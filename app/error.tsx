@@ -1,0 +1,59 @@
+"use client";
+
+import Link from "next/link";
+import { Button } from "@appica/ui-react/button";
+import { AlertTriangle, Refresh } from "@appica/icons-react";
+
+export default function ErrorPage({
+  error,
+  reset,
+}: {
+  error: Error & { digest?: string };
+  reset: () => void;
+}) {
+  return (
+    <div className="enter flex flex-1 flex-col items-center justify-center gap-5 px-4 py-24 text-center">
+      <div className="grid size-16 place-items-center rounded-3xl bg-background-muted text-foreground-subtle">
+        <AlertTriangle size={28} />
+      </div>
+      <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
+        Une erreur est survenue
+      </h1>
+      <p className="max-w-md text-foreground-muted text-balance">
+        Le contenu n’a pas pu être chargé. Réessayez — si le problème persiste,
+        il vient probablement de l’API TMDB.
+      </p>
+
+      {/* Le détail technique reste accessible, mais cadré : il informe sans
+          être ce que l'utilisateur lit en premier. Le digest est ce qui
+          permet de retrouver l'erreur côté serveur. */}
+      {(error.message || error.digest) && (
+        <div className="max-w-md space-y-1.5 rounded-2xl bg-background-muted px-4 py-3 text-start">
+          {error.message && (
+            <p className="font-mono text-xs break-words text-foreground-muted">
+              {error.message}
+            </p>
+          )}
+          {error.digest && (
+            <p className="font-mono text-xs text-foreground-subtle">
+              digest : {error.digest}
+            </p>
+          )}
+        </div>
+      )}
+
+      <div className="flex flex-wrap items-center justify-center gap-2.5 pt-1">
+        <Button className="rounded-full" onClick={reset}>
+          <Refresh size={18} /> Réessayer
+        </Button>
+        <Button
+          variant="ghost"
+          className="rounded-full"
+          render={<Link href="/" />}
+        >
+          Retour à l’accueil
+        </Button>
+      </div>
+    </div>
+  );
+}
