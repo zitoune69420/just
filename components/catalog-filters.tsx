@@ -165,13 +165,13 @@ function FilterSection({
         className="flex w-full items-center justify-between border-b border-border/60 pb-2.5 outline-none focus-visible:ring-2 focus-visible:ring-ring"
       >
         <span className="flex items-center gap-2">
-          <Icon size={16} className="text-foreground-muted" />
+          <Icon size={20} className="text-foreground-muted" />
           <span className="text-sm font-medium text-foreground-strong">
             {title}
           </span>
         </span>
         <ChevronDown
-          size={16}
+          size={20}
           className={`text-foreground-subtle transition-transform ${open ? "rotate-180" : ""}`}
         />
       </button>

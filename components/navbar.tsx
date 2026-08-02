@@ -42,7 +42,9 @@ export function Navbar() {
         </Suspense>
 
         <div className="ms-auto flex items-center gap-2">
-          <form onSubmit={handleSearch} role="search" className="max-sm:hidden">
+          {/* Le champ passe à 260px une fois l'interface à 125% : sous 768px
+              la barre ne tient plus, on bascule sur le bouton loupe. */}
+          <form onSubmit={handleSearch} role="search" className="max-md:hidden">
             <Input
               name="q"
               inputSize="sm"
@@ -55,7 +57,7 @@ export function Navbar() {
           <Button
             variant="ghost"
             size="icon-sm"
-            className="rounded-full sm:hidden"
+            className="rounded-full md:hidden"
             render={<Link href="/search" aria-label="Recherche" />}
           >
             <Search size={18} />

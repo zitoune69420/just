@@ -6,7 +6,7 @@ export default function NotFound() {
   return (
     <div className="enter flex flex-1 flex-col items-center justify-center gap-5 px-4 py-24 text-center">
       <div className="grid size-16 place-items-center rounded-3xl bg-background-muted text-foreground-subtle">
-        <Compass size={28} />
+        <Compass size={35} />
       </div>
       <div className="space-y-2">
         <p className="text-sm font-medium text-foreground-subtle">Erreur 404</p>

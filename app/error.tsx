@@ -14,7 +14,7 @@ export default function ErrorPage({
   return (
     <div className="enter flex flex-1 flex-col items-center justify-center gap-5 px-4 py-24 text-center">
       <div className="grid size-16 place-items-center rounded-3xl bg-background-muted text-foreground-subtle">
-        <AlertTriangle size={28} />
+        <AlertTriangle size={35} />
       </div>
       <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
         Une erreur est survenue

@@ -59,7 +59,7 @@ export function HeroCarousel({ items }: { items: Media[] }) {
                   <div className="flex items-center gap-3 text-sm text-white/85">
                     {media.votes > 0 && (
                       <span className="inline-flex items-center gap-1 font-semibold">
-                        <StarFilled size={14} className="text-warning" />
+                        <StarFilled size={18} className="text-warning" />
                         {media.rating.toFixed(1)}
                       </span>
                     )}
@@ -68,7 +68,7 @@ export function HeroCarousel({ items }: { items: Media[] }) {
                   <p className="line-clamp-2 max-w-prose text-sm text-white/75 sm:text-base">
                     {media.overview}
                   </p>
-                  <div className="flex items-center gap-2.5 pt-1">
+                  <div className="flex flex-wrap items-center gap-2.5 pt-1">
                     <Button
                       size="lg"
                       className="rounded-full"

@@ -117,7 +117,7 @@ export function MediaDetailView({ details }: { details: MediaDetails }) {
             <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-foreground-muted">
               {details.votes > 0 && (
                 <span className="inline-flex items-center gap-1 font-semibold text-foreground-strong">
-                  <StarFilled size={14} className="text-warning" />
+                  <StarFilled size={18} className="text-warning" />
                   {details.rating.toFixed(1)}
                 </span>
               )}
@@ -182,7 +182,7 @@ export function MediaDetailView({ details }: { details: MediaDetails }) {
                   <figure className="flex flex-col items-center gap-2.5 text-center">
                     <Thumbnail
                       shape="circle"
-                      size={88}
+                      size={110}
                       src={
                         member.profile
                           ? tmdbImage(member.profile, "w185")

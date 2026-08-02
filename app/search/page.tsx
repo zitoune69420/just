@@ -53,7 +53,7 @@ function EmptyState({
   return (
     <div className="enter flex flex-col items-center gap-3 py-20 text-center">
       <div className="grid size-14 place-items-center rounded-2xl bg-background-muted text-foreground-subtle">
-        <Icon size={24} />
+        <Icon size={30} />
       </div>
       <p className="text-lg font-medium text-foreground-strong">{title}</p>
       <p className="max-w-sm text-sm text-foreground-muted">{hint}</p>

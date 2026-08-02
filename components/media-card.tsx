@@ -29,12 +29,12 @@ export function MediaCard({ media, sizes = "190px" }: MediaCardProps) {
           />
         ) : (
           <div className="grid size-full place-items-center text-foreground-subtle">
-            <MovieOff size={32} />
+            <MovieOff size={40} />
           </div>
         )}
         {media.votes > 0 && (
           <span className="absolute end-2 top-2 inline-flex items-center gap-1 rounded-full bg-black/60 px-2 py-0.5 text-xs font-semibold text-white ring-1 ring-white/15 backdrop-blur-sm">
-            <StarFilled size={12} className="text-warning" />
+            <StarFilled size={15} className="text-warning" />
             {media.rating.toFixed(1)}
           </span>
         )}

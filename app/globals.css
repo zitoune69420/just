@@ -24,6 +24,16 @@
   --color-ring: var(--foreground-strong);
 }
 
+/* Échelle globale de l'interface : 100% → 125%.
+ * Toute l'échelle Tailwind dérive du rem (`--spacing: .25rem`, tailles de
+ * texte, `max-w-*`, `--radius`), donc agrandir la racine agrandit tout d'un
+ * bloc — texte, espacements, rayons, hauteurs — sans toucher une classe.
+ * En pourcentage et non en px : la valeur reste relative au réglage de taille
+ * de texte du navigateur, qu'on ne doit pas écraser. */
+html {
+  font-size: 125%;
+}
+
 /* Palette neutre (noir / blanc) : on retire la teinte bleue des tokens
  * Appica par défaut (chroma 0). L'accent coloré vient des halos de fond. */
 :root {

@@ -121,7 +121,7 @@ async function CatalogResults({
              surtout ne jamais laisser l'utilisateur dans une impasse. */
           <div className="flex flex-col items-center gap-3 py-24 text-center">
             <div className="grid size-14 place-items-center rounded-2xl bg-background-muted text-foreground-subtle">
-              <FilterOff size={24} />
+              <FilterOff size={30} />
             </div>
             <p className="text-lg font-medium text-foreground-strong">
               Aucun résultat
@@ -155,7 +155,7 @@ async function CatalogResults({
         {totalPages > 1 && items.length > 0 && (
           <nav
             aria-label="Pagination"
-            className="flex items-center justify-center gap-4 pt-2"
+            className="flex flex-wrap items-center justify-center gap-4 pt-2"
           >
             <Button
               variant="outline"

@@ -46,7 +46,7 @@ export function TrailerPlayer({ videoKey, title, backdrop }: TrailerPlayerProps)
           )}
           <span className="absolute inset-0 grid place-items-center">
             <span className="grid size-16 place-items-center rounded-full bg-white text-neutral-950 shadow-lg transition-transform duration-200 ease-out group-hover:scale-105 group-active:scale-95 motion-reduce:group-hover:scale-100">
-              <PlayerPlayFilled size={24} className="translate-x-0.5" />
+              <PlayerPlayFilled size={30} className="translate-x-0.5" />
             </span>
           </span>
           <span className="absolute start-5 bottom-4 text-sm font-medium text-white">
