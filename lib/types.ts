@@ -84,12 +84,35 @@ export interface TmdbMovieDetails extends TmdbDetailsBase {
   runtime: number | null;
 }
 
+export interface TmdbSeasonSummary {
+  season_number: number;
+  name: string;
+  episode_count: number;
+}
+
+export interface TmdbEpisode {
+  episode_number: number;
+  name: string;
+  overview: string;
+  still_path: string | null;
+  air_date?: string;
+  runtime: number | null;
+  vote_average: number;
+}
+
+export interface TmdbSeasonDetails {
+  season_number: number;
+  name: string;
+  episodes: TmdbEpisode[];
+}
+
 export interface TmdbTvDetails extends TmdbDetailsBase {
   name: string;
   original_name: string;
   first_air_date?: string;
   number_of_seasons: number;
   number_of_episodes: number;
+  seasons: TmdbSeasonSummary[];
 }
 
 export interface Media {
@@ -129,6 +152,21 @@ export interface WatchInfo {
   offers: WatchOffer[];
 }
 
+export interface Season {
+  number: number;
+  name: string;
+  episodeCount: number;
+}
+
+export interface Episode {
+  number: number;
+  title: string;
+  overview: string;
+  still: string | null;
+  facts: string[];
+  rating: number;
+}
+
 export interface MediaDetails extends Media {
   genres: TmdbGenre[];
   originalTitle: string;
@@ -138,4 +176,5 @@ export interface MediaDetails extends Media {
   cast: CastMember[];
   recommendations: Media[];
   watch: WatchInfo | null;
+  seasons: Season[];
 }

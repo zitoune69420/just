@@ -8,6 +8,7 @@ import { resolveStreamSource } from "@/lib/streaming";
 import type { MediaDetails } from "@/lib/types";
 import { MediaRow } from "./media-row";
 import { RowCarousel } from "./row-carousel";
+import { SeasonPicker } from "./season-picker";
 import { TrailerPlayer } from "./trailer-player";
 import { WatchButton } from "./watch-button";
 import { WatchSection } from "./watch-section";
@@ -127,13 +128,21 @@ export async function MediaDetailView({ details }: { details: MediaDetails }) {
                   </div>
               )}
               <div className="pt-1">
-                <WatchButton id={details.id} />
+                <WatchButton
+                    id={details.id}
+                    season={details.type === "tv" ? 1 : null}
+                    episode={details.type === "tv" ? 1 : null}
+                />
               </div>
             </div>
           </header>
 
           <div className="mt-10 grid gap-12 lg:mt-14">
             <WatchSection details={details}/>
+
+            {details.seasons.length > 0 && (
+                <SeasonPicker tvId={details.id} seasons={details.seasons}/>
+            )}
 
             <section className="max-w-3xl space-y-3">
               {details.tagline && (

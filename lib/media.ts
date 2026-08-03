@@ -1,10 +1,14 @@
 import type {
+  Episode,
   Media,
   MediaDetails,
   MediaType,
+  Season,
   TmdbCastMember,
+  TmdbEpisode,
   TmdbListItem,
   TmdbMovieDetails,
+  TmdbSeasonSummary,
   TmdbTvDetails,
   TmdbVideo,
   TmdbWatchCountry,
@@ -14,7 +18,14 @@ import type {
 
 const IMAGE_BASE = "https://image.tmdb.org/t/p";
 
-type TmdbImageSize = "w185" | "w342" | "w500" | "w780" | "w1280" | "original";
+type TmdbImageSize =
+  | "w185"
+  | "w300"
+  | "w342"
+  | "w500"
+  | "w780"
+  | "w1280"
+  | "original";
 
 export function tmdbImage(path: string, size: TmdbImageSize): string {
   return `${IMAGE_BASE}/${size}${path}`;
@@ -121,6 +132,32 @@ function toWatchInfo(
   return offers.length > 0 ? { link: country.link, offers } : null;
 }
 
+function toSeasons(seasons: TmdbSeasonSummary[]): Season[] {
+  return seasons
+    .filter((season) => season.season_number > 0 && season.episode_count > 0)
+    .map((season) => ({
+      number: season.season_number,
+      name: season.name,
+      episodeCount: season.episode_count,
+    }));
+}
+
+export function toEpisode(episode: TmdbEpisode): Episode {
+  const facts = [
+    formatDate(episode.air_date),
+    formatRuntime(episode.runtime),
+  ].filter((fact): fact is string => fact !== null);
+
+  return {
+    number: episode.episode_number,
+    title: episode.name,
+    overview: episode.overview,
+    still: episode.still_path,
+    facts,
+    rating: episode.vote_average,
+  };
+}
+
 export function toMovieDetails(details: TmdbMovieDetails): MediaDetails {
   const facts = [
     formatDate(details.release_date),
@@ -137,6 +174,7 @@ export function toMovieDetails(details: TmdbMovieDetails): MediaDetails {
     cast: toCast(details.credits.cast),
     recommendations: toRecommendations(details.recommendations.results, "movie"),
     watch: toWatchInfo(details["watch/providers"]?.results),
+    seasons: [],
   };
 }
 
@@ -161,5 +199,6 @@ export function toTvDetails(details: TmdbTvDetails): MediaDetails {
     cast: toCast(details.credits.cast),
     recommendations: toRecommendations(details.recommendations.results, "tv"),
     watch: toWatchInfo(details["watch/providers"]?.results),
+    seasons: toSeasons(details.seasons ?? []),
   };
 }

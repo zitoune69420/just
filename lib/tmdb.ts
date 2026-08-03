@@ -6,6 +6,7 @@ import type {
   TmdbMovieDetails,
   TmdbMovieListItem,
   TmdbPaginated,
+  TmdbSeasonDetails,
   TmdbTvDetails,
   TmdbTvListItem,
 } from "./types";
@@ -174,6 +175,20 @@ export async function getMovieDetails(
   cacheLife("hours");
   try {
     return await tmdbFetch<TmdbMovieDetails>(`/movie/${id}`, DETAIL_PARAMS);
+  } catch (error) {
+    if (error instanceof TmdbNotFoundError) return null;
+    throw error;
+  }
+}
+
+export async function getTvSeason(
+  id: number,
+  season: number,
+): Promise<TmdbSeasonDetails | null> {
+  "use cache";
+  cacheLife("hours");
+  try {
+    return await tmdbFetch<TmdbSeasonDetails>(`/tv/${id}/season/${season}`);
   } catch (error) {
     if (error instanceof TmdbNotFoundError) return null;
     throw error;
