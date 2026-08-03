@@ -7,6 +7,9 @@ import type {
   TmdbMovieDetails,
   TmdbTvDetails,
   TmdbVideo,
+  TmdbWatchCountry,
+  WatchInfo,
+  WatchOfferKind,
 } from "./types";
 
 const IMAGE_BASE = "https://image.tmdb.org/t/p";
@@ -53,7 +56,6 @@ export function toMedia(item: TmdbListItem, fallbackType?: MediaType): Media {
   };
 }
 
-/** Bande-annonce YouTube la plus pertinente : officielle > trailer > teaser. */
 function pickTrailer(videos: TmdbVideo[]): string | null {
   const youtube = videos.filter((video) => video.site === "YouTube");
   const best =
@@ -83,6 +85,42 @@ function toRecommendations(
     .map((item) => toMedia(item, fallbackType));
 }
 
+export const WATCH_REGION = "FR";
+
+const OFFER_KINDS: WatchOfferKind[] = [
+  "flatrate",
+  "free",
+  "ads",
+  "rent",
+  "buy",
+];
+
+function toWatchInfo(
+  results: Record<string, TmdbWatchCountry | undefined> | undefined,
+): WatchInfo | null {
+  const country = results?.[WATCH_REGION];
+  if (!country) return null;
+
+  const offers = OFFER_KINDS.flatMap((kind) => {
+    const providers = country[kind];
+    if (!providers?.length) return [];
+    return [
+      {
+        kind,
+        providers: providers
+          .toSorted((a, b) => a.display_priority - b.display_priority)
+          .map((provider) => ({
+            id: provider.provider_id,
+            name: provider.provider_name,
+            logo: provider.logo_path,
+          })),
+      },
+    ];
+  });
+
+  return offers.length > 0 ? { link: country.link, offers } : null;
+}
+
 export function toMovieDetails(details: TmdbMovieDetails): MediaDetails {
   const facts = [
     formatDate(details.release_date),
@@ -92,11 +130,13 @@ export function toMovieDetails(details: TmdbMovieDetails): MediaDetails {
   return {
     ...toMedia(details, "movie"),
     genres: details.genres,
+    originalTitle: details.original_title,
     tagline: details.tagline || null,
     facts,
     trailerKey: pickTrailer(details.videos.results),
     cast: toCast(details.credits.cast),
     recommendations: toRecommendations(details.recommendations.results, "movie"),
+    watch: toWatchInfo(details["watch/providers"]?.results),
   };
 }
 
@@ -114,10 +154,12 @@ export function toTvDetails(details: TmdbTvDetails): MediaDetails {
   return {
     ...toMedia(details, "tv"),
     genres: details.genres,
+    originalTitle: details.original_name,
     tagline: details.tagline || null,
     facts,
     trailerKey: pickTrailer(details.videos.results),
     cast: toCast(details.credits.cast),
     recommendations: toRecommendations(details.recommendations.results, "tv"),
+    watch: toWatchInfo(details["watch/providers"]?.results),
   };
 }

@@ -11,10 +11,6 @@ interface TrailerPlayerProps {
   backdrop: string | null;
 }
 
-/**
- * Lecteur « lite » : affiche la miniature et ne charge l'iframe YouTube
- * qu'au clic, pour ne pas alourdir le chargement initial.
- */
 export function TrailerPlayer({ videoKey, title, backdrop }: TrailerPlayerProps) {
   const [playing, setPlaying] = useState(false);
 

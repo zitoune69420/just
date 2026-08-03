@@ -6,7 +6,6 @@ import type { Media } from "@/lib/types";
 
 interface MediaCardProps {
   media: Media;
-  /** Attribut `sizes` de next/image, dépend de la grille ou du carrousel parent. */
   sizes?: string;
 }
 
@@ -23,8 +22,6 @@ export function MediaCard({ media, sizes = "190px" }: MediaCardProps) {
             alt={media.title}
             fill
             sizes={sizes}
-            /* Survol vu des dizaines de fois par session : il doit rester
-               quasi imperceptible. 300ms/1.05 traînait, 200ms/1.03 répond. */
             className="object-cover transition-transform duration-200 ease-out group-hover:scale-[1.03] motion-reduce:group-hover:scale-100"
           />
         ) : (
@@ -33,7 +30,7 @@ export function MediaCard({ media, sizes = "190px" }: MediaCardProps) {
           </div>
         )}
         {media.votes > 0 && (
-          <span className="absolute end-2 top-2 inline-flex items-center gap-1 rounded-full bg-black/60 px-2 py-0.5 text-xs font-semibold text-white ring-1 ring-white/15 backdrop-blur-sm">
+          <span className="absolute inset-x-0 bottom-3 mx-auto inline-flex w-fit items-center gap-1 rounded-full bg-black/60 px-2.5 py-0.5 text-xs font-semibold text-white ring-1 ring-white/15 backdrop-blur-sm">
             <StarFilled size={15} className="text-warning" />
             {media.rating.toFixed(1)}
           </span>

@@ -17,8 +17,6 @@ export default function NotFound() {
       <p className="max-w-md text-foreground-muted text-balance">
         Le contenu que vous cherchez n’existe pas ou a été déplacé.
       </p>
-      {/* Deux sorties plutôt qu'une : on ne laisse pas l'utilisateur dans un
-          cul-de-sac, et chercher est souvent ce qu'il voulait faire. */}
       <div className="flex flex-wrap items-center justify-center gap-2.5 pt-1">
         <Button className="rounded-full" render={<Link href="/" />}>
           Retour à l’accueil

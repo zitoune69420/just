@@ -1,45 +1,31 @@
 @import "tailwindcss";
 @import "@appica/ui-react/styles.css";
 
-/* Chemin explicite vers le dist compilé : la forme package `@source '@appica/ui-react'`
- * ne résout pas ici, Tailwind n'y scanne donc aucune classe (composants "nus"). */
 @source "../node_modules/@appica/ui-react/dist";
 
-/* Courbes de motion. Les easings intégrés de Tailwind sont trop mous pour
- * une animation intentionnelle (`ease-out` = cubic-bezier(0, 0, .2, 1)) :
- * on les remplace par les courbes fortes de référence, ce qui met à niveau
- * d'un coup toutes les transitions existantes.
- * `ease-in` n'est volontairement pas redéfini : il ne doit pas servir en UI,
- * il retarde le mouvement au moment précis où l'œil regarde. */
 @theme {
   --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
   --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
   --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
 
-  /* `ring-ring` était utilisé (media-card, catalog-filters) sans que
-   * `--color-ring` n'existe : la classe n'était jamais générée et l'anneau
-   * de focus retombait sur `currentColor`. On le mappe sur un token à fort
-   * contraste — `--focus-ring` d'Appica est un gris trop proche du fond
-   * dans les deux thèmes pour un indicateur de focus. */
   --color-ring: var(--foreground-strong);
 }
 
-/* Échelle globale de l'interface : 100% → 125%.
- * Toute l'échelle Tailwind dérive du rem (`--spacing: .25rem`, tailles de
- * texte, `max-w-*`, `--radius`), donc agrandir la racine agrandit tout d'un
- * bloc — texte, espacements, rayons, hauteurs — sans toucher une classe.
- * En pourcentage et non en px : la valeur reste relative au réglage de taille
- * de texte du navigateur, qu'on ne doit pas écraser. */
 html {
   font-size: 125%;
 }
 
-/* Palette neutre (noir / blanc) : on retire la teinte bleue des tokens
- * Appica par défaut (chroma 0). L'accent coloré vient des halos de fond. */
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
 :root {
+  color-scheme: light;
+
   --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-geist-mono), ui-monospace, monospace;
-  /* Arrondis plus généreux que le défaut Appica (0.875rem). */
   --radius: 1.1rem;
 
   --foreground: oklch(0.371 0 0);
@@ -77,6 +63,8 @@ html {
 }
 
 .dark {
+  color-scheme: dark;
+
   --foreground: oklch(0.87 0 0);
   --foreground-subtle: oklch(0.556 0 0);
   --foreground-muted: oklch(0.708 0 0);
@@ -111,6 +99,53 @@ html {
   --focus-ring-primary: oklch(0.371 0 0);
 }
 
+@property --scroll-fade-top {
+  syntax: "<length>";
+  inherits: false;
+  initial-value: 0px;
+}
+
+@property --scroll-fade-bottom {
+  syntax: "<length>";
+  inherits: false;
+  initial-value: 0px;
+}
+
+@utility scroll-hint {
+  --scroll-fade-top: 0px;
+  --scroll-fade-bottom: 0px;
+
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    transparent 0,
+    black var(--scroll-fade-top),
+    black calc(100% - var(--scroll-fade-bottom)),
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    to bottom,
+    transparent 0,
+    black var(--scroll-fade-top),
+    black calc(100% - var(--scroll-fade-bottom)),
+    transparent 100%
+  );
+  transition:
+    --scroll-fade-top 150ms var(--ease-out),
+    --scroll-fade-bottom 150ms var(--ease-out);
+
+  &[data-fade-top="true"] {
+    --scroll-fade-top: 2.5rem;
+  }
+
+  &[data-fade-bottom="true"] {
+    --scroll-fade-bottom: 2.5rem;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    transition: none;
+  }
+}
+
 @utility no-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;
@@ -120,15 +155,34 @@ html {
   }
 }
 
-/* Retour de pression : une surface cliquable doit répondre à l'instant où
- * on appuie, pas au relâchement. On anime la propriété `scale` (et non
- * `transform`) pour composer avec les utilities Tailwind translate/scale.
- * Mouvement réduit : on retire l'échelle, le focus/hover reste.
- *
- * À réserver aux éléments dont on maîtrise le style. Les composants Appica
- * déclarent déjà leur propre `transition-[…]`, qui gagne la cascade et
- * annulerait l'animation ici — et leur `Button` a déjà un état pressé conçu
- * (overlay `::before` via `data-pressed`) : rien à superposer. */
+@utility slim-scrollbar {
+  scrollbar-gutter: stable;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-strong) transparent;
+
+  &::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-button {
+    display: none;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background-color: var(--border-strong);
+    border-radius: 9999px;
+  }
+
+  &::-webkit-scrollbar-thumb:hover {
+    background-color: var(--border-emphasis);
+  }
+}
+
 @utility press {
   transition: scale 150ms var(--ease-out);
 
@@ -143,12 +197,6 @@ html {
   }
 }
 
-/* Chrome translucide : la barre est une couche flottante sous laquelle le
- * contenu défile, pas un bandeau opaque qui mange une bande de l'écran.
- * `saturate` compense le lavage des couleurs provoqué par le flou, et une
- * grande surface doit paraître plus épaisse qu'une petite pastille : d'où
- * un rayon nettement plus large que le `backdrop-blur-sm` des cartes.
- * Transparence réduite : on repasse en opaque, la lisibilité prime. */
 @utility chrome {
   background-color: color-mix(in oklab, var(--background) 75%, transparent);
   backdrop-filter: blur(24px) saturate(180%);
@@ -159,11 +207,6 @@ html {
   }
 }
 
-/* Entrée des blocs streamés par Suspense. Sans elle le contenu remplace le
- * skeleton d'un coup sec, à des instants différents selon la requête TMDB.
- * Objectif : éviter un changement brutal — pas de la décoration. D'où 300ms,
- * 8px, une seule fois, et aucun blocage de l'interaction.
- * `@starting-style` fait l'entrée sans JS, y compris à l'insertion en flux. */
 @utility enter {
   opacity: 1;
   translate: 0 0;
@@ -176,8 +219,6 @@ html {
     translate: 0 8px;
   }
 
-  /* Mouvement réduit ≠ aucun retour : on garde le fondu, qui explique le
-   * changement, et on supprime le déplacement. */
   @media (prefers-reduced-motion: reduce) {
     transition-property: opacity;
 

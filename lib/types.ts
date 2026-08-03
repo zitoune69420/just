@@ -1,4 +1,3 @@
-/** Formes brutes renvoyées par l'API TMDB (sous-ensemble utilisé par l'app). */
 
 export type MediaType = "movie" | "tv";
 
@@ -51,28 +50,47 @@ export interface TmdbCastMember {
   profile_path: string | null;
 }
 
+export interface TmdbWatchProvider {
+  provider_id: number;
+  provider_name: string;
+  logo_path: string;
+  display_priority: number;
+}
+
+export interface TmdbWatchCountry {
+  link: string;
+  flatrate?: TmdbWatchProvider[];
+  free?: TmdbWatchProvider[];
+  ads?: TmdbWatchProvider[];
+  rent?: TmdbWatchProvider[];
+  buy?: TmdbWatchProvider[];
+}
+
 interface TmdbDetailsBase extends TmdbListItemBase {
   genres: TmdbGenre[];
   tagline: string | null;
   videos: { results: TmdbVideo[] };
   credits: { cast: TmdbCastMember[] };
   recommendations: TmdbPaginated<TmdbListItem>;
+  "watch/providers"?: {
+    results?: Record<string, TmdbWatchCountry | undefined>;
+  };
 }
 
 export interface TmdbMovieDetails extends TmdbDetailsBase {
   title: string;
+  original_title: string;
   release_date?: string;
   runtime: number | null;
 }
 
 export interface TmdbTvDetails extends TmdbDetailsBase {
   name: string;
+  original_name: string;
   first_air_date?: string;
   number_of_seasons: number;
   number_of_episodes: number;
 }
-
-/** Formes normalisées consommées par les composants UI. */
 
 export interface Media {
   id: number;
@@ -93,12 +111,31 @@ export interface CastMember {
   profile: string | null;
 }
 
+export type WatchOfferKind = "flatrate" | "free" | "ads" | "rent" | "buy";
+
+export interface WatchProvider {
+  id: number;
+  name: string;
+  logo: string;
+}
+
+export interface WatchOffer {
+  kind: WatchOfferKind;
+  providers: WatchProvider[];
+}
+
+export interface WatchInfo {
+  link: string;
+  offers: WatchOffer[];
+}
+
 export interface MediaDetails extends Media {
   genres: TmdbGenre[];
+  originalTitle: string;
   tagline: string | null;
-  /** Métadonnées affichables, ex. ["12 juin 2024", "2 h 15"] ou ["3 saisons", "24 épisodes"]. */
   facts: string[];
   trailerKey: string | null;
   cast: CastMember[];
   recommendations: Media[];
+  watch: WatchInfo | null;
 }

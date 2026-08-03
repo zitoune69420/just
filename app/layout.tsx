@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { ThemeProvider } from "@appica/ui-react/providers/theme-provider";
-import { BackgroundGlow } from "@/components/background-glow";
+import { TooltipProvider } from "@appica/ui-react/tooltip";
 import { Footer } from "@/components/footer";
 import { Navbar } from "@/components/navbar";
 import "./globals.css";
@@ -38,10 +38,11 @@ export default function RootLayout({
     >
       <body className="flex min-h-full flex-col bg-background text-foreground">
         <ThemeProvider defaultTheme="dark">
-          <BackgroundGlow />
-          <Navbar />
-          <main className="flex flex-1 flex-col">{children}</main>
-          <Footer />
+          <TooltipProvider>
+            <Navbar />
+            <main className="flex flex-1 flex-col">{children}</main>
+            <Footer />
+          </TooltipProvider>
         </ThemeProvider>
       </body>
     </html>

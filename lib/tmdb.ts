@@ -35,7 +35,6 @@ async function tmdbFetch<T>(
     url.searchParams.set(name, value);
   }
 
-  // Les jetons v4 sont des JWT (en-tête Bearer), les clés v3 passent en query string.
   const isV4Token = apiKey.startsWith("eyJ");
   if (!isV4Token) {
     url.searchParams.set("api_key", apiKey);
@@ -54,7 +53,6 @@ async function tmdbFetch<T>(
   return response.json() as Promise<T>;
 }
 
-/** Tendances de la semaine (films et séries confondus, personnes exclues). */
 export async function getTrending(): Promise<TmdbListItem[]> {
   "use cache";
   cacheLife("hours");
@@ -91,6 +89,17 @@ export async function getTopRatedMovies(): Promise<
   return tmdbFetch("/movie/top_rated");
 }
 
+export async function getAcclaimedMovies(): Promise<
+  TmdbPaginated<TmdbMovieListItem>
+> {
+  "use cache";
+  cacheLife("days");
+  return tmdbFetch("/discover/movie", {
+    sort_by: "vote_average.desc",
+    "vote_count.gte": "5000",
+  });
+}
+
 export async function getGenres(type: MediaType): Promise<TmdbGenre[]> {
   "use cache";
   cacheLife("days");
@@ -100,7 +109,6 @@ export async function getGenres(type: MediaType): Promise<TmdbGenre[]> {
 
 export type SortKey = "popularity" | "rating" | "year" | "title";
 
-/** Champs de tri TMDB (les noms de champs date/titre diffèrent entre films et séries). */
 const SORT_BY: Record<MediaType, Record<SortKey, string>> = {
   movie: {
     popularity: "popularity.desc",
@@ -128,10 +136,8 @@ export async function discoverMedia(
     sort_by: SORT_BY[type][sort],
   };
   if (options.genreIds?.length) {
-    // "|" = OU logique : un titre correspond s'il a au moins un des genres.
     params.with_genres = options.genreIds.join("|");
   }
-  // Sans seuil de votes, ces tris remontent des titres obscurs.
   if (sort === "rating" || sort === "title") {
     params["vote_count.gte"] = "100";
   }
@@ -157,7 +163,7 @@ export async function searchMedia(
 }
 
 const DETAIL_PARAMS = {
-  append_to_response: "videos,credits,recommendations",
+  append_to_response: "videos,credits,recommendations,watch/providers",
   include_video_language: "fr,en,null",
 };
 

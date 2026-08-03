@@ -9,7 +9,6 @@ import { CatalogFilters } from "./catalog-filters";
 import { MediaCard } from "./media-card";
 import { CatalogSkeleton } from "./skeletons";
 
-/** TMDB refuse toute page au-delà de 500. */
 const MAX_PAGE = 500;
 
 const SORT_KEYS: SortKey[] = ["popularity", "rating", "year", "title"];
@@ -117,8 +116,6 @@ async function CatalogResults({
 
       <div className="min-w-0 flex-1 space-y-8">
         {items.length === 0 ? (
-          /* État vide : moment rare, donc on peut y mettre du soin — et
-             surtout ne jamais laisser l'utilisateur dans une impasse. */
           <div className="flex flex-col items-center gap-3 py-24 text-center">
             <div className="grid size-14 place-items-center rounded-2xl bg-background-muted text-foreground-subtle">
               <FilterOff size={30} />

@@ -24,9 +24,6 @@ export default function ErrorPage({
         il vient probablement de l’API TMDB.
       </p>
 
-      {/* Le détail technique reste accessible, mais cadré : il informe sans
-          être ce que l'utilisateur lit en premier. Le digest est ce qui
-          permet de retrouver l'erreur côté serveur. */}
       {(error.message || error.digest) && (
         <div className="max-w-md space-y-1.5 rounded-2xl bg-background-muted px-4 py-3 text-start">
           {error.message && (

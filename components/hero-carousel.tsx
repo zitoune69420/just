@@ -47,9 +47,6 @@ export function HeroCarousel({ items }: { items: Media[] }) {
                 )}
                 <div className="absolute inset-0 bg-linear-to-t from-black/85 via-black/35 to-black/10" />
                 <div className="absolute inset-x-0 bottom-0 space-y-3 p-5 sm:max-w-xl sm:space-y-4 sm:p-10">
-                  {/* Liseré clair : c'est ce qui fait lire la pastille comme
-                      un matériau translucide posé sur l'image, et non comme
-                      un aplat gris. */}
                   <span className="inline-block rounded-full bg-white/15 px-3 py-1 text-xs font-medium text-white ring-1 ring-white/20 backdrop-blur-sm">
                     {TYPE_LABELS[media.type]}
                   </span>

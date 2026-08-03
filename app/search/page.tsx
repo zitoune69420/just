@@ -40,7 +40,6 @@ export default function SearchPage({
   );
 }
 
-/** État vide : une icône, une phrase, et rien qui prétende être un résultat. */
 function EmptyState({
   icon: Icon,
   title,

@@ -13,20 +13,18 @@ import { ChevronRight } from "@appica/icons-react";
 interface RowCarouselProps {
   title: string;
   moreHref?: string;
-  /** Des `CarouselSlide` (largeur via `basis-*`). */
   children: React.ReactNode;
 }
 
 export function RowCarousel({ title, moreHref, children }: RowCarouselProps) {
   return (
-    /* `min-w-0` : dans un parent grid ou flex (page détail), un item prend par
-     * défaut sa largeur min-content, ici la somme des slides — le conteneur de
-     * défilement (viewport Embla) étant plus bas dans l'arbre, il ne peut pas
-     * ramener ce minimum à 0. Sans ça la rangée déborde de la page, et Embla,
-     * dont le viewport fait alors la largeur du contenu, croit que tout tient
-     * et désactive le défilement. */
     <section className="enter min-w-0">
-      <Carousel dragFree align="start" containScroll="trimSnaps">
+      <Carousel
+        dragFree
+        align="start"
+        containScroll="trimSnaps"
+        className="[&_[data-slot=carousel-viewport]]:rounded-t-2xl"
+      >
         <div className="mb-4 flex items-center justify-between gap-4">
           <h2 className="text-lg font-semibold tracking-tight sm:text-xl">
             {title}

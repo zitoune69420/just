@@ -1,11 +1,16 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { Suspense } from "react";
 import { Button } from "@appica/ui-react/button";
-import { Input } from "@appica/ui-react/input";
-import { Search } from "@appica/icons-react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@appica/ui-react/tooltip";
+import { Search, User } from "@appica/icons-react";
+import { CommandMenu } from "./command-menu";
 import { ThemeToggle } from "./theme-toggle";
 
 const NAV_LINKS = [
@@ -15,16 +20,6 @@ const NAV_LINKS = [
 ] as const;
 
 export function Navbar() {
-  const router = useRouter();
-
-  function handleSearch(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const query = new FormData(event.currentTarget).get("q");
-    if (typeof query === "string" && query.trim()) {
-      router.push(`/search?q=${encodeURIComponent(query.trim())}`);
-    }
-  }
-
   return (
     <header className="chrome sticky top-0 z-50 border-b border-border/60">
       <div className="mx-auto flex h-16 max-w-7xl items-center gap-2 px-4 sm:gap-5 sm:px-6 lg:px-8">
@@ -35,34 +30,59 @@ export function Navbar() {
           JUST<span className="text-foreground-muted">.</span>
         </Link>
 
-        {/* usePathname est une donnée runtime : hors Suspense, il bloquerait
-            le shell statique des routes dynamiques (Cache Components). */}
         <Suspense fallback={<NavLinks pathname={null} />}>
           <ActiveNavLinks />
         </Suspense>
 
         <div className="ms-auto flex items-center gap-2">
-          {/* Le champ passe à 260px une fois l'interface à 125% : sous 768px
-              la barre ne tient plus, on bascule sur le bouton loupe. */}
-          <form onSubmit={handleSearch} role="search" className="max-md:hidden">
-            <Input
-              name="q"
-              inputSize="sm"
-              placeholder="Rechercher…"
-              aria-label="Rechercher un film ou une série"
-              startSlot={<Search size={16} />}
-              className="w-52 rounded-full"
+          <CommandMenu />
+          <Tooltip>
+            <TooltipTrigger
+              render={
+                <Button
+                  variant="ghost"
+                  size="icon-sm"
+                  className="rounded-full lg:hidden"
+                  render={<Link href="/search" aria-label="Recherche" />}
+                >
+                  <Search size={18} />
+                </Button>
+              }
             />
-          </form>
+            <TooltipContent>Recherche</TooltipContent>
+          </Tooltip>
+          <ThemeToggle />
+
           <Button
             variant="ghost"
-            size="icon-sm"
-            className="rounded-full md:hidden"
-            render={<Link href="/search" aria-label="Recherche" />}
+            size="sm"
+            className="rounded-full max-md:hidden"
+            render={<Link href="/login" />}
           >
-            <Search size={18} />
+            Connexion
           </Button>
-          <ThemeToggle />
+          <Button
+            size="sm"
+            className="rounded-full max-md:hidden"
+            render={<Link href="/register" />}
+          >
+            Inscription
+          </Button>
+          <Tooltip>
+            <TooltipTrigger
+              render={
+                <Button
+                  variant="ghost"
+                  size="icon-sm"
+                  className="rounded-full md:hidden"
+                  render={<Link href="/login" aria-label="Connexion" />}
+                >
+                  <User size={18} />
+                </Button>
+              }
+            />
+            <TooltipContent>Connexion</TooltipContent>
+          </Tooltip>
         </div>
       </div>
     </header>
