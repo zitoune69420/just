@@ -1,11 +1,15 @@
+import { cacheLife } from "next/cache";
+
 const AUTHORIZE_URL = "https://discord.com/oauth2/authorize";
 const TOKEN_URL = "https://discord.com/api/oauth2/token";
+const API_BASE = "https://discord.com/api/v10";
 const USER_URL = "https://discord.com/api/users/@me";
 const CDN_URL = "https://cdn.discordapp.com";
 const SCOPE = "identify email";
 
 export interface DiscordProfile {
   discordId: string;
+  username: string;
   name: string;
   avatar: string | null;
   email: string | null;
@@ -22,6 +26,32 @@ interface DiscordUser {
   discriminator: string;
   email?: string | null;
   verified?: boolean;
+}
+
+export function hasDiscordBotToken(): boolean {
+  return Boolean(process.env.DISCORD_BOT_TOKEN);
+}
+
+export async function fetchDiscordUsername(
+  discordId: string,
+): Promise<string | null> {
+  "use cache";
+  cacheLife("days");
+
+  const token = process.env.DISCORD_BOT_TOKEN;
+  if (!token) return null;
+
+  try {
+    const response = await fetch(`${API_BASE}/users/${discordId}`, {
+      headers: { Authorization: `Bot ${token}` },
+    });
+    if (!response.ok) return null;
+
+    const data = (await response.json()) as { username?: string };
+    return data.username ?? null;
+  } catch {
+    return null;
+  }
 }
 
 export function isDiscordConfigured(): boolean {
@@ -118,6 +148,7 @@ export async function signInWithCode(
   const user = (await response.json()) as DiscordUser;
   return {
     discordId: user.id,
+    username: user.username,
     name: user.global_name ?? user.username,
     avatar: avatarUrl(user),
     email: user.verified && user.email ? user.email : null,

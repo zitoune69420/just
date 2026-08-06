@@ -4,7 +4,11 @@ import { CarouselSlide } from "@appica/ui-react/carousel";
 import { Thumbnail } from "@appica/ui-react/thumbnail";
 import { StarFilled } from "@appica/icons-react";
 import { tmdbImage } from "@/lib/media";
+import { getProgressFor } from "@/lib/progress";
+import { getSession } from "@/lib/session";
 import { resolveStreamSource } from "@/lib/streaming";
+import { isStreamConfigured } from "@/lib/stream-url";
+import { isSupabaseAdminConfigured } from "@/lib/supabase";
 import type { MediaDetails } from "@/lib/types";
 import { FavoriteButton } from "./favorite-button";
 import { MediaRow } from "./media-row";
@@ -18,6 +22,17 @@ const TYPE_LABELS: Record<MediaDetails["type"], string> = {
   movie: "Film",
   tv: "Série",
 };
+
+async function resumePoint(type: MediaDetails["type"], id: number) {
+  if (!isSupabaseAdminConfigured()) return null;
+  const session = await getSession();
+  if (!session) return null;
+  try {
+    return await getProgressFor(session.id, type, id);
+  } catch {
+    return null;
+  }
+}
 
 const BACKDROP_FADE =
   "[-webkit-mask-image:linear-gradient(to_bottom,black_72%,#000b_85%,#0004_95%,transparent_100%)] [mask-image:linear-gradient(to_bottom,black_72%,#000b_85%,#0004_95%,transparent_100%)]";
@@ -48,6 +63,9 @@ export async function MediaDetailView({ details }: { details: MediaDetails }) {
     originalTitle: details.originalTitle,
     year: details.year,
   });
+
+  const resume = await resumePoint(details.type, details.id);
+  const streamAvailable = isStreamConfigured();
 
   return (
       <article className="enter pb-16">
@@ -131,8 +149,14 @@ export async function MediaDetailView({ details }: { details: MediaDetails }) {
               <div className="flex flex-wrap items-center gap-3 pt-1">
                 <WatchButton
                     id={details.id}
-                    season={details.type === "tv" ? 1 : null}
-                    episode={details.type === "tv" ? 1 : null}
+                    type={details.type}
+                    season={details.type === "tv" ? (resume?.season ?? 1) : null}
+                    episode={
+                      details.type === "tv" ? (resume?.episode ?? 1) : null
+                    }
+                    runtime={details.runtime}
+                    resumed={resume !== null}
+                    available={streamAvailable}
                 />
                 <FavoriteButton
                     mediaType={details.type}
@@ -148,7 +172,12 @@ export async function MediaDetailView({ details }: { details: MediaDetails }) {
             <WatchSection details={details}/>
 
             {details.seasons.length > 0 && (
-                <SeasonPicker tvId={details.id} seasons={details.seasons}/>
+                <SeasonPicker
+                    tvId={details.id}
+                    seasons={details.seasons}
+                    initialSeason={resume?.season ?? null}
+                    available={streamAvailable}
+                />
             )}
 
             <section className="max-w-3xl space-y-3">

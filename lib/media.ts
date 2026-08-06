@@ -155,6 +155,7 @@ export function toEpisode(episode: TmdbEpisode): Episode {
     still: episode.still_path,
     facts,
     rating: episode.vote_average,
+    runtime: episode.runtime,
   };
 }
 
@@ -175,6 +176,7 @@ export function toMovieDetails(details: TmdbMovieDetails): MediaDetails {
     recommendations: toRecommendations(details.recommendations.results, "movie"),
     watch: toWatchInfo(details["watch/providers"]?.results),
     seasons: [],
+    runtime: details.runtime,
   };
 }
 
@@ -200,5 +202,6 @@ export function toTvDetails(details: TmdbTvDetails): MediaDetails {
     recommendations: toRecommendations(details.recommendations.results, "tv"),
     watch: toWatchInfo(details["watch/providers"]?.results),
     seasons: toSeasons(details.seasons ?? []),
+    runtime: null,
   };
 }

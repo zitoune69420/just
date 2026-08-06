@@ -1,4 +1,5 @@
 import { supabaseAdmin } from "./supabase";
+import type { Role } from "./roles";
 import type { SessionUser } from "./session";
 
 export interface UserRow {
@@ -8,9 +9,12 @@ export interface UserRow {
   name: string;
   avatar: string | null;
   discord_id: string | null;
+  discord_username: string | null;
+  role: Role;
 }
 
-const COLUMNS = "id, email, password_hash, name, avatar, discord_id";
+const COLUMNS =
+  "id, email, password_hash, name, avatar, discord_id, discord_username, role";
 
 const DUPLICATE_CODE = "23505";
 
@@ -57,6 +61,7 @@ export async function createUserWithPassword(input: {
   email: string;
   passwordHash: string;
   name: string;
+  role?: Role;
 }): Promise<UserRow> {
   const { data, error } = await supabaseAdmin()
     .from("users")
@@ -64,6 +69,7 @@ export async function createUserWithPassword(input: {
       email: normalizeEmail(input.email),
       password_hash: input.passwordHash,
       name: input.name,
+      role: input.role ?? "user",
     })
     .select(COLUMNS)
     .single<UserRow>();
@@ -118,7 +124,12 @@ export async function setCredentials(
 
 export async function linkDiscordToUser(
   userId: string,
-  profile: { discordId: string; email: string | null; avatar: string | null },
+  profile: {
+    discordId: string;
+    username: string;
+    email: string | null;
+    avatar: string | null;
+  },
 ): Promise<UserRow> {
   const owner = await findUserByDiscordId(profile.discordId);
   if (owner) {
@@ -133,6 +144,7 @@ export async function linkDiscordToUser(
 
   const patch: Record<string, unknown> = {
     discord_id: profile.discordId,
+    discord_username: profile.username,
     avatar: current.avatar ?? profile.avatar,
   };
 
@@ -148,13 +160,18 @@ export async function linkDiscordToUser(
 
 export async function upsertDiscordUser(input: {
   discordId: string;
+  username: string;
   email: string | null;
   name: string;
   avatar: string | null;
 }): Promise<UserRow> {
   const linked = await findUserByDiscordId(input.discordId);
   if (linked) {
-    return update(linked.id, { name: input.name, avatar: input.avatar });
+    return update(linked.id, {
+      name: input.name,
+      avatar: input.avatar,
+      discord_username: input.username,
+    });
   }
 
   if (input.email) {
@@ -162,6 +179,7 @@ export async function upsertDiscordUser(input: {
     if (existing) {
       return update(existing.id, {
         discord_id: input.discordId,
+        discord_username: input.username,
         avatar: existing.avatar ?? input.avatar,
       });
     }
@@ -171,6 +189,7 @@ export async function upsertDiscordUser(input: {
     .from("users")
     .insert({
       discord_id: input.discordId,
+      discord_username: input.username,
       email: input.email ? normalizeEmail(input.email) : null,
       name: input.name,
       avatar: input.avatar,

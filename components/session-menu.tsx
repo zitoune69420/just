@@ -11,9 +11,11 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@appica/ui-react/dropdown-menu";
-import { Heart, Logout, Settings } from "@appica/icons-react";
+import { Heart, Logout, Settings, Users } from "@appica/icons-react";
 import { logout } from "@/lib/auth-actions";
+import type { Role } from "@/lib/roles";
 import { DiscordMark, discordSignInHref } from "./discord-sign-in";
+import { RoleBadge } from "./role-badge";
 
 function initials(name: string): string {
   return name.trim().slice(0, 2).toUpperCase();
@@ -23,10 +25,14 @@ export function SessionMenu({
   name,
   avatar,
   canLinkDiscord = false,
+  isAdmin = false,
+  role = "user",
 }: {
   name: string;
   avatar: string | null;
   canLinkDiscord?: boolean;
+  isAdmin?: boolean;
+  role?: Role;
 }) {
   const [pending, startTransition] = useTransition();
 
@@ -47,6 +53,7 @@ export function SessionMenu({
             <span className="max-w-32 truncate text-sm font-medium max-md:hidden">
               {name}
             </span>
+            <RoleBadge role={role} className="max-md:hidden" />
           </Button>
         }
       />
@@ -62,6 +69,12 @@ export function SessionMenu({
           <Settings size={16} />
           Mon compte
         </DropdownMenuItem>
+        {isAdmin && (
+          <DropdownMenuItem render={<Link href="/admin" />}>
+            <Users size={16} />
+            Administration
+          </DropdownMenuItem>
+        )}
         {canLinkDiscord && (
           <DropdownMenuItem
             render={<a href={discordSignInHref("/account")} />}

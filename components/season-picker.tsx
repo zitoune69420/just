@@ -13,7 +13,13 @@ import { Spinner } from "@appica/ui-react/spinner";
 import { PlayerPlayFilled } from "@appica/icons-react";
 import { tmdbImage } from "@/lib/media";
 import type { Episode, Season } from "@/lib/types";
-import { streamUrl, WatchDialog } from "./watch-button";
+import {
+  requestPlayback,
+  type PlaybackDenied,
+} from "@/lib/playback-client";
+import { recordProgress } from "@/lib/progress-actions";
+import { AccessDialog } from "./access-dialog";
+import { WatchDialog } from "./watch-button";
 
 const OVERVIEW_MAX = 90;
 
@@ -27,16 +33,25 @@ function shorten(text: string): string {
 export function SeasonPicker({
   tvId,
   seasons,
+  initialSeason,
+  available = true,
 }: {
   tvId: number;
   seasons: Season[];
+  initialSeason?: number | null;
+  available?: boolean;
 }) {
-  const [season, setSeason] = useState(seasons[0]?.number ?? 1);
+  const [season, setSeason] = useState(
+    initialSeason ?? seasons[0]?.number ?? 1,
+  );
   const [loaded, setLoaded] = useState<{
     season: number;
     episodes: Episode[];
   } | null>(null);
   const [playing, setPlaying] = useState<number | null>(null);
+  const [src, setSrc] = useState<string | null>(null);
+  const [denied, setDenied] = useState<PlaybackDenied | null>(null);
+  const [pending, setPending] = useState<number | null>(null);
 
   const loading = loaded?.season !== season;
   const episodes = loaded?.season === season ? loaded.episodes : [];
@@ -64,8 +79,22 @@ export function SeasonPicker({
     };
   }, [tvId, season]);
 
-  const src = playing === null ? null : streamUrl(tvId, season, playing);
-  const canPlay = streamUrl(tvId, season, 1) !== null;
+  const canPlay = available;
+
+  async function play(number: number) {
+    if (pending !== null) return;
+    setPending(number);
+    const result = await requestPlayback("tv", tvId, season, number);
+    setPending(null);
+
+    if ("url" in result) {
+      void recordProgress("tv", tvId, season, number);
+      setSrc(result.url);
+      setPlaying(number);
+      return;
+    }
+    setDenied(result.denied);
+  }
 
   return (
     <section className="space-y-4">
@@ -114,7 +143,7 @@ export function SeasonPicker({
               <button
                 type="button"
                 disabled={!canPlay}
-                onClick={() => setPlaying(episode.number)}
+                onClick={() => void play(episode.number)}
                 className="press group flex h-full w-full gap-3 rounded-2xl border border-border/60 bg-background-subtle/60 p-2.5 text-start outline-none transition-colors hover:border-border-strong focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-default"
               >
                 <span className="relative aspect-video w-32 shrink-0 overflow-hidden rounded-xl bg-background-muted">
@@ -159,10 +188,23 @@ export function SeasonPicker({
           src={src}
           open={playing !== null}
           onOpenChange={(next) => {
-            if (!next) setPlaying(null);
+            if (!next) {
+              setPlaying(null);
+              setSrc(null);
+            }
+          }}
+          track={{
+            type: "tv",
+            id: tvId,
+            season,
+            episode: playing,
+            runtime:
+              episodes.find((item) => item.number === playing)?.runtime ?? null,
           }}
         />
       )}
+
+      <AccessDialog denied={denied} onClose={() => setDenied(null)} />
     </section>
   );
 }
