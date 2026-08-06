@@ -31,6 +31,14 @@ export function MediaCard({ media, sizes = "190px" }: MediaCardProps) {
               <MovieOff size={40} />
             </div>
           )}
+          {typeof media.progress === "number" && media.progress > 0 && (
+            <span className="absolute inset-x-0 bottom-0 h-1 bg-black/50">
+              <span
+                className="block h-full bg-primary"
+                style={{ width: `${Math.min(media.progress, 1) * 100}%` }}
+              />
+            </span>
+          )}
           {media.votes > 0 && (
             <span className="absolute inset-x-0 bottom-3 mx-auto inline-flex w-fit items-center gap-1 rounded-full bg-black/60 px-2.5 py-0.5 text-xs font-semibold text-white ring-1 ring-white/15 backdrop-blur-sm">
               <StarFilled size={15} className="text-warning" />

@@ -17,6 +17,7 @@ const NAV_LINKS = [
   { href: "/", label: "Accueil" },
   { href: "/movies", label: "Films" },
   { href: "/series", label: "Séries" },
+  { href: "/search", label: "Search" },
 ] as const;
 
 export function Navbar({ session }: { session: React.ReactNode }) {

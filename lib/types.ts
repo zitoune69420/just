@@ -125,6 +125,7 @@ export interface Media {
   backdrop: string | null;
   rating: number;
   votes: number;
+  progress?: number;
 }
 
 export interface CastMember {
@@ -165,6 +166,7 @@ export interface Episode {
   still: string | null;
   facts: string[];
   rating: number;
+  runtime: number | null;
 }
 
 export interface MediaDetails extends Media {
@@ -177,4 +179,5 @@ export interface MediaDetails extends Media {
   recommendations: Media[];
   watch: WatchInfo | null;
   seasons: Season[];
+  runtime: number | null;
 }

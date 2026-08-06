@@ -4,6 +4,15 @@ import { Badge } from "@appica/ui-react/badge";
 import { Button } from "@appica/ui-react/button";
 import { AlertCircle, Check } from "@appica/icons-react";
 import { isDiscordConfigured } from "@/lib/discord";
+import { countGrants, currentPeriod } from "@/lib/grants";
+import {
+  FREE_MOVIE_LIMIT,
+  FREE_SERIES_LIMIT,
+  GOLD_MOVIES_PER_MONTH,
+  ROLE_LABELS,
+  ROLE_SUMMARIES,
+  type Role,
+} from "@/lib/roles";
 import { getSession } from "@/lib/session";
 import { isSupabaseAdminConfigured } from "@/lib/supabase";
 import { findUserById } from "@/lib/users";
@@ -39,6 +48,19 @@ function Section({
 
 function initials(name: string): string {
   return name.trim().slice(0, 2).toUpperCase();
+}
+
+async function quotaUsage(userId: string, role: Role) {
+  if (role !== "user" && role !== "gold") return { movies: 0, series: 0 };
+  try {
+    const [movies, series] = await Promise.all([
+      countGrants(userId, "movie", role === "gold" ? currentPeriod() : undefined),
+      countGrants(userId, "tv"),
+    ]);
+    return { movies, series };
+  } catch {
+    return { movies: 0, series: 0 };
+  }
 }
 
 export async function AccountPanel({ error }: { error?: string }) {
@@ -86,6 +108,7 @@ export async function AccountPanel({ error }: { error?: string }) {
   }
 
   const message = error ? (ERRORS[error] ?? ERRORS.database) : null;
+  const usage = await quotaUsage(user.id, user.role);
 
   return (
     <div className="space-y-6">
@@ -113,6 +136,29 @@ export async function AccountPanel({ error }: { error?: string }) {
           </p>
         </div>
       </div>
+
+      <Section
+        title="Mon offre"
+        description={ROLE_SUMMARIES[user.role]}
+      >
+        <div className="flex flex-wrap items-center gap-3">
+          <Badge variant="soft" className="rounded-full">
+            {ROLE_LABELS[user.role]}
+          </Badge>
+          {user.role === "user" && (
+            <span className="text-sm text-foreground-muted">
+              {usage.movies} / {FREE_MOVIE_LIMIT} films · {usage.series} /{" "}
+              {FREE_SERIES_LIMIT} série
+            </span>
+          )}
+          {user.role === "gold" && (
+            <span className="text-sm text-foreground-muted">
+              {usage.movies} / {GOLD_MOVIES_PER_MONTH} films ce mois-ci ·
+              séries illimitées
+            </span>
+          )}
+        </div>
+      </Section>
 
       <Section
         title={

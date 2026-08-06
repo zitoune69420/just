@@ -1,18 +1,25 @@
 import Link from "next/link";
 import { Button } from "@appica/ui-react/button";
 import { isDiscordConfigured } from "@/lib/discord";
+import type { Role } from "@/lib/roles";
 import { getSession } from "@/lib/session";
 import { isSupabaseAdminConfigured } from "@/lib/supabase";
 import { findUserById } from "@/lib/users";
 import { SessionMenu } from "./session-menu";
 
-async function hasDiscordLink(userId: string): Promise<boolean> {
-  if (!isSupabaseAdminConfigured()) return true;
+async function accountFlags(userId: string) {
+  if (!isSupabaseAdminConfigured()) {
+    return { linked: true, admin: false, role: "user" as Role };
+  }
   try {
     const user = await findUserById(userId);
-    return Boolean(user?.discord_id);
+    return {
+      linked: Boolean(user?.discord_id),
+      admin: user?.role === "admin",
+      role: user?.role ?? ("user" as Role),
+    };
   } catch {
-    return true;
+    return { linked: true, admin: false, role: "user" as Role };
   }
 }
 
@@ -29,11 +36,14 @@ export async function NavbarSession() {
   const user = await getSession();
 
   if (user) {
+    const flags = await accountFlags(user.id);
     return (
       <SessionMenu
         name={user.name}
         avatar={user.avatar}
-        canLinkDiscord={isDiscordConfigured() && !(await hasDiscordLink(user.id))}
+        canLinkDiscord={isDiscordConfigured() && !flags.linked}
+        isAdmin={flags.admin}
+        role={flags.role}
       />
     );
   }
