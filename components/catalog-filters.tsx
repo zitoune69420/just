@@ -97,7 +97,7 @@ export function CatalogFilters({
   }
 
   return (
-    <aside className="flex h-[80vh] w-full flex-col rounded-3xl border border-border/60 bg-background-subtle/60 p-5 backdrop-blur-sm lg:sticky lg:top-20 lg:max-h-[calc(100vh-6rem)] lg:w-72 lg:shrink-0">
+    <aside className="flex max-h-[60vh] w-full flex-col rounded-3xl border border-border/60 bg-background-subtle/60 p-5 backdrop-blur-sm lg:sticky lg:top-20 lg:h-[80vh] lg:max-h-[calc(100vh-6rem)] lg:w-72 lg:shrink-0">
       <div
         ref={scrollRef}
         data-fade-top={fade.top}

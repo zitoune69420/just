@@ -1,0 +1,84 @@
+"use client";
+
+import Link from "next/link";
+import { useTransition } from "react";
+import { Avatar, AvatarFallback, AvatarImage } from "@appica/ui-react/avatar";
+import { Button } from "@appica/ui-react/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@appica/ui-react/dropdown-menu";
+import { Heart, Logout, Settings } from "@appica/icons-react";
+import { logout } from "@/lib/auth-actions";
+import { DiscordMark, discordSignInHref } from "./discord-sign-in";
+
+function initials(name: string): string {
+  return name.trim().slice(0, 2).toUpperCase();
+}
+
+export function SessionMenu({
+  name,
+  avatar,
+  canLinkDiscord = false,
+}: {
+  name: string;
+  avatar: string | null;
+  canLinkDiscord?: boolean;
+}) {
+  const [pending, startTransition] = useTransition();
+
+  return (
+    <DropdownMenu size="sm">
+      <DropdownMenuTrigger
+        render={
+          <Button
+            variant="ghost"
+            size="sm"
+            className="gap-2 rounded-full ps-1 pe-3 max-md:pe-1"
+            aria-label={`Compte de ${name}`}
+          >
+            <Avatar size="xs" shape="circle">
+              {avatar && <AvatarImage src={avatar} alt="" />}
+              <AvatarFallback>{initials(name)}</AvatarFallback>
+            </Avatar>
+            <span className="max-w-32 truncate text-sm font-medium max-md:hidden">
+              {name}
+            </span>
+          </Button>
+        }
+      />
+      <DropdownMenuContent align="end" className="w-56">
+        <div className="flex items-center gap-2 px-2.5 pt-1.5 pb-1 text-xs text-foreground-subtle">
+          <span className="truncate">{name}</span>
+        </div>
+        <DropdownMenuItem render={<Link href="/favorites" />}>
+          <Heart size={16} className="-ms-px" />
+          Favoris
+        </DropdownMenuItem>
+        <DropdownMenuItem render={<Link href="/account" />}>
+          <Settings size={16} />
+          Mon compte
+        </DropdownMenuItem>
+        {canLinkDiscord && (
+          <DropdownMenuItem
+            render={<a href={discordSignInHref("/account")} />}
+          >
+            <DiscordMark size={16} className="text-[#5865F2]" />
+            Lier Discord
+          </DropdownMenuItem>
+        )}
+        <DropdownMenuSeparator />
+        <DropdownMenuItem
+          disabled={pending}
+          onClick={() => startTransition(() => logout())}
+        >
+          <Logout size={16} />
+          Se déconnecter
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}

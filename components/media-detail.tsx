@@ -6,6 +6,7 @@ import { StarFilled } from "@appica/icons-react";
 import { tmdbImage } from "@/lib/media";
 import { resolveStreamSource } from "@/lib/streaming";
 import type { MediaDetails } from "@/lib/types";
+import { FavoriteButton } from "./favorite-button";
 import { MediaRow } from "./media-row";
 import { RowCarousel } from "./row-carousel";
 import { SeasonPicker } from "./season-picker";
@@ -127,11 +128,17 @@ export async function MediaDetailView({ details }: { details: MediaDetails }) {
                     ))}
                   </div>
               )}
-              <div className="pt-1">
+              <div className="flex flex-wrap items-center gap-3 pt-1">
                 <WatchButton
                     id={details.id}
                     season={details.type === "tv" ? 1 : null}
                     episode={details.type === "tv" ? 1 : null}
+                />
+                <FavoriteButton
+                    mediaType={details.type}
+                    tmdbId={details.id}
+                    title={details.title}
+                    variant="inline"
                 />
               </div>
             </div>

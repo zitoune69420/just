@@ -1,9 +1,15 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { Suspense } from "react";
 import { ThemeProvider } from "@appica/ui-react/providers/theme-provider";
 import { TooltipProvider } from "@appica/ui-react/tooltip";
+import { FavoritesProvider } from "@/components/favorites-provider";
 import { Footer } from "@/components/footer";
 import { Navbar } from "@/components/navbar";
+import {
+  NavbarSession,
+  NavbarSessionFallback,
+} from "@/components/navbar-session";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -39,9 +45,17 @@ export default function RootLayout({
       <body className="flex min-h-full flex-col bg-background text-foreground">
         <ThemeProvider defaultTheme="dark">
           <TooltipProvider>
-            <Navbar />
-            <main className="flex flex-1 flex-col">{children}</main>
-            <Footer />
+            <FavoritesProvider>
+              <Navbar
+                session={
+                  <Suspense fallback={<NavbarSessionFallback />}>
+                    <NavbarSession />
+                  </Suspense>
+                }
+              />
+              <main className="flex flex-1 flex-col">{children}</main>
+              <Footer />
+            </FavoritesProvider>
           </TooltipProvider>
         </ThemeProvider>
       </body>

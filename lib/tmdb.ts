@@ -181,6 +181,20 @@ export async function getMovieDetails(
   }
 }
 
+export async function getMediaSummary(
+  type: MediaType,
+  id: number,
+): Promise<TmdbListItem | null> {
+  "use cache";
+  cacheLife("hours");
+  try {
+    return await tmdbFetch<TmdbListItem>(`/${type}/${id}`);
+  } catch (error) {
+    if (error instanceof TmdbNotFoundError) return null;
+    throw error;
+  }
+}
+
 export async function getTvSeason(
   id: number,
   season: number,
