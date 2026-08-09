@@ -1,9 +1,20 @@
 import type { MediaType } from "./types";
 
+const DEFAULT_SUBTITLE_LANG = "fr";
+
 function base(): string | null {
   const value =
     process.env.STREAM_BASE_URL || process.env.NEXT_PUBLIC_STREAM_BASE_URL;
   return value ? value.replace(/\/+$/, "") : null;
+}
+
+function subtitleLang(): string | null {
+  const value =
+    process.env.STREAM_SUBTITLE_LANG ??
+    process.env.NEXT_PUBLIC_STREAM_SUBTITLE_LANG ??
+    DEFAULT_SUBTITLE_LANG;
+  const code = value.trim().toLowerCase();
+  return /^[a-z]{2,3}$/.test(code) ? code : null;
 }
 
 export function isStreamConfigured(): boolean {
@@ -18,11 +29,17 @@ export function buildStreamUrl(
 ): string | null {
   const root = base();
   if (!root) return null;
+  if (mediaType === "tv" && (season === null || episode === null)) return null;
 
-  if (mediaType === "tv" && season !== null && episode !== null) {
-    return `${root}/tv?tmdb=${tmdbId}&season=${season}&episode=${episode}`;
+  const path = mediaType === "tv" ? "tv" : "movie";
+  const params = new URLSearchParams({ tmdb: String(tmdbId) });
+  if (mediaType === "tv") {
+    params.set("season", String(season));
+    params.set("episode", String(episode));
   }
-  if (mediaType === "tv") return null;
 
-  return `${root}/movie?tmdb=${tmdbId}`;
+  const lang = subtitleLang();
+  if (lang) params.set("ds_lang", lang);
+
+  return `${root}/${path}?${params.toString()}`;
 }

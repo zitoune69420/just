@@ -31,6 +31,22 @@ export function RowSkeleton() {
   );
 }
 
+export function TopRowSkeleton() {
+  return (
+    <div>
+      <Skeleton className="mb-4 h-7 w-56 rounded-full" />
+      <div className="flex items-end gap-4 overflow-hidden">
+        {Array.from({ length: 5 }, (_, index) => (
+          <div key={index} className="flex shrink-0 items-end">
+            <Skeleton className="h-24 w-14 rounded-2xl sm:h-36 sm:w-20" />
+            <Skeleton className="-ms-6 aspect-2/3 w-32 rounded-2xl sm:-ms-8 sm:w-44" />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export function GridSkeleton({ count = 12 }: { count?: number }) {
   return (
     <div className="grid grid-cols-2 gap-x-4 gap-y-8 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
