@@ -8,12 +8,16 @@ import {
   CarouselNext,
   CarouselPrev,
 } from "@appica/ui-react/carousel";
-import { ChevronRight } from "@appica/icons-react";
+import { ChevronLeft, ChevronRight } from "@appica/icons-react";
 
 interface RowCarouselProps {
   title: string;
   moreHref?: string;
   children: React.ReactNode;
+}
+
+function navButton() {
+  return <Button variant="soft" size="icon-sm" className="rounded-full" />;
 }
 
 export function RowCarousel({ title, moreHref, children }: RowCarouselProps) {
@@ -29,22 +33,34 @@ export function RowCarousel({ title, moreHref, children }: RowCarouselProps) {
           <h2 className="text-lg font-semibold tracking-tight sm:text-xl">
             {title}
           </h2>
-          <div className="flex items-center gap-1.5">
-            {moreHref && (
-              <Button
-                variant="ghost"
-                size="sm"
-                className="rounded-full"
-                render={<Link href={moreHref} />}
-              >
-                Voir tout <ChevronRight size={16} />
-              </Button>
-            )}
-            <CarouselPrev position="none" className="max-sm:hidden" />
-            <CarouselNext position="none" className="max-sm:hidden" />
-          </div>
+          {moreHref && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="rounded-full"
+              render={<Link href={moreHref} />}
+            >
+              Voir tout <ChevronRight size={16} />
+            </Button>
+          )}
         </div>
         <CarouselContent>{children}</CarouselContent>
+        <div className="mt-3 flex items-center justify-end gap-1.5">
+          <CarouselPrev
+            position="none"
+            aria-label="Faire défiler vers la gauche"
+            render={navButton()}
+          >
+            <ChevronLeft size={18} />
+          </CarouselPrev>
+          <CarouselNext
+            position="none"
+            aria-label="Faire défiler vers la droite"
+            render={navButton()}
+          >
+            <ChevronRight size={18} />
+          </CarouselNext>
+        </div>
       </Carousel>
     </section>
   );

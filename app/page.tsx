@@ -2,7 +2,12 @@ import { Suspense } from "react";
 import { HeroCarousel } from "@/components/hero-carousel";
 import { MediaRow } from "@/components/media-row";
 import { SetupNotice } from "@/components/setup-notice";
-import { HeroSkeleton, RowSkeleton } from "@/components/skeletons";
+import {
+  HeroSkeleton,
+  RowSkeleton,
+  TopRowSkeleton,
+} from "@/components/skeletons";
+import { TopMediaRow } from "@/components/top-media-row";
 import { toMedia } from "@/lib/media";
 import { getRecentProgress } from "@/lib/progress";
 import { getSession } from "@/lib/session";
@@ -28,8 +33,8 @@ export default function HomePage() {
       <Suspense fallback={null}>
         <ContinueRow />
       </Suspense>
-      <Suspense fallback={<RowSkeleton />}>
-        <TrendingRow />
+      <Suspense fallback={<TopRowSkeleton />}>
+        <TrendingTopRow />
       </Suspense>
       <Suspense fallback={<RowSkeleton />}>
         <PopularMoviesRow />
@@ -87,12 +92,12 @@ async function ContinueRow() {
   return <MediaRow title="Reprendre" items={items} />;
 }
 
-async function TrendingRow() {
+async function TrendingTopRow() {
   const trending = await getTrending();
   return (
-    <MediaRow
-      title="Tendances de la semaine"
-      items={trending.slice(5, 20).map((item) => toMedia(item))}
+    <TopMediaRow
+      title="Top 10 de la semaine"
+      items={trending.slice(0, 10).map((item) => toMedia(item))}
     />
   );
 }
