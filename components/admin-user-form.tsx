@@ -14,7 +14,8 @@ import {
 import { Spinner } from "@appica/ui-react/spinner";
 import { AlertCircle, Check } from "@appica/icons-react";
 import { saveUser, type AdminUserState } from "@/lib/admin-actions";
-import { ROLE_LABELS, ROLES, type Role } from "@/lib/roles";
+import { roleLabelKey, ROLES, type Role } from "@/lib/roles";
+import { useTranslations } from "./i18n-provider";
 
 const INITIAL: AdminUserState = { error: null, success: null };
 
@@ -29,6 +30,7 @@ export function AdminUserForm({
   email: string | null;
   role: Role;
 }) {
+  const t = useTranslations();
   const [state, formAction, pending] = useActionState(saveUser, INITIAL);
 
   return (
@@ -36,7 +38,7 @@ export function AdminUserForm({
       <input type="hidden" name="id" value={id} />
 
       <Field className="gap-1.5">
-        <FieldLabel htmlFor="admin-name">Pseudo</FieldLabel>
+        <FieldLabel htmlFor="admin-name">{t("admin.name")}</FieldLabel>
         <Input
           id="admin-name"
           name="name"
@@ -49,7 +51,7 @@ export function AdminUserForm({
       </Field>
 
       <Field className="gap-1.5">
-        <FieldLabel htmlFor="admin-email">Adresse e-mail</FieldLabel>
+        <FieldLabel htmlFor="admin-email">{t("admin.email")}</FieldLabel>
         <Input
           id="admin-email"
           name="email"
@@ -57,34 +59,34 @@ export function AdminUserForm({
           autoCapitalize="none"
           spellCheck={false}
           defaultValue={email ?? ""}
-          placeholder="Aucune adresse"
+          placeholder={t("admin.emailNone")}
         />
       </Field>
 
       <Field className="gap-1.5">
-        <FieldLabel htmlFor="admin-password">Nouveau mot de passe</FieldLabel>
+        <FieldLabel htmlFor="admin-password">{t("form.newPassword")}</FieldLabel>
         <Input
           id="admin-password"
           name="password"
           type="password"
           minLength={8}
           autoComplete="new-password"
-          placeholder="Laisser vide pour ne pas changer"
+          placeholder={t("admin.newPasswordPlaceholder")}
         />
       </Field>
 
       <Field className="gap-1.5">
-        <FieldLabel htmlFor="admin-role">Offre</FieldLabel>
+        <FieldLabel htmlFor="admin-role">{t("admin.role")}</FieldLabel>
         <Select name="role" defaultValue={role}>
           <SelectTrigger id="admin-role" className="w-full">
             <SelectValue>
-              {(value: Role) => ROLE_LABELS[value] ?? value}
+              {(value: Role) => t(roleLabelKey(value))}
             </SelectValue>
           </SelectTrigger>
           <SelectContent>
             {ROLES.map((item) => (
               <SelectItem key={item} value={item}>
-                {ROLE_LABELS[item]}
+                {t(roleLabelKey(item))}
               </SelectItem>
             ))}
           </SelectContent>
@@ -117,7 +119,7 @@ export function AdminUserForm({
         disabled={pending}
       >
         {pending ? <Spinner className="text-base" /> : null}
-        {pending ? "Enregistrement…" : "Enregistrer"}
+        {pending ? t("admin.saving") : t("admin.save")}
       </Button>
     </form>
   );

@@ -4,6 +4,7 @@ import { useState } from "react";
 import Image from "next/image";
 import { PlayerPlayFilled } from "@appica/icons-react";
 import { tmdbImage } from "@/lib/media";
+import { useTranslations } from "./i18n-provider";
 
 interface TrailerPlayerProps {
   videoKey: string;
@@ -12,6 +13,7 @@ interface TrailerPlayerProps {
 }
 
 export function TrailerPlayer({ videoKey, title, backdrop }: TrailerPlayerProps) {
+  const t = useTranslations();
   const [playing, setPlaying] = useState(false);
 
   return (
@@ -19,7 +21,7 @@ export function TrailerPlayer({ videoKey, title, backdrop }: TrailerPlayerProps)
       {playing ? (
         <iframe
           src={`https://www.youtube-nocookie.com/embed/${videoKey}?autoplay=1&rel=0`}
-          title={`Bande-annonce : ${title}`}
+          title={t("detail.trailerTitle", { title })}
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
           allowFullScreen
           className="absolute inset-0 size-full border-0"
@@ -28,7 +30,7 @@ export function TrailerPlayer({ videoKey, title, backdrop }: TrailerPlayerProps)
         <button
           type="button"
           onClick={() => setPlaying(true)}
-          aria-label={`Lire la bande-annonce : ${title}`}
+          aria-label={t("detail.trailerPlay", { title })}
           className="group absolute inset-0 cursor-pointer"
         >
           {backdrop && (
@@ -46,7 +48,7 @@ export function TrailerPlayer({ videoKey, title, backdrop }: TrailerPlayerProps)
             </span>
           </span>
           <span className="absolute start-5 bottom-4 text-sm font-medium text-white">
-            Bande-annonce
+            {t("detail.trailer")}
           </span>
         </button>
       )}

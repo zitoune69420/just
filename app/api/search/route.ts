@@ -1,8 +1,16 @@
-import { toMedia } from "@/lib/media";
-import { getAcclaimedMovies, isTmdbConfigured, searchMedia } from "@/lib/tmdb";
+import { getLocaleAndTranslator } from "@/lib/i18n/server";
+import { toMedia, toPerson } from "@/lib/media";
+import {
+  getAcclaimedMovies,
+  isTmdbConfigured,
+  searchMedia,
+  searchPeople,
+} from "@/lib/tmdb";
 import type { Media } from "@/lib/types";
 
 const LIMIT = 8;
+
+const PEOPLE_LIMIT = 3;
 
 const SUGGESTIONS = 3;
 
@@ -21,26 +29,37 @@ export async function GET(request: Request) {
     new URL(request.url).searchParams.get("q")?.trim().slice(0, 100) ?? "";
 
   if (!isTmdbConfigured()) {
-    return Response.json({ results: [] });
+    return Response.json({ results: [], people: [] });
   }
 
+  const { locale, t } = await getLocaleAndTranslator();
+
   if (query.length === 0) {
-    const data = await getAcclaimedMovies();
+    const data = await getAcclaimedMovies(locale);
     const results = data.results
       .filter((item) => item.poster_path)
       .slice(0, SUGGESTIONS)
       .map((item) => toHit(toMedia(item, "movie")));
-    return Response.json({ results });
+    return Response.json({ results, people: [] });
   }
 
   if (query.length < 2) {
-    return Response.json({ results: [] });
+    return Response.json({ results: [], people: [] });
   }
 
-  const data = await searchMedia(query);
+  const [data, peopleData] = await Promise.all([
+    searchMedia(locale, query),
+    searchPeople(locale, query),
+  ]);
+
   const results = data.results
     .slice(0, LIMIT)
     .map((item) => toHit(toMedia(item)));
 
-  return Response.json({ results });
+  const people = peopleData.results
+    .filter((item) => item.profile_path)
+    .slice(0, PEOPLE_LIMIT)
+    .map((item) => toPerson(item, t));
+
+  return Response.json({ results, people });
 }

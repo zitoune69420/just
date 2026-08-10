@@ -7,6 +7,7 @@ import { HeartOff } from "@appica/icons-react";
 import { DiscordSignInButton } from "@/components/discord-sign-in";
 import { MediaCard } from "@/components/media-card";
 import { GridSkeleton } from "@/components/skeletons";
+import { getLocaleAndTranslator } from "@/lib/i18n/server";
 import { toMedia } from "@/lib/media";
 import { getSession } from "@/lib/session";
 import { isSupabaseAdminConfigured } from "@/lib/supabase";
@@ -15,8 +16,7 @@ import { getWatchlist } from "@/lib/watchlist";
 import type { Media } from "@/lib/types";
 
 export const metadata: Metadata = {
-  title: "Favoris",
-  description: "Vos films et séries enregistrés.",
+  title: "Favorites",
 };
 
 const GRID_SIZES = "(min-width: 1280px) 190px, (min-width: 768px) 22vw, 45vw";
@@ -24,17 +24,8 @@ const GRID_SIZES = "(min-width: 1280px) 190px, (min-width: 768px) 22vw, 45vw";
 export default function FavoritesPage() {
   return (
     <div className="mx-auto w-full max-w-7xl flex-1 space-y-8 px-4 py-10 sm:px-6 lg:px-8">
-      <header className="space-y-1">
-        <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
-          Favoris
-        </h1>
-        <p className="text-sm text-foreground-muted">
-          Vos films et séries enregistrés, liés à votre compte Discord.
-        </p>
-      </header>
-
       <Suspense fallback={<GridSkeleton count={6} />}>
-        <FavoritesGrid />
+        <FavoritesContent />
       </Suspense>
     </div>
   );
@@ -61,36 +52,52 @@ function Empty({
   );
 }
 
-async function FavoritesGrid() {
+async function FavoritesContent() {
+  const { locale, t } = await getLocaleAndTranslator();
   const user = await getSession();
+
+  const header = (
+    <header className="space-y-1">
+      <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
+        {t("favorites.title")}
+      </h1>
+      <p className="text-sm text-foreground-muted">
+        {t("favorites.descriptionLong")}
+      </p>
+    </header>
+  );
 
   if (!user) {
     return (
-      <Empty
-        title="Connexion requise"
-        description="Connectez-vous avec Discord pour retrouver vos favoris sur tous vos appareils."
-        action={
-          <DiscordSignInButton
-            label="Continuer avec Discord"
-            returnTo="/favorites"
-          />
-        }
-      />
+      <>
+        {header}
+        <Empty
+          title={t("favorites.signInRequired")}
+          description={t("favorites.signInHint")}
+          action={
+            <DiscordSignInButton
+              label={t("auth.discord")}
+              returnTo="/favorites"
+            />
+          }
+        />
+      </>
     );
   }
 
   if (!isSupabaseAdminConfigured() || !isTmdbConfigured()) {
     return (
-      <div className="max-w-lg space-y-4 rounded-3xl border border-border bg-background-subtle p-8">
-        <Badge variant="soft" className="rounded-full">
-          Configuration requise
-        </Badge>
-        <p className="text-sm text-foreground-muted">
-          Les favoris ont besoin de <code>SUPABASE_SECRET_KEY</code>,{" "}
-          <code>NEXT_PUBLIC_SUPABASE_URL</code> et <code>TMDB_API_KEY</code> dans{" "}
-          <code>.env.local</code>.
-        </p>
-      </div>
+      <>
+        {header}
+        <div className="max-w-lg space-y-4 rounded-3xl border border-border bg-background-subtle p-8">
+          <Badge variant="soft" className="rounded-full">
+            {t("favorites.configRequired")}
+          </Badge>
+          <p className="text-sm text-foreground-muted">
+            {t("favorites.configHint")}
+          </p>
+        </div>
+      </>
     );
   }
 
@@ -98,25 +105,28 @@ async function FavoritesGrid() {
 
   if (entries.length === 0) {
     return (
-      <Empty
-        title="Aucun favori"
-        description="Touchez le cœur sur une affiche ou une fiche pour l’ajouter ici."
-        action={
-          <Button
-            variant="outline"
-            size="sm"
-            className="rounded-full"
-            render={<Link href="/movies" />}
-          >
-            Parcourir les films
-          </Button>
-        }
-      />
+      <>
+        {header}
+        <Empty
+          title={t("favorites.empty")}
+          description={t("favorites.emptyHint")}
+          action={
+            <Button
+              variant="outline"
+              size="sm"
+              className="rounded-full"
+              render={<Link href="/movies" />}
+            >
+              {t("favorites.browse")}
+            </Button>
+          }
+        />
+      </>
     );
   }
 
   const summaries = await Promise.all(
-    entries.map((entry) => getMediaSummary(entry.mediaType, entry.tmdbId)),
+    entries.map((entry) => getMediaSummary(locale, entry.mediaType, entry.tmdbId)),
   );
 
   const items = summaries
@@ -127,22 +137,28 @@ async function FavoritesGrid() {
 
   if (items.length === 0) {
     return (
-      <Empty
-        title="Favoris introuvables"
-        description="Les titres enregistrés ne sont plus disponibles sur TMDB."
-      />
+      <>
+        {header}
+        <Empty
+          title={t("favorites.missing")}
+          description={t("favorites.missingHint")}
+        />
+      </>
     );
   }
 
   return (
-    <div className="enter grid grid-cols-2 gap-x-4 gap-y-8 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
-      {items.map((media) => (
-        <MediaCard
-          key={`${media.type}-${media.id}`}
-          media={media}
-          sizes={GRID_SIZES}
-        />
-      ))}
-    </div>
+    <>
+      {header}
+      <div className="enter grid grid-cols-2 gap-x-4 gap-y-8 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
+        {items.map((media) => (
+          <MediaCard
+            key={`${media.type}-${media.id}`}
+            media={media}
+            sizes={GRID_SIZES}
+          />
+        ))}
+      </div>
+    </>
   );
 }

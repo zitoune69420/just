@@ -1,0 +1,428 @@
+/**
+ * Catalogue de référence. Les clés sont plates et les variables notées
+ * `{nom}` : les valeurs restent des chaînes, donc sérialisables du serveur
+ * vers les composants client.
+ */
+export const en = {
+  // Chrome
+  "nav.home": "Home",
+  "nav.movies": "Movies",
+  "nav.series": "Series",
+  "nav.new": "New",
+  "nav.search": "Search",
+  "nav.label": "Main navigation",
+  "nav.searchLabel": "Search",
+  "footer.tmdb":
+    "This product uses the TMDB API but is not endorsed or certified by TMDB.",
+
+  // Session menu
+  "session.account": "Account for {name}",
+  "session.favorites": "Favorites",
+  "session.myAccount": "My account",
+  "session.admin": "Administration",
+  "session.linkDiscord": "Link Discord",
+  "session.signOut": "Sign out",
+  "session.signIn": "Sign in",
+  "session.signUp": "Sign up free",
+  "session.language": "Language",
+
+  // Command menu
+  "command.placeholder": "Search a movie, a series, a person…",
+  "command.trigger": "Search…",
+  "command.dialogLabel": "Search a movie, a series or a person",
+  "command.people": "People",
+  "command.titles": "Movies & series",
+  "command.recent": "Recent searches",
+  "command.suggestions": "Suggestions",
+  "command.forget": "Remove “{term}” from history",
+  "command.hint": "Type the name of a movie, a series or a person.",
+  "command.searching": "Searching…",
+  "command.noResults": "No result for “{term}”",
+
+  // Media
+  "media.movie": "Movie",
+  "media.tv": "Series",
+  "media.person": "Person",
+  "media.seasonCount": "{count} season",
+  "media.seasonCount.plural": "{count} seasons",
+  "media.episodeCount": "{count} episode",
+  "media.episodeCount.plural": "{count} episodes",
+  "media.runtime": "{hours}h {minutes}m",
+  "media.runtimeMinutes": "{minutes} min",
+
+  // Home
+  "home.continue": "Keep watching",
+  "home.top10": "Top 10 this week",
+  "home.becauseYouWatched": "Because you watched {title}",
+  "home.forYou": "For you",
+  "home.newReleases": "New releases",
+  "home.popularMovies": "Popular movies",
+  "home.popularSeries": "Popular series",
+  "home.topRated": "Top rated",
+  "home.seeAll": "See all",
+  "home.scrollLeft": "Scroll left",
+  "home.scrollRight": "Scroll right",
+  "home.rank": "No.{rank}: {title}",
+
+  // Foundation notice
+  "notice.title": "Site under construction",
+  "notice.body":
+    "JUST is still being built: some movies and series may be missing from the catalogue.",
+  "notice.dismiss": "Got it",
+
+  // Detail page
+  "detail.watch": "Watch",
+  "detail.rewatch": "Watch again",
+  "detail.resume": "Resume S{season} E{episode}",
+  "detail.nextEpisode": "Next episode",
+  "detail.upNext": "Up next: {label}",
+  "detail.releaseOn": "In theatres {date}",
+  "detail.releaseUnknown": "Release date unknown",
+  "detail.synopsis": "Synopsis",
+  "detail.noSynopsis": "No synopsis available.",
+  "detail.trailer": "Trailer",
+  "detail.cast": "Cast",
+  "detail.recommendations": "You may also like",
+  "detail.episodes": "Episodes",
+  "detail.noEpisodes": "No episode for this season.",
+  "detail.episodesShort": "{count} ep.",
+  "detail.seasonFallback": "Season {number}",
+  "detail.unreleasedEpisode": "Upcoming",
+  "detail.markWatched": "Mark as watched",
+  "detail.markWatchedLabel":
+    "Mark “{title}” as watched and remove it from Keep watching",
+  "detail.favoriteAdd": "Add to favorites",
+  "detail.favoriteRemove": "In my favorites",
+  "detail.favoriteAddLabel": "Add “{title}” to favorites",
+  "detail.favoriteRemoveLabel": "Remove “{title}” from favorites",
+  "detail.trailerPlay": "Play the trailer for {title}",
+
+  // Where to watch
+  "watch.title": "Where to watch",
+  "watch.flatrate": "Included with subscription",
+  "watch.free": "Free",
+  "watch.ads": "Free with ads",
+  "watch.rent": "Rent",
+  "watch.buy": "Buy",
+  "watch.allOffers": "See all offers",
+  "watch.region": "Availability for France ({region}) · JustWatch data via TMDB",
+
+  // Person page
+  "person.biography": "Biography",
+  "person.knownFor": "Known for",
+  "person.filmography": "Filmography",
+  "person.crew": "Behind the camera",
+  "person.notFound": "Person not found",
+  "person.portrait": "Portrait: {name}",
+  "person.department.Acting": "Acting",
+  "person.department.Directing": "Directing",
+  "person.department.Writing": "Writing",
+  "person.department.Production": "Production",
+  "person.department.Sound": "Sound",
+  "person.department.Camera": "Camera",
+  "person.department.Editing": "Editing",
+  "person.department.Art": "Art",
+  "person.department.CostumeMakeUp": "Costume & make-up",
+  "person.department.VisualEffects": "Visual effects",
+  "person.department.Crew": "Crew",
+
+  // Catalogue
+  "catalog.movies.title": "Movies",
+  "catalog.movies.description": "Browse the movie catalogue.",
+  "catalog.series.title": "Series",
+  "catalog.series.description": "Browse the series catalogue.",
+  "catalog.filters": "Filters",
+  "catalog.genres": "Genres",
+  "catalog.sort": "Sort by",
+  "catalog.sort.popularity": "Popularity",
+  "catalog.sort.rating": "Rating",
+  "catalog.sort.year": "Release year",
+  "catalog.sort.title": "Title",
+  "catalog.reset": "Reset filters",
+  "catalog.empty": "No result",
+  "catalog.emptyHint": "No title matches this combination of filters.",
+  "catalog.previous": "Previous",
+  "catalog.next": "Next",
+  "catalog.page": "Page {page} of {total}",
+  "catalog.pagination": "Pagination",
+
+  // New releases
+  "new.title": "New",
+  "new.description":
+    "What is coming out, what is playing, and the episodes you are waiting for.",
+  "new.upcomingEpisodes": "Your upcoming episodes",
+  "new.nowPlaying": "In theatres",
+  "new.upcomingMovies": "Coming soon",
+  "new.airingToday": "Airing today",
+  "new.onTheAir": "Currently airing",
+
+  // Search
+  "search.title": "Search",
+  "search.placeholder": "Name of a movie, a series or a person…",
+  "search.label": "Search a movie, a series or a person",
+  "search.submit": "Search",
+  "search.prompt": "What are you looking for?",
+  "search.promptHint":
+    "Type the name of a movie, a series or a person to start searching.",
+  "search.noResults": "No result for “{query}”",
+  "search.noResultsHint": "Check the spelling, or try the original title.",
+  "search.people": "People",
+  "search.moviesAndSeries": "Movies & series",
+  "search.seeAll": "See all",
+  "search.backToResults": "Back to results",
+  "search.allTitles": "All movies & series for “{query}”",
+  "search.allPeople": "All people for “{query}”",
+  "search.titles": "{count} movie or series for “{query}”",
+  "search.titles.plural": "{count} movies or series for “{query}”",
+
+  // Favorites
+  "favorites.title": "Favorites",
+  "favorites.description": "Your saved movies and series.",
+  "favorites.descriptionLong":
+    "Your saved movies and series, tied to your account.",
+  "favorites.signInRequired": "Sign-in required",
+  "favorites.signInHint":
+    "Sign in to find your favorites on every device.",
+  "favorites.empty": "No favorite yet",
+  "favorites.emptyHint": "Tap the heart on a poster or a page to add it here.",
+  "favorites.browse": "Browse movies",
+  "favorites.missing": "Favorites not found",
+  "favorites.missingHint": "The saved titles are no longer available on TMDB.",
+  "favorites.configRequired": "Configuration required",
+  "favorites.configHint":
+    "Favorites need SUPABASE_SECRET_KEY, NEXT_PUBLIC_SUPABASE_URL and TMDB_API_KEY in .env.local.",
+
+  // Account
+  "account.title": "My account",
+  "account.description": "Password, linked accounts and preferences.",
+  "account.signInRequired": "Sign-in required",
+  "account.signInHint": "Sign in to manage your account.",
+  "account.signIn": "Sign in",
+  "account.noDatabase": "Database not configured",
+  "account.noDatabaseHint":
+    "Account settings need the Supabase variables in .env.local.",
+  "account.notFound": "Account not found",
+  "account.notFoundHint":
+    "Your session matches no account. Sign out, then sign in again.",
+  "account.signInAgain": "Sign in again",
+  "account.noEmail": "No email address",
+  "account.plan": "My plan",
+  "account.usageFree": "{movies} / {limit} movies · {series} / {seriesLimit} series",
+  "account.usageGold": "{movies} / {limit} movies this month · unlimited series",
+  "account.password": "Password",
+  "account.addPassword": "Add a password",
+  "account.passwordHint": "Change the password used for email sign-in.",
+  "account.addPasswordHint":
+    "Set a password to sign in without going through Discord.",
+  "account.discord": "Discord",
+  "account.discordLinked": "Your Discord account is linked.",
+  "account.discordLink": "Link Discord to sign in with one click.",
+  "account.discordLinkedShort": "Account linked",
+  "account.discordUnavailable": "Discord sign-in is not configured on this server.",
+  "account.language": "Language",
+  "account.languageHint": "Language of the interface and of TMDB content.",
+  "account.searchHistory": "Search history",
+  "account.searchHistoryHint":
+    "Your recent searches are kept in this browser only.",
+  "account.searchHistoryCount": "{count} saved search",
+  "account.searchHistoryCount.plural": "{count} saved searches",
+  "account.searchHistoryEmpty": "No search saved.",
+  "account.clearSearchHistory": "Clear search history",
+  "account.searchHistoryCleared": "Search history cleared.",
+  "account.error.linked": "This Discord account is already tied to another JUST account.",
+  "account.error.database": "Database unreachable. Try again later.",
+  "account.error.denied": "Linking cancelled on Discord.",
+  "account.error.state": "Linking link expired or invalid. Start over.",
+
+  // Roles
+  "role.user": "Free",
+  "role.gold": "Gold",
+  "role.platinum": "Platinum",
+  "role.admin": "Administrator",
+  "role.summary.user": "3 movie views and 1 full series. How about a plan?",
+  "role.summary.gold": "All series, 5 movies a month. Thanks for the support!",
+  "role.summary.platinum": "The whole catalogue, no limit. Thank you!",
+  "role.summary.admin": "The whole catalogue, plus administration.",
+
+  // Playback denials
+  "playback.anonymous": "Sign in to start playback.",
+  "playback.movieQuota":
+    "Your free movies are used up. Move to Gold or Platinum to keep watching.",
+  "playback.seriesQuota":
+    "The free plan covers a single series. Move to Gold for all of them.",
+  "playback.monthlyQuota":
+    "Your movies for this month are used up. Move to Platinum for unlimited access.",
+  "playback.unavailable": "No playback source is configured on this server.",
+  "playback.database": "Database unreachable. Try again later.",
+  "playback.accessTitle": "Playback unavailable",
+  "playback.close": "Close",
+
+  // Authentication
+  "auth.title": "Sign in",
+  "auth.subtitle":
+    "Email and password, or Discord. Your favorites follow your account.",
+  "auth.signedIn": "Already signed in",
+  "auth.signedInAs": "Signed in as",
+  "auth.continue": "Continue",
+  "auth.or": "or",
+  "auth.forgotPassword": "Forgot password?",
+  "auth.passwordChanged": "Password changed. Sign in with the new one.",
+  "auth.email": "Email address",
+  "auth.password": "Password",
+  "auth.name": "Nickname",
+  "auth.signInTab": "Sign in",
+  "auth.signUpTab": "Sign up",
+  "auth.submitSignIn": "Sign in",
+  "auth.submitSignUp": "Create my account",
+  "auth.pending": "One moment…",
+  "auth.discord": "Continue with Discord",
+  "auth.discordLink": "Link my Discord account",
+  "auth.notConfigured": "Sign-in not configured",
+  "auth.notConfiguredIntro": "Generate a session signing key:",
+  "auth.notConfiguredEnv":
+    "Add it to .env.local, along with the Discord credentials if you want that sign-in method too:",
+  "auth.notConfiguredRestart": "Then restart",
+  "auth.configRequired": "Configuration required",
+  "auth.error.denied": "Sign-in cancelled on Discord.",
+  "auth.error.state": "Sign-in link expired or invalid. Start over.",
+  "auth.error.discord": "Discord could not confirm your identity. Try again.",
+  "auth.error.config": "Discord sign-in is not configured on this server.",
+  "auth.error.database":
+    "Account could not be saved: database unreachable or schema missing.",
+
+  // Password reset
+  "reset.requestTitle": "Forgot password",
+  "reset.requestSubtitle":
+    "Enter your account email address: we will send you a link to choose a new password.",
+  "reset.requestSubmit": "Send the link",
+  "reset.requestPending": "Sending…",
+  "reset.sent":
+    "If an account exists with this address, a reset link has just been sent. It is valid for one hour.",
+  "reset.backToSignIn": "Back to sign-in",
+  "reset.title": "New password",
+  "reset.subtitle": "Choose a password, then sign in again.",
+  "reset.newPassword": "New password",
+  "reset.confirm": "Confirmation",
+  "reset.submit": "Change password",
+  "reset.pending": "One moment…",
+  "reset.askNewLink": "Request a new link",
+  "reset.incompleteLink":
+    "This link is incomplete. Request a new one to receive a fresh link.",
+  "reset.requestLink": "Request a link",
+  "reset.mailSubject": "Reset your JUST password",
+  "reset.mailGreeting": "Hello {name},",
+  "reset.mailBody": "You asked to reset your JUST password.",
+  "reset.mailValidity": "This link is valid for {minutes} minutes:",
+  "reset.mailIgnore": "If you did not ask for this, ignore this message.",
+
+  // Form validation
+  "form.currentPassword": "Current password",
+  "form.newPassword": "New password",
+  "form.passwordPlaceholder": "8 characters minimum",
+  "form.confirmPlaceholder": "Retype the password",
+  "form.emailPlaceholder": "you@example.com",
+  "form.setPassword": "Set the password",
+  "form.changePassword": "Change password",
+  "form.passwordSet":
+    "Password set. You can now sign in with your email address.",
+  "form.passwordChanged": "Password changed.",
+  "error.invalidEmail": "Invalid email address.",
+  "error.invalidCredentials": "Invalid email address or password.",
+  "error.wrongCredentials": "Incorrect email address or password.",
+  "error.wrongCurrentPassword": "Incorrect current password.",
+  "error.passwordTooShort": "The password must be at least {min} characters.",
+  "error.passwordMismatch": "The two passwords do not match.",
+  "error.nameTooShort": "The nickname must be at least 2 characters.",
+  "error.emailTaken": "An account already exists with this address.",
+  "error.signInNotConfigured": "Password sign-in is not configured.",
+  "error.signUpNotConfigured": "Account creation is not configured.",
+  "error.noDatabase": "Database not configured.",
+  "error.sessionExpired": "Session expired. Sign in again.",
+  "error.accountNotFound": "Account not found.",
+  "error.databaseUnreachable": "Database unreachable. Try again.",
+  "error.resetInvalid": "Invalid reset link.",
+  "error.resetExpired": "Link expired or already used. Request a new one.",
+
+  // Administration
+  "admin.title": "Administration",
+  "admin.description": "Account index and profile editing.",
+  "admin.search": "Search",
+  "admin.searchPlaceholder": "Nickname or email",
+  "admin.newUser": "New account",
+  "admin.new": "New",
+  "admin.name": "Nickname",
+  "admin.namePlaceholder": "Displayed nickname",
+  "admin.email": "Email address",
+  "admin.emailNone": "No address",
+  "admin.role": "Plan",
+  "admin.discord": "Discord",
+  "admin.linkedAccount": "Linked account",
+  "admin.actions": "Actions",
+  "admin.edit": "Edit",
+  "admin.empty": "No account matches this search.",
+  "admin.accountCount": "{count} account",
+  "admin.accountCount.plural": "{count} accounts",
+  "admin.newPasswordPlaceholder": "Leave empty to keep it unchanged",
+  "admin.saving": "Saving…",
+  "admin.creating": "Creating…",
+  "admin.page": "Page {page} of {total}",
+  "admin.editTitle": "Edit account",
+  "admin.editDescription": "Name, email address and role.",
+  "admin.createTitle": "New account",
+  "admin.createDescription": "Create an account with a password.",
+  "admin.save": "Save",
+  "admin.create": "Create the account",
+  "admin.saved": "Account updated.",
+  "admin.created": "Account created.",
+  "admin.back": "Back to the index",
+
+  // Errors and empty states
+  "error.title": "Something went wrong",
+  "error.body": "This page could not be displayed. Try again.",
+  "error.retry": "Try again",
+  "notFound.title": "Page not found",
+  "notFound.body": "This link points to nothing on JUST.",
+  "notFound.home": "Back home",
+
+  // Setup notice
+  "setup.title": "Configuration required",
+  "setup.body":
+    "Add your TMDB key to .env.local, then restart the development server.",
+
+  "setup.tmdbMissing": "TMDB API key missing",
+  "setup.step1": "Create a free account on",
+  "setup.step2": "Get a key under Settings → API",
+  "setup.step3": "Create a .env.local file at the project root:",
+  "setup.restart": "Then restart",
+  "hero.moreInfo": "More info",
+  "playback.myPlan": "See my plan",
+  "detail.trailerTitle": "Trailer: {title}",
+
+  "error.digest": "digest: {digest}",
+  "error.hint":
+    "The content could not load. Try again — if it keeps failing, it most likely comes from the TMDB API.",
+  "notFound.code": "Error 404",
+  "notFound.hint": "The content you are looking for does not exist or has moved.",
+  "notFound.search": "Search a title",
+  "admin.allAccounts": "All accounts",
+  "admin.discordLinked": "Discord linked",
+  "admin.discordMissing": "No Discord",
+  "admin.passwordSet": "Password set",
+  "admin.passwordMissing": "No password",
+  "admin.createHint":
+    "The account is created with a password and can sign in right away.",
+
+  "auth.namePlaceholder": "Your nickname",
+  "auth.noAccount": "No account yet?",
+  "auth.createAccount": "Create an account",
+  "auth.haveAccount": "Already have an account?",
+
+  // Theme
+  "theme.toggle": "Switch theme",
+  "theme.light": "Light",
+  "theme.dark": "Dark",
+} as const;
+
+export type MessageKey = keyof typeof en;
+
+export type Messages = Record<MessageKey, string>;

@@ -7,6 +7,7 @@ import { Button } from "@appica/ui-react/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroupLabel,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
@@ -15,6 +16,8 @@ import { Heart, Logout, Settings, Users } from "@appica/icons-react";
 import { logout } from "@/lib/auth-actions";
 import type { Role } from "@/lib/roles";
 import { DiscordMark, discordSignInHref } from "./discord-sign-in";
+import { useTranslations } from "./i18n-provider";
+import { LocaleMenuItems } from "./locale-picker";
 import { RoleBadge } from "./role-badge";
 
 function initials(name: string): string {
@@ -34,6 +37,7 @@ export function SessionMenu({
   isAdmin?: boolean;
   role?: Role;
 }) {
+  const t = useTranslations();
   const [pending, startTransition] = useTransition();
 
   return (
@@ -44,7 +48,7 @@ export function SessionMenu({
             variant="ghost"
             size="sm"
             className="gap-2 rounded-full ps-1 pe-3 max-md:pe-1"
-            aria-label={`Compte de ${name}`}
+            aria-label={t("session.account", { name })}
           >
             <Avatar size="xs" shape="circle">
               {avatar && <AvatarImage src={avatar} alt="" />}
@@ -63,16 +67,16 @@ export function SessionMenu({
         </div>
         <DropdownMenuItem render={<Link href="/favorites" />}>
           <Heart size={16} className="-ms-px" />
-          Favoris
+          {t("session.favorites")}
         </DropdownMenuItem>
         <DropdownMenuItem render={<Link href="/account" />}>
           <Settings size={16} />
-          Mon compte
+          {t("session.myAccount")}
         </DropdownMenuItem>
         {isAdmin && (
           <DropdownMenuItem render={<Link href="/admin" />}>
             <Users size={16} />
-            Administration
+            {t("session.admin")}
           </DropdownMenuItem>
         )}
         {canLinkDiscord && (
@@ -80,16 +84,21 @@ export function SessionMenu({
             render={<a href={discordSignInHref("/account")} />}
           >
             <DiscordMark size={16} className="text-[#5865F2]" />
-            Lier Discord
+            {t("session.linkDiscord")}
           </DropdownMenuItem>
         )}
+
+        <DropdownMenuSeparator />
+        <DropdownMenuGroupLabel>{t("session.language")}</DropdownMenuGroupLabel>
+        <LocaleMenuItems />
+
         <DropdownMenuSeparator />
         <DropdownMenuItem
           disabled={pending}
           onClick={() => startTransition(() => logout())}
         >
           <Logout size={16} />
-          Se déconnecter
+          {t("session.signOut")}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

@@ -1,4 +1,7 @@
+"use client";
+
 import { Button } from "@appica/ui-react/button";
+import { useTranslations } from "./i18n-provider";
 
 const BRAND =
   "bg-[#5865F2] text-white before:bg-none before:bg-transparent before:border-white/15 hover:before:bg-white/15 data-pressed:before:bg-white/20 data-popup-open:before:bg-white/15";
@@ -31,7 +34,7 @@ export function discordSignInHref(returnTo?: string): string {
 }
 
 export function DiscordSignInButton({
-  label = "Continuer avec Discord",
+  label,
   size = "md",
   iconOnly = false,
   returnTo,
@@ -43,6 +46,8 @@ export function DiscordSignInButton({
   returnTo?: string;
   className?: string;
 }) {
+  const t = useTranslations();
+  const text = label ?? t("auth.discord");
   const href = discordSignInHref(returnTo);
 
   if (iconOnly) {
@@ -52,7 +57,7 @@ export function DiscordSignInButton({
         size={size === "lg" ? "icon-lg" : size === "sm" ? "icon-sm" : "icon-md"}
         className={`rounded-full ${BRAND} ${className}`}
         nativeButton={false}
-        render={<a href={href} aria-label={label} />}
+        render={<a href={href} aria-label={text} />}
       >
         <DiscordMark size={18} />
       </Button>
@@ -68,7 +73,7 @@ export function DiscordSignInButton({
       render={<a href={href} />}
     >
       <DiscordMark size={18} />
-      {label}
+      {text}
     </Button>
   );
 }

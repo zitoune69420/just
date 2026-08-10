@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { Button } from "@appica/ui-react/button";
 import { ChevronLeft, ChevronRight, FilterOff } from "@appica/icons-react";
+import { getLocaleAndTranslator } from "@/lib/i18n/server";
 import { toMedia } from "@/lib/media";
 import { discoverMedia, getGenres, type SortKey } from "@/lib/tmdb";
 import type { MediaType } from "@/lib/types";
@@ -21,19 +22,11 @@ export interface CatalogSearchParams {
 
 interface CatalogProps {
   type: MediaType;
-  title: string;
-  description: string;
   basePath: "/movies" | "/series";
   searchParams: Promise<CatalogSearchParams>;
 }
 
-export function Catalog({
-  type,
-  title,
-  description,
-  basePath,
-  searchParams,
-}: CatalogProps) {
+export function Catalog({ type, basePath, searchParams }: CatalogProps) {
   return (
     <div className="mx-auto w-full max-w-7xl space-y-8 px-4 py-10 sm:px-6 lg:px-8">
       <Suspense fallback={<CatalogSkeleton />}>
@@ -96,9 +89,10 @@ async function CatalogResults({
   genreIds: number[];
   sort: SortKey;
 }) {
+  const { locale, t } = await getLocaleAndTranslator();
   const [genres, data] = await Promise.all([
-    getGenres(type),
-    discoverMedia(type, { page, genreIds, sort }),
+    getGenres(locale, type),
+    discoverMedia(locale, type, { page, genreIds, sort }),
   ]);
   const items = data.results.map((item) => toMedia(item, type));
   const totalPages = Math.min(data.total_pages, MAX_PAGE);
@@ -121,10 +115,10 @@ async function CatalogResults({
               <FilterOff size={30} />
             </div>
             <p className="text-lg font-medium text-foreground-strong">
-              Aucun résultat
+              {t("catalog.empty")}
             </p>
             <p className="max-w-sm text-sm text-foreground-muted">
-              Aucun titre ne correspond à cette combinaison de filtres.
+              {t("catalog.emptyHint")}
             </p>
             {hasActiveFilters && (
               <Button
@@ -133,7 +127,7 @@ async function CatalogResults({
                 className="mt-2 rounded-full"
                 render={<Link href={basePath} />}
               >
-                <FilterOff size={16} /> Réinitialiser les filtres
+                <FilterOff size={16} /> {t("catalog.reset")}
               </Button>
             )}
           </div>
@@ -151,7 +145,7 @@ async function CatalogResults({
 
         {totalPages > 1 && items.length > 0 && (
           <nav
-            aria-label="Pagination"
+            aria-label={t("catalog.pagination")}
             className="flex flex-wrap items-center justify-center gap-4 pt-2"
           >
             <Button
@@ -165,10 +159,10 @@ async function CatalogResults({
                 ) : undefined
               }
             >
-              <ChevronLeft size={16} /> Précédent
+              <ChevronLeft size={16} /> {t("catalog.previous")}
             </Button>
             <span className="text-sm text-foreground-muted">
-              Page {page} sur {totalPages}
+              {t("catalog.page", { page, total: totalPages })}
             </span>
             <Button
               variant="outline"
@@ -181,7 +175,7 @@ async function CatalogResults({
                 ) : undefined
               }
             >
-              Suivant <ChevronRight size={16} />
+              {t("catalog.next")} <ChevronRight size={16} />
             </Button>
           </nav>
         )}

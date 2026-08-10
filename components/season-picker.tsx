@@ -12,6 +12,8 @@ import {
 import { Spinner } from "@appica/ui-react/spinner";
 import { PlayerPlayFilled } from "@appica/icons-react";
 import { tmdbImage } from "@/lib/media";
+import { nextEpisodeAfter } from "@/lib/next-episode";
+import { useTranslations } from "./i18n-provider";
 import type { Episode, Season } from "@/lib/types";
 import {
   requestPlayback,
@@ -44,6 +46,7 @@ export function SeasonPicker({
   const [season, setSeason] = useState(
     initialSeason ?? seasons[0]?.number ?? 1,
   );
+  const t = useTranslations();
   const [loaded, setLoaded] = useState<{
     season: number;
     episodes: Episode[];
@@ -81,16 +84,28 @@ export function SeasonPicker({
 
   const canPlay = available;
 
-  async function play(number: number) {
+  // Sans la liste de la saison courante on ne sait pas s'il reste un épisode.
+  const next =
+    playing === null || loading
+      ? null
+      : nextEpisodeAfter(seasons, season, playing, episodes);
+
+  async function play(seasonNumber: number, episodeNumber: number) {
     if (pending !== null) return;
-    setPending(number);
-    const result = await requestPlayback("tv", tvId, season, number);
+    setPending(episodeNumber);
+    const result = await requestPlayback(
+      "tv",
+      tvId,
+      seasonNumber,
+      episodeNumber,
+    );
     setPending(null);
 
     if ("url" in result) {
-      void recordProgress("tv", tvId, season, number);
+      void recordProgress("tv", tvId, seasonNumber, episodeNumber);
+      setSeason(seasonNumber);
       setSrc(result.url);
-      setPlaying(number);
+      setPlaying(episodeNumber);
       return;
     }
     setDenied(result.denied);
@@ -100,7 +115,7 @@ export function SeasonPicker({
     <section className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h2 className="text-lg font-semibold tracking-tight sm:text-xl">
-          Épisodes
+          {t("detail.episodes")}
         </h2>
         <Select
           value={season}
@@ -110,7 +125,7 @@ export function SeasonPicker({
             <SelectValue>
               {(value: number) =>
                 seasons.find((item) => item.number === value)?.name ??
-                `Saison ${value}`
+                t("detail.seasonFallback", { number: value })
               }
             </SelectValue>
           </SelectTrigger>
@@ -120,7 +135,7 @@ export function SeasonPicker({
                 {item.name}
                 <span className="text-foreground-subtle">
                   {" "}
-                  · {item.episodeCount} ép.
+                  · {t("detail.episodesShort", { count: item.episodeCount })}
                 </span>
               </SelectItem>
             ))}
@@ -134,7 +149,7 @@ export function SeasonPicker({
         </div>
       ) : episodes.length === 0 ? (
         <p className="py-10 text-center text-sm text-foreground-muted">
-          Aucun épisode pour cette saison.
+          {t("detail.noEpisodes")}
         </p>
       ) : (
         <ul className="grid auto-rows-fr grid-cols-1 gap-3 sm:grid-cols-2">
@@ -142,8 +157,8 @@ export function SeasonPicker({
             <li key={episode.number} className="min-w-0">
               <button
                 type="button"
-                disabled={!canPlay}
-                onClick={() => void play(episode.number)}
+                disabled={!canPlay || !episode.released}
+                onClick={() => void play(season, episode.number)}
                 className="press group flex h-full w-full gap-3 rounded-2xl border border-border/60 bg-background-subtle/60 p-2.5 text-start outline-none transition-colors hover:border-border-strong focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-default"
               >
                 <span className="relative aspect-video w-32 shrink-0 overflow-hidden rounded-xl bg-background-muted">
@@ -153,10 +168,10 @@ export function SeasonPicker({
                       alt=""
                       fill
                       sizes="128px"
-                      className="object-cover"
+                      className={`object-cover ${episode.released ? "" : "opacity-50"}`}
                     />
                   )}
-                  {canPlay && (
+                  {canPlay && episode.released && (
                     <span className="absolute inset-0 grid place-items-center bg-black/40 opacity-0 transition-opacity group-hover:opacity-100">
                       <PlayerPlayFilled size={24} className="text-white" />
                     </span>
@@ -168,6 +183,7 @@ export function SeasonPicker({
                   </span>
                   {episode.facts.length > 0 && (
                     <span className="block text-xs text-foreground-muted">
+                      {episode.released ? "" : `${t("detail.unreleasedEpisode")} · `}
                       {episode.facts.join(" · ")}
                     </span>
                   )}
@@ -201,6 +217,13 @@ export function SeasonPicker({
             runtime:
               episodes.find((item) => item.number === playing)?.runtime ?? null,
           }}
+          next={
+            next && {
+              label: next.label,
+              pending: pending !== null,
+              onPlay: () => void play(next.season, next.episode),
+            }
+          }
         />
       )}
 

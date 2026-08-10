@@ -2,32 +2,36 @@ import Image from "next/image";
 import { Badge } from "@appica/ui-react/badge";
 import { Button } from "@appica/ui-react/button";
 import { ExternalLink } from "@appica/icons-react";
+import { getTranslator } from "@/lib/i18n/server";
+import type { MessageKey } from "@/lib/i18n/translate";
 import { tmdbImage, WATCH_REGION } from "@/lib/media";
 import type { MediaDetails, WatchOfferKind } from "@/lib/types";
 import { WATCH_ANCHOR } from "./watch-button";
 
-const OFFER_LABELS: Record<WatchOfferKind, string> = {
-  flatrate: "Compris dans l’abonnement",
-  free: "Gratuit",
-  ads: "Gratuit avec publicité",
-  rent: "Location",
-  buy: "Achat",
+const OFFER_KEYS: Record<WatchOfferKind, MessageKey> = {
+  flatrate: "watch.flatrate",
+  free: "watch.free",
+  ads: "watch.ads",
+  rent: "watch.rent",
+  buy: "watch.buy",
 };
 
-export function WatchSection({ details }: { details: MediaDetails }) {
+export async function WatchSection({ details }: { details: MediaDetails }) {
   if (!details.watch) return null;
+
+  const t = await getTranslator();
 
   return (
     <section id={WATCH_ANCHOR} className="scroll-mt-28 space-y-4">
       <h2 className="text-lg font-semibold tracking-tight sm:text-xl">
-        Où regarder
+        {t("watch.title")}
       </h2>
 
       <div className="max-w-4xl space-y-5 rounded-3xl border border-border/60 bg-background-subtle/60 p-5 backdrop-blur-sm sm:p-6">
             {details.watch.offers.map((offer) => (
               <div key={offer.kind} className="space-y-2.5">
                 <Badge variant="soft" size="sm" className="rounded-full">
-                  {OFFER_LABELS[offer.kind]}
+                  {t(OFFER_KEYS[offer.kind])}
                 </Badge>
                 <ul className="flex flex-wrap gap-2.5">
                   {offer.providers.map((provider) => (
@@ -64,11 +68,10 @@ export function WatchSection({ details }: { details: MediaDetails }) {
                   />
                 }
               >
-                Voir toutes les offres <ExternalLink size={16} />
+                {t("watch.allOffers")} <ExternalLink size={16} />
               </Button>
               <p className="text-xs text-foreground-subtle">
-                Disponibilités pour la France ({WATCH_REGION}) · données
-                JustWatch via TMDB
+                {t("watch.region", { region: WATCH_REGION })}
           </p>
         </div>
       </div>

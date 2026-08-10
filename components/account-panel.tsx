@@ -5,25 +5,29 @@ import { Button } from "@appica/ui-react/button";
 import { AlertCircle, Check } from "@appica/icons-react";
 import { isDiscordConfigured } from "@/lib/discord";
 import { countGrants, currentPeriod } from "@/lib/grants";
+import { getTranslator } from "@/lib/i18n/server";
+import type { MessageKey, Translate } from "@/lib/i18n/translate";
 import {
   FREE_MOVIE_LIMIT,
   FREE_SERIES_LIMIT,
   GOLD_MOVIES_PER_MONTH,
-  ROLE_LABELS,
-  ROLE_SUMMARIES,
+  roleLabelKey,
+  roleSummaryKey,
   type Role,
 } from "@/lib/roles";
 import { getSession } from "@/lib/session";
 import { isSupabaseAdminConfigured } from "@/lib/supabase";
 import { findUserById } from "@/lib/users";
 import { DiscordMark, DiscordSignInButton } from "./discord-sign-in";
+import { LocaleCard } from "./locale-card";
 import { PasswordForm } from "./password-form";
+import { SearchHistoryCard } from "./search-history-card";
 
-const ERRORS: Record<string, string> = {
-  linked: "Ce compte Discord est déjà rattaché à un autre compte JUST.",
-  database: "Base de données injoignable. Réessayez plus tard.",
-  denied: "Liaison annulée sur Discord.",
-  state: "Lien de liaison expiré ou invalide. Relancez l’opération.",
+const ERRORS: Record<string, MessageKey> = {
+  linked: "account.error.linked",
+  database: "account.error.database",
+  denied: "account.error.denied",
+  state: "account.error.state",
 };
 
 function Section({
@@ -63,32 +67,47 @@ async function quotaUsage(userId: string, role: Role) {
   }
 }
 
+function LanguageSection({ t }: { t: Translate }) {
+  return (
+    <Section title={t("account.language")} description={t("account.languageHint")}>
+      <LocaleCard />
+    </Section>
+  );
+}
+
 export async function AccountPanel({ error }: { error?: string }) {
+  const t = await getTranslator();
   const session = await getSession();
 
   if (!session) {
     return (
-      <Section
-        title="Connexion requise"
-        description="Connectez-vous pour gérer votre compte."
-      >
-        <Button className="rounded-full" render={<Link href="/login" />}>
-          Se connecter
-        </Button>
-      </Section>
+      <div className="space-y-6">
+        <Section
+          title={t("account.signInRequired")}
+          description={t("account.signInHint")}
+        >
+          <Button className="rounded-full" render={<Link href="/login" />}>
+            {t("account.signIn")}
+          </Button>
+        </Section>
+        <LanguageSection t={t} />
+      </div>
     );
   }
 
   if (!isSupabaseAdminConfigured()) {
     return (
-      <Section
-        title="Base de données non configurée"
-        description="Les réglages de compte ont besoin des variables Supabase dans .env.local."
-      >
-        <Badge variant="soft" className="rounded-full">
-          Configuration requise
-        </Badge>
-      </Section>
+      <div className="space-y-6">
+        <Section
+          title={t("account.noDatabase")}
+          description={t("account.noDatabaseHint")}
+        >
+          <Badge variant="soft" className="rounded-full">
+            {t("auth.configRequired")}
+          </Badge>
+        </Section>
+        <LanguageSection t={t} />
+      </div>
     );
   }
 
@@ -96,18 +115,21 @@ export async function AccountPanel({ error }: { error?: string }) {
 
   if (!user) {
     return (
-      <Section
-        title="Compte introuvable"
-        description="Votre session ne correspond à aucun compte. Déconnectez-vous puis reconnectez-vous."
-      >
-        <Button className="rounded-full" render={<Link href="/login" />}>
-          Se reconnecter
-        </Button>
-      </Section>
+      <div className="space-y-6">
+        <Section
+          title={t("account.notFound")}
+          description={t("account.notFoundHint")}
+        >
+          <Button className="rounded-full" render={<Link href="/login" />}>
+            {t("account.signInAgain")}
+          </Button>
+        </Section>
+        <LanguageSection t={t} />
+      </div>
     );
   }
 
-  const message = error ? (ERRORS[error] ?? ERRORS.database) : null;
+  const message = error ? t(ERRORS[error] ?? "account.error.database") : null;
   const usage = await quotaUsage(user.id, user.role);
 
   return (
@@ -132,42 +154,50 @@ export async function AccountPanel({ error }: { error?: string }) {
             {user.name}
           </p>
           <p className="truncate text-sm text-foreground-muted">
-            {user.email ?? "Aucune adresse e-mail"}
+            {user.email ?? t("account.noEmail")}
           </p>
         </div>
       </div>
 
       <Section
-        title="Mon offre"
-        description={ROLE_SUMMARIES[user.role]}
+        title={t("account.plan")}
+        description={t(roleSummaryKey(user.role))}
       >
         <div className="flex flex-wrap items-center gap-3">
           <Badge variant="soft" className="rounded-full">
-            {ROLE_LABELS[user.role]}
+            {t(roleLabelKey(user.role))}
           </Badge>
           {user.role === "user" && (
             <span className="text-sm text-foreground-muted">
-              {usage.movies} / {FREE_MOVIE_LIMIT} films · {usage.series} /{" "}
-              {FREE_SERIES_LIMIT} série
+              {t("account.usageFree", {
+                movies: usage.movies,
+                limit: FREE_MOVIE_LIMIT,
+                series: usage.series,
+                seriesLimit: FREE_SERIES_LIMIT,
+              })}
             </span>
           )}
           {user.role === "gold" && (
             <span className="text-sm text-foreground-muted">
-              {usage.movies} / {GOLD_MOVIES_PER_MONTH} films ce mois-ci ·
-              séries illimitées
+              {t("account.usageGold", {
+                movies: usage.movies,
+                limit: GOLD_MOVIES_PER_MONTH,
+              })}
             </span>
           )}
         </div>
       </Section>
 
+      <LanguageSection t={t} />
+
       <Section
         title={
-          user.password_hash ? "Mot de passe" : "Ajouter un mot de passe"
+          user.password_hash ? t("account.password") : t("account.addPassword")
         }
         description={
           user.password_hash
-            ? "Changez le mot de passe utilisé pour la connexion par e-mail."
-            : "Définissez un mot de passe pour vous connecter sans passer par Discord."
+            ? t("account.passwordHint")
+            : t("account.addPasswordHint")
         }
       >
         <PasswordForm
@@ -177,29 +207,36 @@ export async function AccountPanel({ error }: { error?: string }) {
       </Section>
 
       <Section
-        title="Discord"
+        title={t("account.discord")}
         description={
           user.discord_id
-            ? "Votre compte Discord est rattaché."
-            : "Rattachez Discord pour vous connecter en un clic."
+            ? t("account.discordLinked")
+            : t("account.discordLink")
         }
       >
         {user.discord_id ? (
           <p className="flex items-center gap-2 text-sm text-foreground-muted">
             <Check size={18} className="shrink-0 text-success" />
             <DiscordMark size={16} className="shrink-0 text-[#5865F2]" />
-            Compte lié
+            {t("account.discordLinkedShort")}
           </p>
         ) : isDiscordConfigured() ? (
           <DiscordSignInButton
-            label="Lier mon compte Discord"
+            label={t("auth.discordLink")}
             returnTo="/account"
           />
         ) : (
           <p className="text-sm text-foreground-muted">
-            Connexion Discord non configurée sur ce serveur.
+            {t("account.discordUnavailable")}
           </p>
         )}
+      </Section>
+
+      <Section
+        title={t("account.searchHistory")}
+        description={t("account.searchHistoryHint")}
+      >
+        <SearchHistoryCard />
       </Section>
     </div>
   );

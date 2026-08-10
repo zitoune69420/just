@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Button } from "@appica/ui-react/button";
 import { Heart, HeartFilled } from "@appica/icons-react";
 import { useFavorites } from "./favorites-provider";
+import { useTranslations } from "./i18n-provider";
 import type { MediaType } from "@/lib/types";
 
 interface FavoriteButtonProps {
@@ -25,11 +26,7 @@ const PARTICLES = [
   { angle: 318, distance: 20, warm: true },
 ];
 
-function label(favorite: boolean, title: string): string {
-  return favorite
-    ? `Retirer « ${title} » des favoris`
-    : `Ajouter « ${title} » aux favoris`;
-}
+
 
 function Burst({ id, size }: { id: number; size: number }) {
   return (
@@ -102,6 +99,7 @@ export function FavoriteButton({
   variant = "overlay",
   className = "",
 }: FavoriteButtonProps) {
+  const t = useTranslations();
   const { has, isBusy, toggle } = useFavorites();
   const [burst, setBurst] = useState(0);
   const favorite = has(mediaType, tmdbId);
@@ -120,7 +118,7 @@ export function FavoriteButton({
         className={`group relative overflow-visible rounded-full ${className}`}
         aria-pressed={favorite}
         aria-busy={busy}
-        aria-label={label(favorite, title)}
+        aria-label={t(favorite ? "detail.favoriteRemoveLabel" : "detail.favoriteAddLabel", { title })}
         onClick={handleClick}
       >
         <HeartSwap favorite={favorite} burst={burst} size={20} />
@@ -131,7 +129,7 @@ export function FavoriteButton({
               favorite ? "translate-y-1 opacity-0" : "translate-y-0 opacity-100"
             }`}
           >
-            Ajouter aux favoris
+            {t("detail.favoriteAdd")}
           </span>
           <span
             aria-hidden={!favorite}
@@ -139,7 +137,7 @@ export function FavoriteButton({
               favorite ? "translate-y-0 opacity-100" : "-translate-y-1 opacity-0"
             }`}
           >
-            Dans mes favoris
+            {t("detail.favoriteRemove")}
           </span>
         </span>
       </Button>
@@ -151,7 +149,7 @@ export function FavoriteButton({
       type="button"
       aria-pressed={favorite}
       aria-busy={busy}
-      aria-label={label(favorite, title)}
+      aria-label={t(favorite ? "detail.favoriteRemoveLabel" : "detail.favoriteAddLabel", { title })}
       onClick={handleClick}
       className={`group grid size-8 place-items-center rounded-full bg-black/60 text-white ring-1 ring-white/15 backdrop-blur-sm transition-colors outline-none before:absolute before:-inset-2 before:content-[''] focus-visible:ring-2 focus-visible:ring-white [@media(hover:hover)]:hover:bg-black/75 ${className}`}
     >

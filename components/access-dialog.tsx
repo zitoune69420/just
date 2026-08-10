@@ -4,7 +4,8 @@ import Link from "next/link";
 import { Button } from "@appica/ui-react/button";
 import { Dialog, DialogContent } from "@appica/ui-react/dialog";
 import { Lock } from "@appica/icons-react";
-import { playbackMessage, type PlaybackDenied } from "@/lib/playback-client";
+import { playbackMessageKey, type PlaybackDenied } from "@/lib/playback-client";
+import { useTranslations } from "./i18n-provider";
 
 export function AccessDialog({
   denied,
@@ -13,6 +14,7 @@ export function AccessDialog({
   denied: PlaybackDenied | null;
   onClose: () => void;
 }) {
+  const t = useTranslations();
   return (
     <Dialog
       open={denied !== null}
@@ -26,10 +28,10 @@ export function AccessDialog({
             <Lock size={24} />
           </div>
           <h2 className="text-lg font-semibold tracking-tight">
-            Lecture indisponible
+            {t("playback.accessTitle")}
           </h2>
           <p className="text-sm text-foreground-muted">
-            {denied ? playbackMessage(denied) : ""}
+            {denied ? t(playbackMessageKey(denied)) : ""}
           </p>
           <div className="flex justify-center gap-2 pt-1">
             <Button
@@ -37,10 +39,10 @@ export function AccessDialog({
               className="rounded-full"
               onClick={onClose}
             >
-              Fermer
+              {t("playback.close")}
             </Button>
             <Button className="rounded-full" render={<Link href="/account" />}>
-              Voir mon offre
+              {t("playback.myPlan")}
             </Button>
           </div>
         </div>

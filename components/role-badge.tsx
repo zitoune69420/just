@@ -1,4 +1,7 @@
-import { ROLE_LABELS, type Role } from "@/lib/roles";
+"use client";
+
+import { roleLabelKey, type Role } from "@/lib/roles";
+import { useTranslations } from "./i18n-provider";
 
 const PLAIN_STYLES: Record<Role, string> = {
   user: "border-border/70 text-foreground-muted",
@@ -45,12 +48,14 @@ export function RoleBadge({
   role: Role;
   className?: string;
 }) {
+  const t = useTranslations();
+
   if (role === "platinum") {
     return (
       <span
         className={`badge-glass ${BASE} text-foreground-strong ${className}`}
       >
-        {ROLE_LABELS.platinum}
+        {t("role.platinum")}
         {SPARKLES.map((sparkle) => (
           <Sparkle
             key={sparkle.className}
@@ -64,7 +69,7 @@ export function RoleBadge({
 
   return (
     <span className={`${BASE} border ${PLAIN_STYLES[role]} ${className}`}>
-      {ROLE_LABELS[role]}
+      {t(roleLabelKey(role))}
     </span>
   );
 }

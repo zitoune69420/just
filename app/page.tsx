@@ -1,4 +1,6 @@
 import { Suspense } from "react";
+import { BetaNotice } from "@/components/beta-notice";
+import { ContinueRow } from "@/components/continue-row";
 import { HeroCarousel } from "@/components/hero-carousel";
 import { MediaRow } from "@/components/media-row";
 import { SetupNotice } from "@/components/setup-notice";
@@ -8,12 +10,15 @@ import {
   TopRowSkeleton,
 } from "@/components/skeletons";
 import { TopMediaRow } from "@/components/top-media-row";
+import { getLocaleAndTranslator } from "@/lib/i18n/server";
 import { toMedia } from "@/lib/media";
 import { getRecentProgress } from "@/lib/progress";
+import { getBecauseYouWatched, getForYou } from "@/lib/recommendations";
 import { getSession } from "@/lib/session";
 import { isSupabaseAdminConfigured } from "@/lib/supabase";
 import {
   getMediaSummary,
+  getNowPlayingMovies,
   getPopularMovies,
   getPopularTv,
   getTopRatedMovies,
@@ -27,14 +32,24 @@ export default function HomePage() {
 
   return (
     <div className="mx-auto w-full max-w-7xl space-y-12 px-4 py-8 sm:px-6 lg:px-8">
+      <BetaNotice />
       <Suspense fallback={<HeroSkeleton />}>
         <Hero />
       </Suspense>
       <Suspense fallback={null}>
-        <ContinueRow />
+        <ContinueWatchingRow />
       </Suspense>
       <Suspense fallback={<TopRowSkeleton />}>
         <TrendingTopRow />
+      </Suspense>
+      <Suspense fallback={null}>
+        <BecauseYouWatchedRow />
+      </Suspense>
+      <Suspense fallback={null}>
+        <ForYouRow />
+      </Suspense>
+      <Suspense fallback={<RowSkeleton />}>
+        <NewReleasesRow />
       </Suspense>
       <Suspense fallback={<RowSkeleton />}>
         <PopularMoviesRow />
@@ -50,7 +65,8 @@ export default function HomePage() {
 }
 
 async function Hero() {
-  const trending = await getTrending();
+  const { locale } = await getLocaleAndTranslator();
+  const trending = await getTrending(locale);
   const items = trending
     .filter((item) => item.backdrop_path)
     .slice(0, 5)
@@ -58,15 +74,21 @@ async function Hero() {
   return <HeroCarousel items={items} />;
 }
 
-async function ContinueRow() {
+/** Identifiant du compte connecté, si la base et la session le permettent. */
+async function currentUserId(): Promise<string | null> {
   if (!isSupabaseAdminConfigured()) return null;
-
   const session = await getSession();
-  if (!session) return null;
+  return session?.id ?? null;
+}
+
+async function ContinueWatchingRow() {
+  const { locale, t } = await getLocaleAndTranslator();
+  const userId = await currentUserId();
+  if (!userId) return null;
 
   let entries: Awaited<ReturnType<typeof getRecentProgress>>;
   try {
-    entries = await getRecentProgress(session.id);
+    entries = await getRecentProgress(userId);
   } catch {
     return null;
   }
@@ -74,7 +96,7 @@ async function ContinueRow() {
   if (entries.length === 0) return null;
 
   const summaries = await Promise.all(
-    entries.map((entry) => getMediaSummary(entry.mediaType, entry.tmdbId)),
+    entries.map((entry) => getMediaSummary(locale, entry.mediaType, entry.tmdbId)),
   );
 
   const items = summaries
@@ -89,24 +111,75 @@ async function ContinueRow() {
     })
     .filter((media): media is Media => media !== null);
 
-  return <MediaRow title="Reprendre" items={items} />;
+  return <ContinueRow title={t("home.continue")} items={items} />;
+}
+
+async function BecauseYouWatchedRow() {
+  const { locale, t } = await getLocaleAndTranslator();
+  const userId = await currentUserId();
+  if (!userId) return null;
+
+  let recommendations: Awaited<ReturnType<typeof getBecauseYouWatched>>;
+  try {
+    recommendations = await getBecauseYouWatched(locale, userId);
+  } catch {
+    return null;
+  }
+
+  if (!recommendations || recommendations.items.length === 0) return null;
+
+  return (
+    <MediaRow
+      title={t("home.becauseYouWatched", { title: recommendations.seed.title })}
+      items={recommendations.items}
+    />
+  );
+}
+
+async function ForYouRow() {
+  const { locale, t } = await getLocaleAndTranslator();
+  const userId = await currentUserId();
+  if (!userId) return null;
+
+  let items: Awaited<ReturnType<typeof getForYou>>;
+  try {
+    items = await getForYou(locale, userId);
+  } catch {
+    return null;
+  }
+
+  return <MediaRow title={t("home.forYou")} items={items} />;
 }
 
 async function TrendingTopRow() {
-  const trending = await getTrending();
+  const { locale, t } = await getLocaleAndTranslator();
+  const trending = await getTrending(locale);
   return (
     <TopMediaRow
-      title="Top 10 de la semaine"
+      title={t("home.top10")}
       items={trending.slice(0, 10).map((item) => toMedia(item))}
     />
   );
 }
 
-async function PopularMoviesRow() {
-  const data = await getPopularMovies();
+async function NewReleasesRow() {
+  const { locale, t } = await getLocaleAndTranslator();
+  const data = await getNowPlayingMovies(locale);
   return (
     <MediaRow
-      title="Films populaires"
+      title={t("home.newReleases")}
+      moreHref="/new"
+      items={data.results.map((item) => toMedia(item, "movie"))}
+    />
+  );
+}
+
+async function PopularMoviesRow() {
+  const { locale, t } = await getLocaleAndTranslator();
+  const data = await getPopularMovies(locale);
+  return (
+    <MediaRow
+      title={t("home.popularMovies")}
       moreHref="/movies"
       items={data.results.map((item) => toMedia(item, "movie"))}
     />
@@ -114,10 +187,11 @@ async function PopularMoviesRow() {
 }
 
 async function PopularSeriesRow() {
-  const data = await getPopularTv();
+  const { locale, t } = await getLocaleAndTranslator();
+  const data = await getPopularTv(locale);
   return (
     <MediaRow
-      title="Séries populaires"
+      title={t("home.popularSeries")}
       moreHref="/series"
       items={data.results.map((item) => toMedia(item, "tv"))}
     />
@@ -125,10 +199,11 @@ async function PopularSeriesRow() {
 }
 
 async function TopRatedRow() {
-  const data = await getTopRatedMovies();
+  const { locale, t } = await getLocaleAndTranslator();
+  const data = await getTopRatedMovies(locale);
   return (
     <MediaRow
-      title="Les mieux notés"
+      title={t("home.topRated")}
       items={data.results.map((item) => toMedia(item, "movie"))}
     />
   );

@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "@appica/ui-react/button";
 import { Input } from "@appica/ui-react/input";
 import { Search } from "@appica/icons-react";
+import { rememberSearch } from "@/lib/search-history";
 
 export function SearchForm({ initialQuery }: { initialQuery: string }) {
   const router = useRouter();
@@ -12,6 +13,7 @@ export function SearchForm({ initialQuery }: { initialQuery: string }) {
     event.preventDefault();
     const query = new FormData(event.currentTarget).get("q");
     if (typeof query === "string" && query.trim()) {
+      rememberSearch(query.trim());
       router.push(`/search?q=${encodeURIComponent(query.trim())}`);
     }
   }

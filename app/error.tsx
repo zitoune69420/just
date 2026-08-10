@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { Button } from "@appica/ui-react/button";
 import { AlertTriangle, Refresh } from "@appica/icons-react";
+import { useTranslations } from "@/components/i18n-provider";
 
 export default function ErrorPage({
   error,
@@ -11,17 +12,18 @@ export default function ErrorPage({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
+  const t = useTranslations();
+
   return (
     <div className="enter flex flex-1 flex-col items-center justify-center gap-5 px-4 py-24 text-center">
       <div className="grid size-16 place-items-center rounded-3xl bg-background-muted text-foreground-subtle">
         <AlertTriangle size={35} />
       </div>
       <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
-        Une erreur est survenue
+        {t("error.title")}
       </h1>
       <p className="max-w-md text-foreground-muted text-balance">
-        Le contenu n’a pas pu être chargé. Réessayez — si le problème persiste,
-        il vient probablement de l’API TMDB.
+        {t("error.hint")}
       </p>
 
       {(error.message || error.digest) && (
@@ -33,7 +35,7 @@ export default function ErrorPage({
           )}
           {error.digest && (
             <p className="font-mono text-xs text-foreground-subtle">
-              digest : {error.digest}
+              {t("error.digest", { digest: error.digest })}
             </p>
           )}
         </div>
@@ -41,14 +43,14 @@ export default function ErrorPage({
 
       <div className="flex flex-wrap items-center justify-center gap-2.5 pt-1">
         <Button className="rounded-full" onClick={reset}>
-          <Refresh size={18} /> Réessayer
+          <Refresh size={18} /> {t("error.retry")}
         </Button>
         <Button
           variant="ghost"
           className="rounded-full"
           render={<Link href="/" />}
         >
-          Retour à l’accueil
+          {t("notFound.home")}
         </Button>
       </div>
     </div>

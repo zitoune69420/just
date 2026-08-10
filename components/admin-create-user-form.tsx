@@ -14,17 +14,19 @@ import {
 import { Spinner } from "@appica/ui-react/spinner";
 import { AlertCircle } from "@appica/icons-react";
 import { createUser, type AdminUserState } from "@/lib/admin-actions";
-import { ROLE_LABELS, ROLES, type Role } from "@/lib/roles";
+import { roleLabelKey, ROLES, type Role } from "@/lib/roles";
+import { useTranslations } from "./i18n-provider";
 
 const INITIAL: AdminUserState = { error: null, success: null };
 
 export function AdminCreateUserForm() {
+  const t = useTranslations();
   const [state, formAction, pending] = useActionState(createUser, INITIAL);
 
   return (
     <form action={formAction} className="space-y-4">
       <Field className="gap-1.5">
-        <FieldLabel htmlFor="new-name">Pseudo</FieldLabel>
+        <FieldLabel htmlFor="new-name">{t("admin.name")}</FieldLabel>
         <Input
           id="new-name"
           name="name"
@@ -33,12 +35,12 @@ export function AdminCreateUserForm() {
           minLength={2}
           maxLength={40}
           autoComplete="off"
-          placeholder="Pseudo affiché"
+          placeholder={t("admin.namePlaceholder")}
         />
       </Field>
 
       <Field className="gap-1.5">
-        <FieldLabel htmlFor="new-email">Adresse e-mail</FieldLabel>
+        <FieldLabel htmlFor="new-email">{t("admin.email")}</FieldLabel>
         <Input
           id="new-email"
           name="email"
@@ -47,12 +49,12 @@ export function AdminCreateUserForm() {
           autoComplete="off"
           autoCapitalize="none"
           spellCheck={false}
-          placeholder="vous@exemple.com"
+          placeholder={t("form.emailPlaceholder")}
         />
       </Field>
 
       <Field className="gap-1.5">
-        <FieldLabel htmlFor="new-password">Mot de passe</FieldLabel>
+        <FieldLabel htmlFor="new-password">{t("auth.password")}</FieldLabel>
         <Input
           id="new-password"
           name="password"
@@ -60,22 +62,22 @@ export function AdminCreateUserForm() {
           required
           minLength={8}
           autoComplete="new-password"
-          placeholder="8 caractères minimum"
+          placeholder={t("form.passwordPlaceholder")}
         />
       </Field>
 
       <Field className="gap-1.5">
-        <FieldLabel htmlFor="new-role">Offre</FieldLabel>
+        <FieldLabel htmlFor="new-role">{t("admin.role")}</FieldLabel>
         <Select name="role" defaultValue={"user" satisfies Role}>
           <SelectTrigger id="new-role" className="w-full">
             <SelectValue>
-              {(value: Role) => ROLE_LABELS[value] ?? value}
+              {(value: Role) => t(roleLabelKey(value))}
             </SelectValue>
           </SelectTrigger>
           <SelectContent>
             {ROLES.map((item) => (
               <SelectItem key={item} value={item}>
-                {ROLE_LABELS[item]}
+                {t(roleLabelKey(item))}
               </SelectItem>
             ))}
           </SelectContent>
@@ -94,7 +96,7 @@ export function AdminCreateUserForm() {
 
       <Button type="submit" className="press rounded-full" disabled={pending}>
         {pending ? <Spinner className="text-base" /> : null}
-        {pending ? "Création…" : "Créer le compte"}
+        {pending ? t("admin.creating") : t("admin.create")}
       </Button>
     </form>
   );

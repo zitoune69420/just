@@ -4,8 +4,7 @@ import { SetupNotice } from "@/components/setup-notice";
 import { isTmdbConfigured } from "@/lib/tmdb";
 
 export const metadata: Metadata = {
-  title: "Séries",
-  description: "Explorez les séries populaires, filtrées par genre.",
+  title: "Series",
 };
 
 export default function SeriesPage({
@@ -15,13 +14,5 @@ export default function SeriesPage({
 }) {
   if (!isTmdbConfigured()) return <SetupNotice />;
 
-  return (
-    <Catalog
-      type="tv"
-      title="Séries"
-      description="Les séries du moment, à filtrer par genre."
-      basePath="/series"
-      searchParams={searchParams}
-    />
-  );
+  return <Catalog type="tv" basePath="/series" searchParams={searchParams} />;
 }

@@ -13,6 +13,8 @@ interface TmdbListItemBase {
   backdrop_path: string | null;
   vote_average: number;
   vote_count: number;
+  genre_ids?: number[];
+  popularity?: number;
 }
 
 export interface TmdbMovieListItem extends TmdbListItemBase {
@@ -28,6 +30,41 @@ export interface TmdbTvListItem extends TmdbListItemBase {
 }
 
 export type TmdbListItem = TmdbMovieListItem | TmdbTvListItem;
+
+export interface TmdbPersonListItem {
+  media_type?: "person";
+  id: number;
+  name: string;
+  profile_path: string | null;
+  known_for_department?: string;
+  popularity?: number;
+  known_for?: TmdbListItem[];
+}
+
+export interface TmdbPersonCredit extends TmdbListItemBase {
+  media_type: MediaType;
+  title?: string;
+  name?: string;
+  release_date?: string;
+  first_air_date?: string;
+  character?: string;
+  job?: string;
+}
+
+export interface TmdbPersonDetails {
+  id: number;
+  name: string;
+  biography: string;
+  birthday: string | null;
+  deathday: string | null;
+  place_of_birth: string | null;
+  known_for_department: string | null;
+  profile_path: string | null;
+  combined_credits?: {
+    cast?: TmdbPersonCredit[];
+    crew?: TmdbPersonCredit[];
+  };
+}
 
 export interface TmdbPaginated<T> {
   page: number;
@@ -106,6 +143,14 @@ export interface TmdbSeasonDetails {
   episodes: TmdbEpisode[];
 }
 
+export interface TmdbAiringEpisode {
+  name: string;
+  season_number: number;
+  episode_number: number;
+  air_date?: string;
+  still_path: string | null;
+}
+
 export interface TmdbTvDetails extends TmdbDetailsBase {
   name: string;
   original_name: string;
@@ -113,6 +158,7 @@ export interface TmdbTvDetails extends TmdbDetailsBase {
   number_of_seasons: number;
   number_of_episodes: number;
   seasons: TmdbSeasonSummary[];
+  next_episode_to_air?: TmdbAiringEpisode | null;
 }
 
 export interface Media {
@@ -126,6 +172,8 @@ export interface Media {
   rating: number;
   votes: number;
   progress?: number;
+  /** Rôle tenu sur ce titre, renseigné sur les fiches personne. */
+  role?: string;
 }
 
 export interface CastMember {
@@ -133,6 +181,31 @@ export interface CastMember {
   name: string;
   character: string;
   profile: string | null;
+}
+
+export interface Person {
+  id: number;
+  name: string;
+  profile: string | null;
+  department: string | null;
+}
+
+export interface PersonDetails extends Person {
+  biography: string;
+  facts: string[];
+  known: Media[];
+  filmography: Media[];
+  crew: Media[];
+}
+
+export interface UpcomingEpisode {
+  tmdbId: number;
+  series: string;
+  poster: string | null;
+  season: number;
+  episode: number;
+  title: string;
+  airDate: string;
 }
 
 export type WatchOfferKind = "flatrate" | "free" | "ads" | "rent" | "buy";
@@ -167,10 +240,16 @@ export interface Episode {
   facts: string[];
   rating: number;
   runtime: number | null;
+  /** Faux tant que la date de diffusion est dans le futur. */
+  released: boolean;
 }
 
 export interface MediaDetails extends Media {
   genres: TmdbGenre[];
+  /** Faux tant que la date de sortie est dans le futur : pas de lecture. */
+  released: boolean;
+  /** Date de sortie mise en forme, pour l'annoncer quand elle est à venir. */
+  releaseDate: string | null;
   originalTitle: string;
   tagline: string | null;
   facts: string[];

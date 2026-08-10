@@ -1,3 +1,4 @@
+import type { MessageKey } from "./i18n/messages/en";
 import type { MediaType } from "./types";
 
 export interface PlaybackDenied {
@@ -9,20 +10,17 @@ export type PlaybackResult =
   | { url: string; remaining: number | null }
   | { denied: PlaybackDenied };
 
-export const PLAYBACK_MESSAGES: Record<string, string> = {
-  anonymous: "Connectez-vous pour lancer la lecture.",
-  "movie-quota":
-    "Vos films gratuits sont épuisés. Passez à Gold ou Platine pour continuer.",
-  "series-quota":
-    "L’offre gratuite couvre une seule série. Passez à Gold pour toutes les séries.",
-  "monthly-quota":
-    "Vos films du mois sont épuisés. Passez à Platine pour un accès illimité.",
-  unavailable: "Aucune source de lecture n’est configurée sur ce serveur.",
-  database: "Base de données injoignable. Réessayez plus tard.",
+const PLAYBACK_KEYS: Record<string, MessageKey> = {
+  anonymous: "playback.anonymous",
+  "movie-quota": "playback.movieQuota",
+  "series-quota": "playback.seriesQuota",
+  "monthly-quota": "playback.monthlyQuota",
+  unavailable: "playback.unavailable",
+  database: "playback.database",
 };
 
-export function playbackMessage(denied: PlaybackDenied): string {
-  return PLAYBACK_MESSAGES[denied.reason] ?? PLAYBACK_MESSAGES.database;
+export function playbackMessageKey(denied: PlaybackDenied): MessageKey {
+  return PLAYBACK_KEYS[denied.reason] ?? "playback.database";
 }
 
 export async function requestPlayback(

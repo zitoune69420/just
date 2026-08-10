@@ -11,14 +11,12 @@ import {
 } from "@appica/ui-react/carousel";
 import { InfoCircle, PlayerPlayFilled, StarFilled } from "@appica/icons-react";
 import { tmdbImage } from "@/lib/media";
+import { useTranslations } from "./i18n-provider";
 import type { Media } from "@/lib/types";
 
-const TYPE_LABELS: Record<Media["type"], string> = {
-  movie: "Film",
-  tv: "Série",
-};
-
 export function HeroCarousel({ items }: { items: Media[] }) {
+  const t = useTranslations();
+
   if (items.length === 0) return null;
 
   return (
@@ -48,7 +46,7 @@ export function HeroCarousel({ items }: { items: Media[] }) {
                 <div className="absolute inset-0 bg-linear-to-t from-black/85 via-black/35 to-black/10" />
                 <div className="absolute inset-x-0 bottom-0 space-y-3 p-5 sm:max-w-xl sm:space-y-4 sm:p-10">
                   <span className="inline-block rounded-full bg-white/15 px-3 py-1 text-xs font-medium text-white ring-1 ring-white/20 backdrop-blur-sm">
-                    {TYPE_LABELS[media.type]}
+                    {t(`media.${media.type}`)}
                   </span>
                   <h2 className="text-2xl font-bold tracking-tight text-balance text-white sm:text-4xl lg:text-5xl lg:tracking-[-0.03em]">
                     {media.title}
@@ -71,7 +69,7 @@ export function HeroCarousel({ items }: { items: Media[] }) {
                       className="rounded-full"
                       render={<Link href={href} />}
                     >
-                      <PlayerPlayFilled size={18} /> Regarder
+                      <PlayerPlayFilled size={18} /> {t("detail.watch")}
                     </Button>
                     <Button
                       variant="light"
@@ -79,7 +77,7 @@ export function HeroCarousel({ items }: { items: Media[] }) {
                       className="rounded-full"
                       render={<Link href={href} />}
                     >
-                      <InfoCircle size={18} /> Plus d’infos
+                      <InfoCircle size={18} /> {t("hero.moreInfo")}
                     </Button>
                   </div>
                 </div>

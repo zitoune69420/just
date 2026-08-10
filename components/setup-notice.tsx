@@ -1,18 +1,21 @@
 import { Badge } from "@appica/ui-react/badge";
+import { getTranslator } from "@/lib/i18n/server";
 
-export function SetupNotice() {
+export async function SetupNotice() {
+  const t = await getTranslator();
+
   return (
     <div className="mx-auto flex w-full max-w-7xl flex-1 items-center justify-center px-4 py-24">
       <div className="max-w-lg space-y-5 rounded-3xl border border-border bg-background-subtle p-8 sm:p-10">
         <Badge variant="soft" className="rounded-full">
-          Configuration requise
+          {t("setup.title")}
         </Badge>
         <h1 className="text-2xl font-bold tracking-tight">
-          Clé API TMDB manquante
+          {t("setup.tmdbMissing")}
         </h1>
         <ol className="list-decimal space-y-2 ps-5 text-sm text-foreground-muted">
           <li>
-            Créez un compte gratuit sur{" "}
+            {t("setup.step1")}{" "}
             <a
               href="https://www.themoviedb.org/signup"
               target="_blank"
@@ -22,16 +25,14 @@ export function SetupNotice() {
               themoviedb.org
             </a>
           </li>
-          <li>Récupérez une clé dans Paramètres → API</li>
-          <li>
-            Créez un fichier <code>.env.local</code> à la racine du projet :
-          </li>
+          <li>{t("setup.step2")}</li>
+          <li>{t("setup.step3")}</li>
         </ol>
         <pre className="overflow-x-auto rounded-2xl bg-background-muted p-4 text-sm">
-          <code>TMDB_API_KEY=votre_clé_ici</code>
+          <code>TMDB_API_KEY=…</code>
         </pre>
         <p className="text-sm text-foreground-muted">
-          Relancez ensuite{" "}
+          {t("setup.restart")}{" "}
           <code className="rounded-md bg-background-muted px-1.5 py-0.5">
             npm run dev
           </code>

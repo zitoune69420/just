@@ -10,17 +10,22 @@ import {
   TooltipTrigger,
 } from "@appica/ui-react/tooltip";
 import { Search } from "@appica/icons-react";
+import type { MessageKey } from "@/lib/i18n/translate";
 import { CommandMenu } from "./command-menu";
+import { useTranslations } from "./i18n-provider";
 import { ThemeToggle } from "./theme-toggle";
 
 const NAV_LINKS = [
-  { href: "/", label: "Accueil" },
-  { href: "/movies", label: "Films" },
-  { href: "/series", label: "Séries" },
-  { href: "/search", label: "Search" },
-] as const;
+  { href: "/", key: "nav.home" },
+  { href: "/movies", key: "nav.movies" },
+  { href: "/series", key: "nav.series" },
+  { href: "/new", key: "nav.new" },
+  { href: "/search", key: "nav.search" },
+] as const satisfies readonly { href: string; key: MessageKey }[];
 
 export function Navbar({ session }: { session: React.ReactNode }) {
+  const t = useTranslations();
+
   return (
     <header className="chrome sticky top-0 z-50 border-b border-border/60">
       <div className="mx-auto flex h-16 max-w-7xl items-center gap-2 px-4 sm:gap-5 sm:px-6 lg:px-8">
@@ -44,13 +49,13 @@ export function Navbar({ session }: { session: React.ReactNode }) {
                   variant="ghost"
                   size="icon-sm"
                   className="rounded-full lg:hidden"
-                  render={<Link href="/search" aria-label="Recherche" />}
+                  render={<Link href="/search" aria-label={t("nav.searchLabel")} />}
                 >
                   <Search size={18} />
                 </Button>
               }
             />
-            <TooltipContent>Recherche</TooltipContent>
+            <TooltipContent>{t("nav.searchLabel")}</TooltipContent>
           </Tooltip>
           <ThemeToggle />
           {session}
@@ -66,9 +71,11 @@ function ActiveNavLinks() {
 }
 
 function NavLinks({ pathname }: { pathname: string | null }) {
+  const t = useTranslations();
+
   return (
     <nav
-      aria-label="Navigation principale"
+      aria-label={t("nav.label")}
       className="no-scrollbar flex min-w-0 items-center gap-1 overflow-x-auto"
     >
       {NAV_LINKS.map((link) => {
@@ -88,7 +95,7 @@ function NavLinks({ pathname }: { pathname: string | null }) {
                 : "text-foreground-muted hover:text-foreground-strong"
             }`}
           >
-            {link.label}
+            {t(link.key)}
           </Link>
         );
       })}

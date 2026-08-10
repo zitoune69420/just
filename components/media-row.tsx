@@ -7,13 +7,14 @@ interface MediaRowProps {
   title: string;
   items: Media[];
   moreHref?: string;
+  moreLabel?: string;
 }
 
-export function MediaRow({ title, items, moreHref }: MediaRowProps) {
+export function MediaRow({ title, items, moreHref, moreLabel }: MediaRowProps) {
   if (items.length === 0) return null;
 
   return (
-    <RowCarousel title={title} moreHref={moreHref}>
+    <RowCarousel title={title} moreHref={moreHref} moreLabel={moreLabel}>
       {items.map((media) => (
         <CarouselSlide
           key={`${media.type}-${media.id}`}

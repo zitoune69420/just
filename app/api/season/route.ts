@@ -1,3 +1,4 @@
+import { getLocaleAndTranslator } from "@/lib/i18n/server";
 import { toEpisode } from "@/lib/media";
 import { getTvSeason, isTmdbConfigured } from "@/lib/tmdb";
 
@@ -16,6 +17,12 @@ export async function GET(request: Request) {
     return Response.json({ episodes: [] });
   }
 
-  const data = await getTvSeason(tvId, season);
-  return Response.json({ episodes: (data?.episodes ?? []).map(toEpisode) });
+  const { locale, t } = await getLocaleAndTranslator();
+  const data = await getTvSeason(locale, tvId, season);
+
+  return Response.json({
+    episodes: (data?.episodes ?? []).map((episode) =>
+      toEpisode(episode, { locale, t }),
+    ),
+  });
 }

@@ -2,6 +2,7 @@
 
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+import { getTranslator } from "./i18n/server";
 import { hashPassword, PASSWORD_MIN_LENGTH, verifyPassword } from "./password";
 import { SESSION_COOKIE, sealSession, sessionCookieOptions } from "./session";
 import { isSupabaseAdminConfigured } from "./supabase";
@@ -46,15 +47,17 @@ export async function signIn(
   _prevState: CredentialsState,
   formData: FormData,
 ): Promise<CredentialsState> {
+  const t = await getTranslator();
+
   if (!isSupabaseAdminConfigured()) {
-    return { error: "La connexion par mot de passe n’est pas configurée." };
+    return { error: t("error.signInNotConfigured") };
   }
 
   const email = field(formData, "email");
   const password = field(formData, "password");
 
   if (!isEmail(email) || password.length === 0) {
-    return { error: "Adresse e-mail ou mot de passe invalide." };
+    return { error: t("error.invalidCredentials") };
   }
 
   const user = await findUserByEmail(email);
@@ -64,7 +67,7 @@ export async function signIn(
   );
 
   if (!user || !valid) {
-    return { error: "Adresse e-mail ou mot de passe incorrect." };
+    return { error: t("error.wrongCredentials") };
   }
 
   await startSession(user);
@@ -75,8 +78,10 @@ export async function signUp(
   _prevState: CredentialsState,
   formData: FormData,
 ): Promise<CredentialsState> {
+  const t = await getTranslator();
+
   if (!isSupabaseAdminConfigured()) {
-    return { error: "La création de compte n’est pas configurée." };
+    return { error: t("error.signUpNotConfigured") };
   }
 
   const name = field(formData, "name").slice(0, NAME_MAX_LENGTH);
@@ -84,14 +89,14 @@ export async function signUp(
   const password = field(formData, "password");
 
   if (name.length < 2) {
-    return { error: "Le pseudo doit faire au moins 2 caractères." };
+    return { error: t("error.nameTooShort") };
   }
   if (!isEmail(email)) {
-    return { error: "Adresse e-mail invalide." };
+    return { error: t("error.invalidEmail") };
   }
   if (password.length < PASSWORD_MIN_LENGTH) {
     return {
-      error: `Le mot de passe doit faire au moins ${PASSWORD_MIN_LENGTH} caractères.`,
+      error: t("error.passwordTooShort", { min: PASSWORD_MIN_LENGTH }),
     };
   }
 
@@ -104,7 +109,7 @@ export async function signUp(
     });
   } catch (error) {
     if (error instanceof EmailTakenError) {
-      return { error: "Un compte existe déjà avec cette adresse." };
+      return { error: t("error.emailTaken") };
     }
     throw error;
   }

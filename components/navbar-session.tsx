@@ -1,7 +1,9 @@
 import Link from "next/link";
 import { Button } from "@appica/ui-react/button";
 import { isDiscordConfigured } from "@/lib/discord";
+import { getTranslator } from "@/lib/i18n/server";
 import type { Role } from "@/lib/roles";
+import { LocaleToggle } from "./locale-picker";
 import { getSession } from "@/lib/session";
 import { isSupabaseAdminConfigured } from "@/lib/supabase";
 import { findUserById } from "@/lib/users";
@@ -48,22 +50,25 @@ export async function NavbarSession() {
     );
   }
 
+  const t = await getTranslator();
+
   return (
     <>
+      <LocaleToggle />
       <Button
         variant="ghost"
         size="sm"
         className="rounded-full"
         render={<Link href="/login" />}
       >
-        Connexion
+        {t("session.signIn")}
       </Button>
       <Button
         size="sm"
         className="rounded-full max-sm:hidden"
         render={<Link href="/login?mode=signup" />}
       >
-        S’inscrire gratuitement
+        {t("session.signUp")}
       </Button>
     </>
   );

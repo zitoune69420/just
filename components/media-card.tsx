@@ -56,8 +56,10 @@ export function MediaCard({ media, sizes = "190px" }: MediaCardProps) {
           <h3 className="truncate text-sm font-medium text-foreground-strong">
             {media.title}
           </h3>
-          {media.year && (
-            <p className="mt-0.5 text-xs text-foreground-muted">{media.year}</p>
+          {(media.year || media.role) && (
+            <p className="mt-0.5 truncate text-xs text-foreground-muted">
+              {[media.year, media.role].filter(Boolean).join(" · ")}
+            </p>
           )}
         </div>
       </Link>

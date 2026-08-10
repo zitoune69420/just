@@ -4,13 +4,19 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Button } from "@appica/ui-react/button";
 import { Dialog, DialogContent } from "@appica/ui-react/dialog";
-import { PlayerPlayFilled } from "@appica/icons-react";
+import { PlayerPlayFilled, PlayerTrackNext } from "@appica/icons-react";
+import {
+  fetchSeasonEpisodes,
+  nextEpisodeAfter,
+  type NextEpisode,
+} from "@/lib/next-episode";
 import {
   requestPlayback,
   type PlaybackDenied,
 } from "@/lib/playback-client";
 import { recordProgress } from "@/lib/progress-actions";
-import type { MediaType } from "@/lib/types";
+import type { MediaType, Season } from "@/lib/types";
+import { useTranslations } from "./i18n-provider";
 import { AccessDialog } from "./access-dialog";
 
 export const WATCH_ANCHOR = "regarder";
@@ -21,6 +27,12 @@ export interface WatchTrack {
   season: number | null;
   episode: number | null;
   runtime: number | null;
+}
+
+export interface NextUp {
+  label: string;
+  onPlay: () => void;
+  pending?: boolean;
 }
 
 const TICK_MS = 60_000;
@@ -109,12 +121,15 @@ export function WatchDialog({
   open,
   onOpenChange,
   track,
+  next,
 }: {
   src: string;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   track?: WatchTrack;
+  next?: NextUp | null;
 }) {
+  const t = useTranslations();
   useWatchTimer(open, track);
 
   return (
@@ -128,6 +143,21 @@ export function WatchDialog({
             className="size-full border-0"
           />
         </div>
+        {next && (
+          <div className="flex items-center justify-between gap-3 border-t border-border-overlay bg-background px-4 py-3">
+            <p className="min-w-0 truncate text-sm text-foreground-muted">
+              {t("detail.upNext", { label: next.label })}
+            </p>
+            <Button
+              size="sm"
+              className="shrink-0 rounded-full"
+              onClick={next.onPlay}
+              disabled={next.pending}
+            >
+              <PlayerTrackNext size={16} /> {t("detail.nextEpisode")}
+            </Button>
+          </div>
+        )}
       </DialogContent>
     </Dialog>
   );
@@ -139,6 +169,7 @@ export function WatchButton({
   season = null,
   episode = null,
   runtime = null,
+  seasons = [],
   resumed = false,
   available = true,
 }: {
@@ -147,25 +178,47 @@ export function WatchButton({
   season?: number | null;
   episode?: number | null;
   runtime?: number | null;
+  seasons?: Season[];
   resumed?: boolean;
   available?: boolean;
 }) {
+  const t = useTranslations();
   const [src, setSrc] = useState<string | null>(null);
   const [denied, setDenied] = useState<PlaybackDenied | null>(null);
   const [pending, setPending] = useState(false);
+  const [current, setCurrent] = useState({ season, episode, runtime });
+  const [next, setNext] = useState<NextEpisode | null>(null);
 
-  async function play() {
+  async function play(
+    nextSeason: number | null,
+    nextEpisode: number | null,
+    nextRuntime: number | null,
+  ) {
     if (pending) return;
     setPending(true);
-    const result = await requestPlayback(type, id, season, episode);
+    const result = await requestPlayback(type, id, nextSeason, nextEpisode);
     setPending(false);
 
-    if ("url" in result) {
-      void recordProgress(type, id, season, episode);
-      setSrc(result.url);
+    if (!("url" in result)) {
+      setDenied(result.denied);
       return;
     }
-    setDenied(result.denied);
+
+    void recordProgress(type, id, nextSeason, nextEpisode);
+    setCurrent({
+      season: nextSeason,
+      episode: nextEpisode,
+      runtime: nextRuntime,
+    });
+    setSrc(result.url);
+
+    if (type !== "tv" || nextSeason === null || nextEpisode === null) {
+      setNext(null);
+      return;
+    }
+
+    const episodes = await fetchSeasonEpisodes(id, nextSeason);
+    setNext(nextEpisodeAfter(seasons, nextSeason, nextEpisode, episodes));
   }
 
   if (!available) {
@@ -175,7 +228,7 @@ export function WatchButton({
         className="rounded-full"
         render={<Link href={`#${WATCH_ANCHOR}`} />}
       >
-        <PlayerPlayFilled size={20} /> Regarder
+        <PlayerPlayFilled size={20} /> {t("detail.watch")}
       </Button>
     );
   }
@@ -185,25 +238,42 @@ export function WatchButton({
       <Button
         size="lg"
         className="rounded-full"
-        onClick={() => void play()}
+        onClick={() => void play(season, episode, runtime)}
         disabled={pending}
       >
         <PlayerPlayFilled size={20} />
         {resumed && season !== null && episode !== null
-          ? `Reprendre S${season} E${episode}`
+          ? t("detail.resume", { season, episode })
           : resumed
-            ? "Revoir"
-            : "Regarder"}
+            ? t("detail.rewatch")
+            : t("detail.watch")}
       </Button>
 
       {src && (
         <WatchDialog
           src={src}
           open={src !== null}
-          onOpenChange={(next) => {
-            if (!next) setSrc(null);
+          onOpenChange={(open) => {
+            if (!open) {
+              setSrc(null);
+              setNext(null);
+            }
           }}
-          track={{ type, id, season, episode, runtime }}
+          track={{
+            type,
+            id,
+            season: current.season,
+            episode: current.episode,
+            runtime: current.runtime,
+          }}
+          next={
+            next && {
+              label: next.label,
+              pending,
+              onPlay: () =>
+                void play(next.season, next.episode, next.runtime),
+            }
+          }
         />
       )}
 

@@ -1,5 +1,6 @@
 "use server";
 
+import { getTranslator } from "./i18n/server";
 import { hashPassword, PASSWORD_MIN_LENGTH, verifyPassword } from "./password";
 import { getSession } from "./session";
 import { isSupabaseAdminConfigured } from "./supabase";
@@ -15,18 +16,20 @@ export async function savePassword(
   _prevState: AccountState,
   formData: FormData,
 ): Promise<AccountState> {
+  const t = await getTranslator();
+
   if (!isSupabaseAdminConfigured()) {
-    return { error: "Base de données non configurée.", success: null };
+    return { error: t("error.noDatabase"), success: null };
   }
 
   const session = await getSession();
   if (!session) {
-    return { error: "Session expirée. Reconnectez-vous.", success: null };
+    return { error: t("error.sessionExpired"), success: null };
   }
 
   const user = await findUserById(session.id);
   if (!user) {
-    return { error: "Compte introuvable.", success: null };
+    return { error: t("error.accountNotFound"), success: null };
   }
 
   const email = readField(formData, "email");
@@ -35,22 +38,22 @@ export async function savePassword(
   const confirm = readField(formData, "confirmPassword");
 
   if (!user.email && !isEmail(email)) {
-    return { error: "Adresse e-mail invalide.", success: null };
+    return { error: t("error.invalidEmail"), success: null };
   }
 
   if (user.password_hash && !(await verifyPassword(current, user.password_hash))) {
-    return { error: "Mot de passe actuel incorrect.", success: null };
+    return { error: t("error.wrongCurrentPassword"), success: null };
   }
 
   if (password.length < PASSWORD_MIN_LENGTH) {
     return {
-      error: `Le mot de passe doit faire au moins ${PASSWORD_MIN_LENGTH} caractères.`,
+      error: t("error.passwordTooShort", { min: PASSWORD_MIN_LENGTH }),
       success: null,
     };
   }
 
   if (password !== confirm) {
-    return { error: "Les deux mots de passe ne correspondent pas.", success: null };
+    return { error: t("error.passwordMismatch"), success: null };
   }
 
   try {
@@ -60,7 +63,7 @@ export async function savePassword(
     });
   } catch (error) {
     if (error instanceof EmailTakenError) {
-      return { error: "Un compte existe déjà avec cette adresse.", success: null };
+      return { error: t("error.emailTaken"), success: null };
     }
     throw error;
   }
@@ -68,7 +71,7 @@ export async function savePassword(
   return {
     error: null,
     success: user.password_hash
-      ? "Mot de passe modifié."
-      : "Mot de passe défini. Vous pouvez maintenant vous connecter avec votre e-mail.",
+      ? t("form.passwordChanged")
+      : t("form.passwordSet"),
   };
 }

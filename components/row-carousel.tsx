@@ -9,10 +9,12 @@ import {
   CarouselPrev,
 } from "@appica/ui-react/carousel";
 import { ChevronLeft, ChevronRight } from "@appica/icons-react";
+import { useTranslations } from "./i18n-provider";
 
 interface RowCarouselProps {
   title: string;
   moreHref?: string;
+  moreLabel?: string;
   children: React.ReactNode;
 }
 
@@ -20,7 +22,14 @@ function navButton() {
   return <Button variant="soft" size="icon-sm" className="rounded-full" />;
 }
 
-export function RowCarousel({ title, moreHref, children }: RowCarouselProps) {
+export function RowCarousel({
+  title,
+  moreHref,
+  moreLabel,
+  children,
+}: RowCarouselProps) {
+  const t = useTranslations();
+
   return (
     <section className="enter min-w-0">
       <Carousel
@@ -40,7 +49,7 @@ export function RowCarousel({ title, moreHref, children }: RowCarouselProps) {
               className="rounded-full"
               render={<Link href={moreHref} />}
             >
-              Voir tout <ChevronRight size={16} />
+              {moreLabel ?? t("home.seeAll")} <ChevronRight size={16} />
             </Button>
           )}
         </div>
@@ -48,14 +57,14 @@ export function RowCarousel({ title, moreHref, children }: RowCarouselProps) {
         <div className="mt-3 flex items-center justify-end gap-1.5">
           <CarouselPrev
             position="none"
-            aria-label="Faire défiler vers la gauche"
+            aria-label={t("home.scrollLeft")}
             render={navButton()}
           >
             <ChevronLeft size={18} />
           </CarouselPrev>
           <CarouselNext
             position="none"
-            aria-label="Faire défiler vers la droite"
+            aria-label={t("home.scrollRight")}
             render={navButton()}
           >
             <ChevronRight size={18} />

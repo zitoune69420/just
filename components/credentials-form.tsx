@@ -7,6 +7,7 @@ import { Input } from "@appica/ui-react/input";
 import { Spinner } from "@appica/ui-react/spinner";
 import { AlertCircle } from "@appica/icons-react";
 import { authenticate, type CredentialsState } from "@/lib/auth-actions";
+import { useTranslations } from "./i18n-provider";
 
 type Mode = "signin" | "signup";
 
@@ -66,6 +67,7 @@ export function CredentialsForm({
   returnTo?: string;
   initialMode?: Mode;
 }) {
+  const t = useTranslations();
   const [mode, setMode] = useState<Mode>(initialMode);
   const [state, formAction, pending] = useActionState(authenticate, INITIAL);
   const [shownError, setShownError] = useState<string | null>(null);
@@ -83,7 +85,7 @@ export function CredentialsForm({
         <Collapse open={signup}>
           <div className="pb-4">
             <Field className="gap-1.5">
-              <FieldLabel htmlFor="credentials-name">Pseudo</FieldLabel>
+              <FieldLabel htmlFor="credentials-name">{t("auth.name")}</FieldLabel>
               <Input
                 id="credentials-name"
                 name="name"
@@ -93,7 +95,7 @@ export function CredentialsForm({
                 minLength={2}
                 maxLength={40}
                 autoComplete="nickname"
-                placeholder="Votre pseudo"
+                placeholder={t("auth.namePlaceholder")}
               />
             </Field>
           </div>
@@ -101,7 +103,7 @@ export function CredentialsForm({
 
         <div className="pb-4">
           <Field className="gap-1.5">
-            <FieldLabel htmlFor="credentials-email">Adresse e-mail</FieldLabel>
+            <FieldLabel htmlFor="credentials-email">{t("auth.email")}</FieldLabel>
             <Input
               id="credentials-email"
               name="email"
@@ -111,7 +113,7 @@ export function CredentialsForm({
               inputMode="email"
               autoCapitalize="none"
               spellCheck={false}
-              placeholder="vous@exemple.com"
+              placeholder={t("form.emailPlaceholder")}
             />
           </Field>
         </div>
@@ -119,7 +121,7 @@ export function CredentialsForm({
         <div className="pb-4">
           <Field className="gap-1.5">
             <FieldLabel htmlFor="credentials-password">
-              Mot de passe
+              {t("auth.password")}
             </FieldLabel>
             <Input
               id="credentials-password"
@@ -128,7 +130,7 @@ export function CredentialsForm({
               required
               minLength={signup ? 8 : undefined}
               autoComplete={signup ? "new-password" : "current-password"}
-              placeholder={signup ? "8 caractères minimum" : "••••••••"}
+              placeholder={signup ? t("form.passwordPlaceholder") : "••••••••"}
             />
           </Field>
         </div>
@@ -152,11 +154,11 @@ export function CredentialsForm({
           disabled={pending}
         >
           <span className="grid">
-            <Layer visible={!pending && !signup}>Se connecter</Layer>
-            <Layer visible={!pending && signup}>Créer mon compte</Layer>
+            <Layer visible={!pending && !signup}>{t("auth.submitSignIn")}</Layer>
+            <Layer visible={!pending && signup}>{t("auth.submitSignUp")}</Layer>
             <Layer visible={pending}>
               <Spinner className="text-base" />
-              Un instant…
+              {t("auth.pending")}
             </Layer>
           </span>
         </Button>
@@ -165,15 +167,15 @@ export function CredentialsForm({
       <p className="text-center text-sm text-foreground-muted">
         <span className="grid">
           <Layer visible={!signup}>
-            Pas encore de compte ?{" "}
+            {t("auth.noAccount")}{" "}
             <ModeSwitch onClick={() => setMode("signup")}>
-              Créer un compte
+              {t("auth.createAccount")}
             </ModeSwitch>
           </Layer>
           <Layer visible={signup}>
-            Déjà un compte ?{" "}
+            {t("auth.haveAccount")}{" "}
             <ModeSwitch onClick={() => setMode("signin")}>
-              Se connecter
+              {t("auth.submitSignIn")}
             </ModeSwitch>
           </Layer>
         </span>

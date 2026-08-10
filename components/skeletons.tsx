@@ -72,6 +72,28 @@ export function CatalogSkeleton() {
   );
 }
 
+export function PersonSkeleton() {
+  return (
+    <div className="mx-auto w-full max-w-7xl space-y-12 px-4 py-10 sm:px-6 lg:px-8">
+      <div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:gap-8">
+        <Skeleton className="aspect-2/3 w-40 shrink-0 rounded-3xl sm:w-56" />
+        <div className="w-full max-w-2xl space-y-4 pb-1">
+          <Skeleton className="h-6 w-28 rounded-full" />
+          <Skeleton className="h-10 w-2/3 rounded-2xl" />
+          <Skeleton className="h-4 w-1/2 rounded-full" />
+        </div>
+      </div>
+      <div className="max-w-3xl space-y-3">
+        <Skeleton className="h-6 w-32 rounded-full" />
+        <Skeleton className="h-4 w-full rounded-full" />
+        <Skeleton className="h-4 w-full rounded-full" />
+        <Skeleton className="h-4 w-2/3 rounded-full" />
+      </div>
+      <RowSkeleton />
+    </div>
+  );
+}
+
 export function DetailSkeleton() {
   return (
     <div className="pb-16">

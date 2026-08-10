@@ -1,12 +1,13 @@
 import Image from "next/image";
+import Link from "next/link";
 import { Badge } from "@appica/ui-react/badge";
 import { CarouselSlide } from "@appica/ui-react/carousel";
 import { Thumbnail } from "@appica/ui-react/thumbnail";
-import { StarFilled } from "@appica/icons-react";
+import { CalendarEvent, StarFilled } from "@appica/icons-react";
+import { getTranslator } from "@/lib/i18n/server";
 import { tmdbImage } from "@/lib/media";
 import { getProgressFor } from "@/lib/progress";
 import { getSession } from "@/lib/session";
-import { resolveStreamSource } from "@/lib/streaming";
 import { isStreamConfigured } from "@/lib/stream-url";
 import { isSupabaseAdminConfigured } from "@/lib/supabase";
 import type { MediaDetails } from "@/lib/types";
@@ -17,11 +18,6 @@ import { SeasonPicker } from "./season-picker";
 import { TrailerPlayer } from "./trailer-player";
 import { WatchButton } from "./watch-button";
 import { WatchSection } from "./watch-section";
-
-const TYPE_LABELS: Record<MediaDetails["type"], string> = {
-  movie: "Film",
-  tv: "Série",
-};
 
 async function resumePoint(type: MediaDetails["type"], id: number) {
   if (!isSupabaseAdminConfigured()) return null;
@@ -53,16 +49,10 @@ function initials(name: string): string {
 }
 
 export async function MediaDetailView({ details }: { details: MediaDetails }) {
+  const t = await getTranslator();
   const backdropUrl = details.backdrop
     ? tmdbImage(details.backdrop, "w1280")
     : null;
-
-  const streamSource = await resolveStreamSource({
-    type: details.type,
-    tmdbId: details.id,
-    originalTitle: details.originalTitle,
-    year: details.year,
-  });
 
   const resume = await resumePoint(details.type, details.id);
   const streamAvailable = isStreamConfigured();
@@ -104,7 +94,7 @@ export async function MediaDetailView({ details }: { details: MediaDetails }) {
               {details.poster ? (
                   <Image
                       src={tmdbImage(details.poster, "w500")}
-                      alt={`Affiche : ${details.title}`}
+                      alt={details.title}
                       fill
                       sizes="(min-width: 640px) 224px, 160px"
                       className="object-cover"
@@ -116,7 +106,7 @@ export async function MediaDetailView({ details }: { details: MediaDetails }) {
 
             <div className="max-w-2xl space-y-4 pb-1">
               <Badge variant="soft" size="sm" className="rounded-full">
-                {TYPE_LABELS[details.type]}
+                {t(`media.${details.type}`)}
               </Badge>
               <h1 className="text-3xl font-bold tracking-tight text-balance sm:text-5xl sm:tracking-[-0.03em]">
                 {details.title}
@@ -147,17 +137,27 @@ export async function MediaDetailView({ details }: { details: MediaDetails }) {
                   </div>
               )}
               <div className="flex flex-wrap items-center gap-3 pt-1">
-                <WatchButton
-                    id={details.id}
-                    type={details.type}
-                    season={details.type === "tv" ? (resume?.season ?? 1) : null}
-                    episode={
-                      details.type === "tv" ? (resume?.episode ?? 1) : null
-                    }
-                    runtime={details.runtime}
-                    resumed={resume !== null}
-                    available={streamAvailable}
-                />
+                {details.released ? (
+                    <WatchButton
+                        id={details.id}
+                        type={details.type}
+                        season={details.type === "tv" ? (resume?.season ?? 1) : null}
+                        episode={
+                          details.type === "tv" ? (resume?.episode ?? 1) : null
+                        }
+                        runtime={details.runtime}
+                        seasons={details.seasons}
+                        resumed={resume !== null}
+                        available={streamAvailable}
+                    />
+                ) : (
+                    <span className="inline-flex items-center gap-2 rounded-full bg-background-muted px-5 py-3 text-sm font-medium text-foreground-muted">
+                      <CalendarEvent size={18} className="shrink-0"/>
+                      {details.releaseDate
+                          ? t("detail.releaseOn", { date: details.releaseDate })
+                          : t("detail.releaseUnknown")}
+                    </span>
+                )}
                 <FavoriteButton
                     mediaType={details.type}
                     tmdbId={details.id}
@@ -187,17 +187,17 @@ export async function MediaDetailView({ details }: { details: MediaDetails }) {
                   </p>
               )}
               <h2 className="text-lg font-semibold tracking-tight sm:text-xl">
-                Synopsis
+                {t("detail.synopsis")}
               </h2>
               <p className="text-[15px]/7 text-foreground-muted">
-                {details.overview || "Aucun synopsis disponible."}
+                {details.overview || t("detail.noSynopsis")}
               </p>
             </section>
 
             {details.trailerKey && (
                 <section className="space-y-4">
                   <h2 className="text-lg font-semibold tracking-tight sm:text-xl">
-                    Bande-annonce
+                    {t("detail.trailer")}
                   </h2>
                   <div className="max-w-4xl">
                     <TrailerPlayer
@@ -210,12 +210,16 @@ export async function MediaDetailView({ details }: { details: MediaDetails }) {
             )}
 
             {details.cast.length > 0 && (
-                <RowCarousel title="Distribution">
+                <RowCarousel title={t("detail.cast")}>
                   {details.cast.map((member, index) => (
                       <CarouselSlide
                           key={`${member.id}-${index}`}
                           className="basis-28 sm:basis-32"
                       >
+                        <Link
+                            href={`/person/${member.id}`}
+                            className="press block rounded-3xl outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+                        >
                         <figure className="flex flex-col items-center gap-2.5 text-center">
                           <Thumbnail
                               shape="circle"
@@ -238,13 +242,14 @@ export async function MediaDetailView({ details }: { details: MediaDetails }) {
                             </p>
                           </figcaption>
                         </figure>
+                        </Link>
                       </CarouselSlide>
                   ))}
                 </RowCarousel>
             )}
 
             {details.recommendations.length > 0 && (
-                <MediaRow title="Recommandations" items={details.recommendations}/>
+                <MediaRow title={t("detail.recommendations")} items={details.recommendations}/>
             )}
           </div>
         </div>
