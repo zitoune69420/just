@@ -123,19 +123,22 @@ export function CatalogFilters({
             open={typesOpen}
             onOpenChange={setTypesOpen}
           >
-            {TYPE_ITEMS.map((item) => (
-              <FilterCheckboxRow
-                key={item.basePath}
-                id={`type-${item.basePath}`}
-                label={item.label}
-                checked={item.basePath === basePath}
-                onCheckedChange={() => {
-                  if (item.basePath !== basePath) {
-                    router.push(buildHref(item.basePath, [], sort));
-                  }
-                }}
-              />
-            ))}
+            {/* Deux choix exclusifs et courts : côte à côte plutôt qu'empilés. */}
+            <div className="grid grid-cols-2 gap-1">
+              {TYPE_ITEMS.map((item) => (
+                <FilterCheckboxRow
+                  key={item.basePath}
+                  id={`type-${item.basePath}`}
+                  label={item.label}
+                  checked={item.basePath === basePath}
+                  onCheckedChange={() => {
+                    if (item.basePath !== basePath) {
+                      router.push(buildHref(item.basePath, [], sort));
+                    }
+                  }}
+                />
+              ))}
+            </div>
           </FilterSection>
 
           <Separator className="my-4 opacity-0" />
