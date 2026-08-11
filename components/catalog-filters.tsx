@@ -9,7 +9,7 @@ import {
   CollapsibleTrigger,
 } from "@appica/ui-react/collapsible";
 import { Separator } from "@appica/ui-react/separator";
-import { ArrowsSort, ChevronDown, LayoutGrid, Tags } from "@appica/icons-react";
+import { ArrowsSort, ChevronDown, Tags } from "@appica/icons-react";
 import type { SortKey } from "@/lib/tmdb";
 import type { TmdbGenre } from "@/lib/types";
 
@@ -19,11 +19,6 @@ const SORT_OPTIONS: { value: SortKey; label: string }[] = [
   { value: "year", label: "Plus récents" },
   { value: "title", label: "A-Z" },
 ];
-
-const TYPE_ITEMS = [
-  { basePath: "/catalog/movies", label: "Films" },
-  { basePath: "/catalog/series", label: "Séries" },
-] as const;
 
 interface CatalogFiltersProps {
   basePath: string;
@@ -51,7 +46,6 @@ export function CatalogFilters({
   sort,
 }: CatalogFiltersProps) {
   const router = useRouter();
-  const [typesOpen, setTypesOpen] = useState(true);
   const [sortOpen, setSortOpen] = useState(true);
   const [genresOpen, setGenresOpen] = useState(true);
 

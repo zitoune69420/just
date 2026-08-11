@@ -164,6 +164,7 @@ export const fr: Messages = {
   "catalog.next": "Suivant",
   "catalog.page": "Page {page} sur {total}",
   "catalog.pagination": "Pagination",
+  "catalog.type": "Films ou séries",
 
   // New releases
   "new.title": "Nouveautés",

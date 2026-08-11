@@ -165,6 +165,7 @@ export const en = {
   "catalog.next": "Next",
   "catalog.page": "Page {page} of {total}",
   "catalog.pagination": "Pagination",
+  "catalog.type": "Movies or series",
 
   // New releases
   "new.title": "New",
