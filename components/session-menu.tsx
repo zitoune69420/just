@@ -13,7 +13,14 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@appica/ui-react/dropdown-menu";
-import { Heart, Logout, Settings, Users } from "@appica/icons-react";
+import {
+  Bookmark,
+  Heart,
+  History,
+  Logout,
+  Settings,
+  Users,
+} from "@appica/icons-react";
 import { logout } from "@/lib/auth-actions";
 import type { Role } from "@/lib/roles";
 import { DiscordMark, discordSignInHref } from "./discord-sign-in";
@@ -69,6 +76,14 @@ export function SessionMenu({
         <DropdownMenuItem render={<Link href="/favorites" />}>
           <Heart size={16} className="-ms-px" />
           {t("session.favorites")}
+        </DropdownMenuItem>
+        <DropdownMenuItem render={<Link href="/watchlist" />}>
+          <Bookmark size={16} className="-ms-px" />
+          {t("session.watchlist")}
+        </DropdownMenuItem>
+        <DropdownMenuItem render={<Link href="/history" />}>
+          <History size={16} className="-ms-px" />
+          {t("session.history")}
         </DropdownMenuItem>
         <DropdownMenuItem render={<Link href="/account" />}>
           <Settings size={16} />

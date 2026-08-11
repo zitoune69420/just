@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Button } from "@appica/ui-react/button";
 import { Heart, HeartFilled } from "@appica/icons-react";
-import { useFavorites } from "./favorites-provider";
+import { useCollections } from "./collections-provider";
 import { useTranslations } from "./i18n-provider";
 import type { MediaType } from "@/lib/types";
 
@@ -100,14 +100,14 @@ export function FavoriteButton({
   className = "",
 }: FavoriteButtonProps) {
   const t = useTranslations();
-  const { has, isBusy, toggle } = useFavorites();
+  const { has, isBusy, toggle } = useCollections();
   const [burst, setBurst] = useState(0);
-  const favorite = has(mediaType, tmdbId);
-  const busy = isBusy(mediaType, tmdbId);
+  const favorite = has("favorite", mediaType, tmdbId);
+  const busy = isBusy("favorite", mediaType, tmdbId);
 
   function handleClick() {
     if (!favorite) setBurst((count) => count + 1);
-    toggle(mediaType, tmdbId);
+    toggle("favorite", mediaType, tmdbId);
   }
 
   if (variant === "inline") {

@@ -1,4 +1,4 @@
-import { isMediaType, isTmdbId } from "@/lib/favorites";
+import { isMediaType, isTmdbId } from "@/lib/collections";
 import { advanceProgress } from "@/lib/progress";
 import { getSession } from "@/lib/auth";
 import {

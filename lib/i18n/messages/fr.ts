@@ -16,6 +16,8 @@ export const fr: Messages = {
   // Session menu
   "session.account": "Compte de {name}",
   "session.favorites": "Favoris",
+  "session.watchlist": "À voir plus tard",
+  "session.history": "Historique",
   "session.myAccount": "Mon compte",
   "session.admin": "Administration",
   "session.linkDiscord": "Lier Discord",
@@ -53,6 +55,7 @@ export const fr: Messages = {
   "home.top10": "Top 10 de la semaine",
   "home.becauseYouWatched": "Parce que vous avez regardé {title}",
   "home.forYou": "Pour vous",
+  "home.fromPeopleYouFollow": "Des personnes que vous suivez",
   "home.newReleases": "Nouveautés",
   "home.popularMovies": "Films populaires",
   "home.popularSeries": "Séries populaires",
@@ -72,6 +75,7 @@ export const fr: Messages = {
   "detail.watch": "Regarder",
   "detail.rewatch": "Revoir",
   "detail.resume": "Reprendre S{season} E{episode}",
+  "detail.playNext": "Lire S{season} E{episode}",
   "detail.nextEpisode": "Épisode suivant",
   "detail.upNext": "À suivre : {label}",
   "detail.releaseOn": "Sortie le {date}",
@@ -93,6 +97,10 @@ export const fr: Messages = {
   "detail.favoriteRemove": "Dans mes favoris",
   "detail.favoriteAddLabel": "Ajouter « {title} » aux favoris",
   "detail.favoriteRemoveLabel": "Retirer « {title} » des favoris",
+  "detail.watchlistAdd": "À voir plus tard",
+  "detail.watchlistRemove": "Dans ma liste",
+  "detail.watchlistAddLabel": "Ajouter « {title} » à la liste à voir plus tard",
+  "detail.watchlistRemoveLabel": "Retirer « {title} » de la liste à voir plus tard",
   "detail.trailerPlay": "Lire la bande-annonce de {title}",
 
   // Where to watch
@@ -113,6 +121,10 @@ export const fr: Messages = {
   "person.crew": "Derrière la caméra",
   "person.notFound": "Personne introuvable",
   "person.portrait": "Portrait : {name}",
+  "person.follow": "Suivre",
+  "person.following": "Suivi",
+  "person.followLabel": "Suivre {name}",
+  "person.unfollowLabel": "Ne plus suivre {name}",
   "person.department.Acting": "Interprétation",
   "person.department.Directing": "Réalisation",
   "person.department.Writing": "Scénario",
@@ -192,6 +204,48 @@ export const fr: Messages = {
   "favorites.configRequired": "Configuration requise",
   "favorites.configHint":
     "Les favoris ont besoin de SUPABASE_SECRET_KEY, NEXT_PUBLIC_SUPABASE_URL et TMDB_API_KEY dans .env.local.",
+
+  // Watchlist
+  "watchlist.title": "À voir plus tard",
+  "watchlist.description": "Les titres que vous avez mis de côté.",
+  "watchlist.descriptionLong":
+    "Les titres que vous avez mis de côté, liés à votre compte.",
+  "watchlist.signInRequired": "Connexion requise",
+  "watchlist.signInHint":
+    "Connectez-vous pour retrouver votre liste sur tous vos appareils.",
+  "watchlist.empty": "Rien de mis de côté",
+  "watchlist.emptyHint":
+    "Touchez le marque-page sur une affiche ou une fiche pour le garder pour plus tard.",
+  "watchlist.browse": "Parcourir les films",
+  "watchlist.missing": "Liste introuvable",
+  "watchlist.missingHint":
+    "Les titres enregistrés ne sont plus disponibles sur TMDB.",
+  "watchlist.configRequired": "Configuration requise",
+  "watchlist.configHint":
+    "La liste à voir plus tard a besoin de SUPABASE_SECRET_KEY, NEXT_PUBLIC_SUPABASE_URL et TMDB_API_KEY dans .env.local.",
+
+  // History
+  "history.title": "Historique",
+  "history.description": "Tout ce que vous avez lancé.",
+  "history.descriptionLong":
+    "Tout ce que vous avez lancé, du plus récent au plus ancien.",
+  "history.signInRequired": "Connexion requise",
+  "history.signInHint":
+    "Connectez-vous pour retrouver votre historique sur tous vos appareils.",
+  "history.empty": "Rien de visionné",
+  "history.emptyHint": "Les titres que vous lancez apparaissent ici.",
+  "history.browse": "Parcourir les films",
+  "history.configRequired": "Configuration requise",
+  "history.configHint":
+    "L’historique a besoin de SUPABASE_SECRET_KEY, NEXT_PUBLIC_SUPABASE_URL et TMDB_API_KEY dans .env.local.",
+  "history.previous": "Plus récent",
+  "history.next": "Plus ancien",
+  "history.clearAll": "Vider l’historique",
+  "history.clearTitle": "Vider tout votre historique ?",
+  "history.clearHint":
+    "Toutes vos reprises de lecture sont supprimées, sur tous vos appareils. C’est irréversible.",
+  "history.clearCancel": "Annuler",
+  "history.clearConfirm": "Tout effacer",
 
   // Account
   "account.title": "Mon compte",

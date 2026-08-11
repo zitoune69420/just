@@ -4,6 +4,7 @@ import { MovieOff, StarFilled } from "@appica/icons-react";
 import { tmdbImage } from "@/lib/media";
 import type { Media } from "@/lib/types";
 import { FavoriteButton } from "./favorite-button";
+import { WatchlistButton } from "./watchlist-button";
 
 interface MediaCardProps {
   media: Media;
@@ -56,9 +57,12 @@ export function MediaCard({ media, sizes = "190px" }: MediaCardProps) {
           <h3 className="truncate text-sm font-medium text-foreground-strong">
             {media.title}
           </h3>
-          {(media.year || media.role) && (
+          {/* Sur la rangée « Continuer », l'épisode à reprendre prime sur l'année. */}
+          {(media.resumeLabel || media.year || media.role) && (
             <p className="mt-0.5 truncate text-xs text-foreground-muted">
-              {[media.year, media.role].filter(Boolean).join(" · ")}
+              {[media.resumeLabel ?? media.year, media.role]
+                .filter(Boolean)
+                .join(" · ")}
             </p>
           )}
         </div>
@@ -69,6 +73,13 @@ export function MediaCard({ media, sizes = "190px" }: MediaCardProps) {
         tmdbId={media.id}
         title={media.title}
         className="absolute end-2 top-2 z-10"
+      />
+
+      <WatchlistButton
+        mediaType={media.type}
+        tmdbId={media.id}
+        title={media.title}
+        className="absolute end-2 top-11 z-10"
       />
     </div>
   );

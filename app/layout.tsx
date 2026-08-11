@@ -3,7 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import { Suspense } from "react";
 import { ThemeProvider } from "@appica/ui-react/providers/theme-provider";
 import { TooltipProvider } from "@appica/ui-react/tooltip";
-import { FavoritesProvider } from "@/components/favorites-provider";
+import { CollectionsProvider } from "@/components/collections-provider";
 import { Footer } from "@/components/footer";
 import { I18nProvider } from "@/components/i18n-provider";
 import { DEFAULT_LOCALE } from "@/lib/i18n/locales";
@@ -66,7 +66,7 @@ async function Localized({ children }: { children: React.ReactNode }) {
     <div lang={locale} className="contents">
       <I18nProvider locale={locale} messages={getMessages(locale)}>
         <TooltipProvider>
-          <FavoritesProvider>
+          <CollectionsProvider>
             <Navbar
               session={
                 <Suspense fallback={<NavbarSessionFallback />}>
@@ -76,7 +76,7 @@ async function Localized({ children }: { children: React.ReactNode }) {
             />
             <main className="flex flex-1 flex-col">{children}</main>
             <Footer />
-          </FavoritesProvider>
+          </CollectionsProvider>
         </TooltipProvider>
       </I18nProvider>
     </div>

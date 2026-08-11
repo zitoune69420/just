@@ -13,7 +13,9 @@ import { TopMediaRow } from "@/components/top-media-row";
 import { getLocaleAndTranslator } from "@/lib/i18n/server";
 import { toMedia } from "@/lib/media";
 import { getRecentProgress } from "@/lib/progress";
+import { resolveResume } from "@/lib/resume";
 import { getBecauseYouWatched, getForYou } from "@/lib/recommendations";
+import { getFollowedReleases } from "@/lib/following-releases";
 import { getSession } from "@/lib/auth";
 import { isSupabaseAdminConfigured } from "@/lib/supabase";
 import {
@@ -47,6 +49,9 @@ export default function HomePage() {
       </Suspense>
       <Suspense fallback={null}>
         <ForYouRow />
+      </Suspense>
+      <Suspense fallback={null}>
+        <FollowedPeopleRow />
       </Suspense>
       <Suspense fallback={<RowSkeleton />}>
         <NewReleasesRow />
@@ -95,19 +100,29 @@ async function ContinueWatchingRow() {
 
   if (entries.length === 0) return null;
 
-  const summaries = await Promise.all(
-    entries.map((entry) => getMediaSummary(locale, entry.mediaType, entry.tmdbId)),
-  );
+  /**
+   * La rangée annonce l'épisode à reprendre, pas le dernier lancé : quand le
+   * précédent est fini, `resolveResume` renvoie déjà le suivant.
+   */
+  const [summaries, resumes] = await Promise.all([
+    Promise.all(
+      entries.map((entry) =>
+        getMediaSummary(locale, entry.mediaType, entry.tmdbId),
+      ),
+    ),
+    Promise.all(entries.map((entry) => resolveResume(locale, entry))),
+  ]);
 
   const items = summaries
     .map((summary, index): Media | null => {
       if (!summary) return null;
       const entry = entries[index];
-      const ratio =
-        entry.durationSeconds && entry.durationSeconds > 0
-          ? entry.positionSeconds / entry.durationSeconds
-          : 0;
-      return { ...toMedia(summary, entry.mediaType), progress: ratio };
+      const resume = resumes[index];
+      return {
+        ...toMedia(summary, entry.mediaType),
+        progress: resume.ratio,
+        resumeLabel: resume.label ?? undefined,
+      };
     })
     .filter((media): media is Media => media !== null);
 
@@ -149,6 +164,23 @@ async function ForYouRow() {
   }
 
   return <MediaRow title={t("home.forYou")} items={items} />;
+}
+
+async function FollowedPeopleRow() {
+  const { locale, t } = await getLocaleAndTranslator();
+  const userId = await currentUserId();
+  if (!userId) return null;
+
+  let items: Awaited<ReturnType<typeof getFollowedReleases>>;
+  try {
+    items = await getFollowedReleases(locale, userId);
+  } catch {
+    return null;
+  }
+
+  if (items.length === 0) return null;
+
+  return <MediaRow title={t("home.fromPeopleYouFollow")} items={items} />;
 }
 
 async function TrendingTopRow() {

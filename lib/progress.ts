@@ -26,6 +26,9 @@ const COLUMNS =
 
 const RECENT_LIMIT = 20;
 
+/** Page d'historique : assez pour remplir un écran sans tout charger. */
+export const HISTORY_PAGE_SIZE = 40;
+
 function toEntry(row: ProgressRow): ProgressEntry {
   return {
     tmdbId: row.tmdb_id,
@@ -53,6 +56,34 @@ export async function getRecentProgress(
   }
 
   return (data ?? []).map((row: ProgressRow) => toEntry(row));
+}
+
+/**
+ * Historique complet, paginé. `hasMore` évite un `count` séparé : on demande
+ * une ligne de plus que la page et on la jette.
+ */
+export async function getProgressHistory(
+  userId: string,
+  page: number,
+): Promise<{ entries: ProgressEntry[]; hasMore: boolean }> {
+  const from = page * HISTORY_PAGE_SIZE;
+
+  const { data, error } = await supabaseAdmin()
+    .from("progress")
+    .select(COLUMNS)
+    .eq("user_id", userId)
+    .order("updated_at", { ascending: false })
+    .range(from, from + HISTORY_PAGE_SIZE);
+
+  if (error) {
+    throw new Error(`Supabase progress: ${error.message}`);
+  }
+
+  const rows = (data ?? []) as ProgressRow[];
+  return {
+    entries: rows.slice(0, HISTORY_PAGE_SIZE).map(toEntry),
+    hasMore: rows.length > HISTORY_PAGE_SIZE,
+  };
 }
 
 export async function getProgressFor(
@@ -140,6 +171,18 @@ export async function clearProgress(
     .eq("user_id", userId)
     .eq("media_type", mediaType)
     .eq("tmdb_id", tmdbId);
+
+  if (error) {
+    throw new Error(`Supabase progress: ${error.message}`);
+  }
+}
+
+/** Efface tout l'historique d'un compte. Irréversible : l'appelant confirme. */
+export async function clearAllProgress(userId: string): Promise<void> {
+  const { error } = await supabaseAdmin()
+    .from("progress")
+    .delete()
+    .eq("user_id", userId);
 
   if (error) {
     throw new Error(`Supabase progress: ${error.message}`);

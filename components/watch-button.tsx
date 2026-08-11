@@ -137,14 +137,22 @@ export function WatchDialog({
       <DialogContent className="w-full max-w-[min(72rem,calc((100dvh-2rem)*16/9))] overflow-hidden border-border-overlay bg-background p-0 [&>[data-slot=dialog-content]]:pt-0! [&>[data-slot=dialog-content]]:pb-0!">
         <div className="aspect-video w-full">
           {/**
-           * Le lecteur vient d'une origine tierce : `sandbox` lui retire le
-           * droit de naviguer l'onglet (hameçonnage par redirection du haut de
-           * page) et de lire nos cookies. `allow-scripts` + `allow-same-origin`
-           * restent nécessaires au lecteur lui-même.
+           * Pas d'attribut `sandbox` ici : le lecteur vient d'une origine
+           * tierce et détecte l'encadrement bridé, il refuse alors de démarrer.
+           * Même la liste permissive (`allow-scripts allow-same-origin
+           * allow-forms allow-modals allow-popups …`) ne suffisait pas, et
+           * `allow-scripts` + `allow-same-origin` réunis annulent de toute
+           * façon l'essentiel de l'isolement.
+           *
+           * Ce qui protège encore : l'iframe reste sur son origine à elle,
+           * donc hors de portée de nos cookies (`SameSite`, `HttpOnly`) ; la
+           * `Permissions-Policy` de l'app coupe caméra, micro et géoloc ; et
+           * `referrerPolicy="no-referrer"` empêche la fuite de l'URL de la
+           * fiche. Le risque résiduel assumé est la redirection de l'onglet
+           * par le lecteur (hameçonnage), inhérent à ce type d'embed.
            */}
           <iframe
             src={src}
-            sandbox="allow-scripts allow-same-origin allow-presentation allow-popups allow-popups-to-escape-sandbox"
             referrerPolicy="no-referrer"
             allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
             allowFullScreen
@@ -179,6 +187,7 @@ export function WatchButton({
   runtime = null,
   seasons = [],
   resumed = false,
+  advanced = false,
   available = true,
 }: {
   id: number;
@@ -188,6 +197,8 @@ export function WatchButton({
   runtime?: number | null;
   seasons?: Season[];
   resumed?: boolean;
+  /** La cible est l'épisode d'après, pas celui laissé en cours : on ne « reprend » pas. */
+  advanced?: boolean;
   available?: boolean;
 }) {
   const t = useTranslations();
@@ -251,7 +262,10 @@ export function WatchButton({
       >
         <PlayerPlayFilled size={20} />
         {resumed && season !== null && episode !== null
-          ? t("detail.resume", { season, episode })
+          ? t(advanced ? "detail.playNext" : "detail.resume", {
+              season,
+              episode,
+            })
           : resumed
             ? t("detail.rewatch")
             : t("detail.watch")}

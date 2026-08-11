@@ -8,7 +8,7 @@ import {
   getTvDetails,
 } from "./tmdb";
 import type { Media, MediaType } from "./types";
-import { getWatchlist } from "./watchlist";
+import { getCollections } from "./watchlist";
 
 export interface SeedRecommendations {
   seed: Media;
@@ -31,17 +31,21 @@ function mediaKey(mediaType: MediaType, tmdbId: number): string {
   return `${mediaType}:${tmdbId}`;
 }
 
-/** Titres lancés puis mis en favori, du plus récent au plus ancien, dédupliqués. */
+/** Titres lancés puis rangés dans une liste, du plus récent au plus ancien, dédupliqués. */
 async function collectSignals(userId: string): Promise<Signal[]> {
-  const [progress, watchlist] = await Promise.all([
+  const [progress, collections] = await Promise.all([
     getRecentProgress(userId),
-    getWatchlist(userId),
+    getCollections(userId),
   ]);
 
   const seen = new Set<string>();
   const signals: Signal[] = [];
 
-  for (const entry of [...progress, ...watchlist]) {
+  for (const entry of [
+    ...progress,
+    ...collections.favorite,
+    ...collections.watchlist,
+  ]) {
     const key = mediaKey(entry.mediaType, entry.tmdbId);
     if (seen.has(key)) continue;
     seen.add(key);

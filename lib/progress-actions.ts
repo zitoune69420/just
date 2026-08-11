@@ -1,7 +1,7 @@
 "use server";
 
-import { isMediaType, isTmdbId } from "./favorites";
-import { clearProgress, saveProgress } from "./progress";
+import { isMediaType, isTmdbId } from "./collections";
+import { clearAllProgress, clearProgress, saveProgress } from "./progress";
 import { getSession } from "./auth";
 import { isSupabaseAdminConfigured } from "./supabase";
 import type { MediaType } from "./types";
@@ -50,5 +50,23 @@ export async function forgetProgress(
     await clearProgress(user.id, mediaType, tmdbId);
   } catch {
     return;
+  }
+}
+
+/**
+ * Vide l'historique entier. La confirmation est à la charge de l'appelant :
+ * cette action ne se rejoue pas.
+ */
+export async function forgetAllProgress(): Promise<{ ok: boolean }> {
+  if (!isSupabaseAdminConfigured()) return { ok: false };
+
+  const user = await getSession();
+  if (!user) return { ok: false };
+
+  try {
+    await clearAllProgress(user.id);
+    return { ok: true };
+  } catch {
+    return { ok: false };
   }
 }

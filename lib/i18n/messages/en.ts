@@ -18,6 +18,8 @@ export const en = {
   // Session menu
   "session.account": "Account for {name}",
   "session.favorites": "Favorites",
+  "session.watchlist": "Watchlist",
+  "session.history": "History",
   "session.myAccount": "My account",
   "session.admin": "Administration",
   "session.linkDiscord": "Link Discord",
@@ -55,6 +57,7 @@ export const en = {
   "home.top10": "Top 10 this week",
   "home.becauseYouWatched": "Because you watched {title}",
   "home.forYou": "For you",
+  "home.fromPeopleYouFollow": "From people you follow",
   "home.newReleases": "New releases",
   "home.popularMovies": "Popular movies",
   "home.popularSeries": "Popular series",
@@ -74,6 +77,7 @@ export const en = {
   "detail.watch": "Watch",
   "detail.rewatch": "Watch again",
   "detail.resume": "Resume S{season} E{episode}",
+  "detail.playNext": "Play S{season} E{episode}",
   "detail.nextEpisode": "Next episode",
   "detail.upNext": "Up next: {label}",
   "detail.releaseOn": "In theatres {date}",
@@ -95,6 +99,10 @@ export const en = {
   "detail.favoriteRemove": "In my favorites",
   "detail.favoriteAddLabel": "Add “{title}” to favorites",
   "detail.favoriteRemoveLabel": "Remove “{title}” from favorites",
+  "detail.watchlistAdd": "Watch later",
+  "detail.watchlistRemove": "In my watchlist",
+  "detail.watchlistAddLabel": "Add “{title}” to the watchlist",
+  "detail.watchlistRemoveLabel": "Remove “{title}” from the watchlist",
   "detail.trailerPlay": "Play the trailer for {title}",
 
   // Where to watch
@@ -114,6 +122,10 @@ export const en = {
   "person.crew": "Behind the camera",
   "person.notFound": "Person not found",
   "person.portrait": "Portrait: {name}",
+  "person.follow": "Follow",
+  "person.following": "Following",
+  "person.followLabel": "Follow {name}",
+  "person.unfollowLabel": "Stop following {name}",
   "person.department.Acting": "Acting",
   "person.department.Directing": "Directing",
   "person.department.Writing": "Writing",
@@ -191,6 +203,46 @@ export const en = {
   "favorites.configRequired": "Configuration required",
   "favorites.configHint":
     "Favorites need SUPABASE_SECRET_KEY, NEXT_PUBLIC_SUPABASE_URL and TMDB_API_KEY in .env.local.",
+
+  // Watchlist
+  "watchlist.title": "Watchlist",
+  "watchlist.description": "The titles you set aside for later.",
+  "watchlist.descriptionLong":
+    "The titles you set aside for later, tied to your account.",
+  "watchlist.signInRequired": "Sign-in required",
+  "watchlist.signInHint":
+    "Sign in to find your watchlist on every device.",
+  "watchlist.empty": "Nothing set aside yet",
+  "watchlist.emptyHint":
+    "Tap the bookmark on a poster or a page to keep it for later.",
+  "watchlist.browse": "Browse movies",
+  "watchlist.missing": "Watchlist not found",
+  "watchlist.missingHint": "The saved titles are no longer available on TMDB.",
+  "watchlist.configRequired": "Configuration required",
+  "watchlist.configHint":
+    "The watchlist needs SUPABASE_SECRET_KEY, NEXT_PUBLIC_SUPABASE_URL and TMDB_API_KEY in .env.local.",
+
+  // History
+  "history.title": "Watch history",
+  "history.description": "Everything you have started.",
+  "history.descriptionLong":
+    "Everything you have started, most recent first.",
+  "history.signInRequired": "Sign-in required",
+  "history.signInHint": "Sign in to find your history on every device.",
+  "history.empty": "Nothing watched yet",
+  "history.emptyHint": "Titles you start show up here.",
+  "history.browse": "Browse movies",
+  "history.configRequired": "Configuration required",
+  "history.configHint":
+    "History needs SUPABASE_SECRET_KEY, NEXT_PUBLIC_SUPABASE_URL and TMDB_API_KEY in .env.local.",
+  "history.previous": "Newer",
+  "history.next": "Older",
+  "history.clearAll": "Clear history",
+  "history.clearTitle": "Clear your whole history?",
+  "history.clearHint":
+    "Every resume point is deleted, on all your devices. This cannot be undone.",
+  "history.clearCancel": "Cancel",
+  "history.clearConfirm": "Clear everything",
 
   // Account
   "account.title": "My account",

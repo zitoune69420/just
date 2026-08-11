@@ -4,14 +4,17 @@ import { Badge } from "@appica/ui-react/badge";
 import { CarouselSlide } from "@appica/ui-react/carousel";
 import { Thumbnail } from "@appica/ui-react/thumbnail";
 import { CalendarEvent, StarFilled } from "@appica/icons-react";
-import { getTranslator } from "@/lib/i18n/server";
+import { getLocaleAndTranslator } from "@/lib/i18n/server";
+import type { Locale } from "@/lib/i18n/locales";
 import { tmdbImage } from "@/lib/media";
 import { getProgressFor } from "@/lib/progress";
+import { resolveResume, type ResumeTarget } from "@/lib/resume";
 import { getSession } from "@/lib/auth";
 import { isStreamConfigured } from "@/lib/stream-url";
 import { isSupabaseAdminConfigured } from "@/lib/supabase";
 import type { MediaDetails } from "@/lib/types";
 import { FavoriteButton } from "./favorite-button";
+import { WatchlistButton } from "./watchlist-button";
 import { MediaRow } from "./media-row";
 import { RowCarousel } from "./row-carousel";
 import { SeasonPicker } from "./season-picker";
@@ -19,12 +22,17 @@ import { TrailerPlayer } from "./trailer-player";
 import { WatchButton } from "./watch-button";
 import { WatchSection } from "./watch-section";
 
-async function resumePoint(type: MediaDetails["type"], id: number) {
+async function resumePoint(
+  locale: Locale,
+  type: MediaDetails["type"],
+  id: number,
+): Promise<ResumeTarget | null> {
   if (!isSupabaseAdminConfigured()) return null;
   const session = await getSession();
   if (!session) return null;
   try {
-    return await getProgressFor(session.id, type, id);
+    const entry = await getProgressFor(session.id, type, id);
+    return entry ? await resolveResume(locale, entry) : null;
   } catch {
     return null;
   }
@@ -49,12 +57,12 @@ function initials(name: string): string {
 }
 
 export async function MediaDetailView({ details }: { details: MediaDetails }) {
-  const t = await getTranslator();
+  const { locale, t } = await getLocaleAndTranslator();
   const backdropUrl = details.backdrop
     ? tmdbImage(details.backdrop, "w1280")
     : null;
 
-  const resume = await resumePoint(details.type, details.id);
+  const resume = await resumePoint(locale, details.type, details.id);
   const streamAvailable = isStreamConfigured();
 
   return (
@@ -148,6 +156,7 @@ export async function MediaDetailView({ details }: { details: MediaDetails }) {
                         runtime={details.runtime}
                         seasons={details.seasons}
                         resumed={resume !== null}
+                        advanced={resume?.advanced ?? false}
                         available={streamAvailable}
                     />
                 ) : (
@@ -159,6 +168,12 @@ export async function MediaDetailView({ details }: { details: MediaDetails }) {
                     </span>
                 )}
                 <FavoriteButton
+                    mediaType={details.type}
+                    tmdbId={details.id}
+                    title={details.title}
+                    variant="inline"
+                />
+                <WatchlistButton
                     mediaType={details.type}
                     tmdbId={details.id}
                     title={details.title}

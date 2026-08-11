@@ -1,11 +1,26 @@
 import Image from "next/image";
 import { Badge } from "@appica/ui-react/badge";
 import { UserOff } from "@appica/icons-react";
+import { getSession } from "@/lib/auth";
+import { isFollowingPerson } from "@/lib/follows";
 import { getTranslator } from "@/lib/i18n/server";
 import { tmdbImage } from "@/lib/media";
+import { isSupabaseAdminConfigured } from "@/lib/supabase";
 import type { PersonDetails } from "@/lib/types";
+import { FollowPersonButton } from "./follow-person-button";
 import { MediaCard } from "./media-card";
 import { MediaRow } from "./media-row";
+
+async function followingPerson(personId: number): Promise<boolean> {
+  if (!isSupabaseAdminConfigured()) return false;
+  const session = await getSession();
+  if (!session) return false;
+  try {
+    return await isFollowingPerson(session.id, personId);
+  } catch {
+    return false;
+  }
+}
 
 const GRID_SIZES = "(min-width: 1280px) 190px, (min-width: 768px) 22vw, 45vw";
 
@@ -52,6 +67,11 @@ export async function PersonDetailView({
               {person.facts.join(" · ")}
             </p>
           )}
+          <FollowPersonButton
+            personId={person.id}
+            name={person.name}
+            initialFollowing={await followingPerson(person.id)}
+          />
         </div>
       </header>
 

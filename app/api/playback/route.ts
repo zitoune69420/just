@@ -1,6 +1,6 @@
 import { currentUser, getSession } from "@/lib/auth";
 import { consumeAccess, type AccessDecision } from "@/lib/entitlements";
-import { isMediaType, isTmdbId } from "@/lib/favorites";
+import { isMediaType, isTmdbId } from "@/lib/collections";
 import { allowByIpShared, MINUTE } from "@/lib/rate-limit";
 import { signStreamTicket } from "@/lib/stream-ticket";
 import { isStreamConfigured } from "@/lib/stream-url";

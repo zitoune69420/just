@@ -174,6 +174,8 @@ export interface Media {
   progress?: number;
   /** Rôle tenu sur ce titre, renseigné sur les fiches personne. */
   role?: string;
+  /** `S2 E3` de l'épisode où reprendre, sur la rangée « Continuer ». */
+  resumeLabel?: string;
 }
 
 export interface CastMember {
