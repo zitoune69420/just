@@ -28,7 +28,7 @@ async function ListsContent() {
   const user = await getSession();
 
   const header = (
-    <header className="space-y-1">
+    <header className="mx-auto w-fit space-y-1">
       <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
         {t("lists.title")}
       </h1>

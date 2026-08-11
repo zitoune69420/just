@@ -50,7 +50,7 @@ function CreateForm() {
   return (
     <form
       onSubmit={handleSubmit}
-      className="space-y-3 rounded-3xl border border-border bg-background-subtle p-5"
+      className="mx-auto w-full max-w-sm space-y-3 rounded-3xl"
     >
       <Input
         value={title}
