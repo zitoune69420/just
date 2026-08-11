@@ -36,6 +36,13 @@ export function RowCarousel({
         dragFree
         align="start"
         containScroll="trimSnaps"
+        /**
+         * Le geste de molette suit l'axe dominant : un défilement horizontal
+         * (trackpad, souris inclinable) fait avancer la ligne, un défilement
+         * vertical continue de faire défiler la page. Sans ça, la ligne ne
+         * bouge qu'au clic sur les flèches.
+         */
+        wheelGestures
         className="[&_[data-slot=carousel-viewport]]:rounded-t-2xl"
       >
         <div className="mb-4 flex items-center justify-between gap-4">

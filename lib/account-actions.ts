@@ -4,7 +4,7 @@ import { cookies } from "next/headers";
 import { getTranslator } from "./i18n/server";
 import { hashPassword, PASSWORD_MIN_LENGTH, verifyPassword } from "./password";
 import { getSession } from "./auth";
-import { allowByIp, MINUTE } from "./rate-limit";
+import { allowByIpShared, MINUTE } from "./rate-limit";
 import {
   sealSession,
   SESSION_COOKIE,
@@ -41,7 +41,7 @@ export async function savePassword(
     return { error: t("error.sessionExpired"), success: null };
   }
 
-  if (!(await allowByIp("account-password", QUOTA))) {
+  if (!(await allowByIpShared("account-password", QUOTA))) {
     return { error: t("error.tooManyAttempts"), success: null };
   }
 

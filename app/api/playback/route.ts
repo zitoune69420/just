@@ -1,7 +1,7 @@
 import { currentUser, getSession } from "@/lib/auth";
 import { consumeAccess, type AccessDecision } from "@/lib/entitlements";
 import { isMediaType, isTmdbId } from "@/lib/favorites";
-import { allowByIp, MINUTE } from "@/lib/rate-limit";
+import { allowByIpShared, MINUTE } from "@/lib/rate-limit";
 import { signStreamTicket } from "@/lib/stream-ticket";
 import { isStreamConfigured } from "@/lib/stream-url";
 import { isSupabaseAdminConfigured } from "@/lib/supabase";
@@ -29,7 +29,7 @@ function denied(decision: Extract<AccessDecision, { allowed: false }>) {
 }
 
 export async function POST(request: Request) {
-  if (!(await allowByIp("playback", QUOTA))) {
+  if (!(await allowByIpShared("playback", QUOTA))) {
     return new Response(null, { status: 429, headers: { "Retry-After": "60" } });
   }
 

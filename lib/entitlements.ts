@@ -1,5 +1,5 @@
 import {
-  addGrant,
+  claimGrant,
   countGrants,
   currentPeriod,
   hasGrant,
@@ -77,17 +77,66 @@ export async function checkAccess(
   return { allowed: true, consumed: true, remaining: limit - used - 1 };
 }
 
+/**
+ * Quota et limite applicables à une lecture payante, ou `null` quand le rôle
+ * n'est pas décompté.
+ */
+function quotaFor(
+  role: Role,
+  mediaType: MediaType,
+): { limit: number; countPeriod: string | null; reason: DenyReason } | null {
+  if (role === "platinum" || role === "admin") return null;
+  if (role === "gold" && mediaType === "tv") return null;
+
+  if (role === "gold") {
+    return {
+      limit: GOLD_MOVIES_PER_MONTH,
+      countPeriod: currentPeriod(),
+      reason: "monthly-quota",
+    };
+  }
+
+  return {
+    limit: mediaType === "movie" ? FREE_MOVIE_LIMIT : FREE_SERIES_LIMIT,
+    countPeriod: null,
+    reason: mediaType === "movie" ? "movie-quota" : "series-quota",
+  };
+}
+
+/**
+ * Décompte réel. Contrairement à `checkAccess`, la vérification de la limite et
+ * la consommation se font dans la même transaction côté base : deux lectures
+ * lancées en parallèle ne peuvent plus franchir la limite ensemble.
+ */
 export async function consumeAccess(
   userId: string,
   role: Role,
   mediaType: MediaType,
   tmdbId: number,
 ): Promise<AccessDecision> {
-  const decision = await checkAccess(userId, role, mediaType, tmdbId);
+  const quota = quotaFor(role, mediaType);
+  if (!quota) return unlimited();
 
-  if (decision.allowed && decision.consumed) {
-    await addGrant(userId, mediaType, tmdbId, periodFor(mediaType));
+  const claim = await claimGrant({
+    userId,
+    mediaType,
+    tmdbId,
+    period: periodFor(mediaType),
+    limit: quota.limit,
+    countPeriod: quota.countPeriod,
+  });
+
+  if (!claim.allowed) {
+    return { allowed: false, reason: quota.reason, limit: quota.limit };
   }
 
-  return decision;
+  if (!claim.consumed) {
+    return { allowed: true, consumed: false, remaining: null };
+  }
+
+  return {
+    allowed: true,
+    consumed: true,
+    remaining: Math.max(quota.limit - (claim.used ?? quota.limit), 0),
+  };
 }

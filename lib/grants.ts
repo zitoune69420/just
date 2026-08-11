@@ -56,23 +56,43 @@ export async function countGrants(
   return count ?? 0;
 }
 
-export async function addGrant(
-  userId: string,
-  mediaType: MediaType,
-  tmdbId: number,
-  period: string,
-): Promise<void> {
-  const { error } = await supabaseAdmin()
-    .from("grants")
-    .upsert(
-      { user_id: userId, media_type: mediaType, tmdb_id: tmdbId, period },
-      {
-        onConflict: "user_id,media_type,tmdb_id,period",
-        ignoreDuplicates: true,
-      },
-    );
+export interface GrantClaim {
+  allowed: boolean;
+  consumed: boolean;
+  used: number | null;
+}
+
+/**
+ * Réserve un titre en une seule transaction : compter depuis Node puis insérer
+ * laisse deux lectures simultanées passer sous la même limite. Le compteur
+ * porte sur `countPeriod` (`null` = toutes périodes confondues), l'insertion
+ * sur `period`.
+ */
+export async function claimGrant(options: {
+  userId: string;
+  mediaType: MediaType;
+  tmdbId: number;
+  period: string;
+  limit: number;
+  countPeriod: string | null;
+}): Promise<GrantClaim> {
+  const { data, error } = await supabaseAdmin().rpc("claim_grant", {
+    p_user_id: options.userId,
+    p_media_type: options.mediaType,
+    p_tmdb_id: options.tmdbId,
+    p_period: options.period,
+    p_limit: options.limit,
+    p_count_period: options.countPeriod,
+  });
 
   if (error) {
-    throw new Error(`Supabase grants: ${error.message}`);
+    throw new Error(`Supabase claim_grant: ${error.message}`);
   }
+
+  const row = (data as GrantClaim[] | null)?.[0];
+  if (!row) {
+    throw new Error("Supabase claim_grant: réponse vide");
+  }
+  return row;
 }
+

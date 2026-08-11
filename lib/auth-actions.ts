@@ -4,17 +4,24 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { getTranslator } from "./i18n/server";
 import { hashPassword, PASSWORD_MIN_LENGTH, verifyPassword } from "./password";
-import { allowByIp, allowByIpAndSubject, MINUTE, HOUR } from "./rate-limit";
+import {
+  allowByIpAndSubject,
+  allowByIpShared,
+  MINUTE,
+  HOUR,
+} from "./rate-limit";
 import { safeInternalPathOr } from "./redirects";
 import { SESSION_COOKIE, sealSession, sessionCookieOptions } from "./session";
 import { isSupabaseAdminConfigured } from "./supabase";
 import {
+  bumpSessionVersion,
   createUserWithPassword,
   EmailTakenError,
   findUserByEmail,
   toSessionUser,
   type UserRow,
 } from "./users";
+import { getSession } from "./auth";
 import { isEmail } from "./validation";
 
 export interface CredentialsState {
@@ -114,7 +121,7 @@ export async function signUp(
     };
   }
 
-  if (!(await allowByIp("sign-up", SIGN_UP_QUOTA))) {
+  if (!(await allowByIpShared("sign-up", SIGN_UP_QUOTA))) {
     return { error: t("error.tooManyAttempts") };
   }
 
@@ -145,7 +152,22 @@ export async function authenticate(
     : signIn(prevState, formData);
 }
 
+/**
+ * Supprimer le cookie ne suffit pas : le jeton reste valable trente jours pour
+ * qui en détiendrait une copie. On incrémente donc aussi le numéro de session,
+ * ce qui invalide tous les jetons déjà émis pour ce compte.
+ */
 export async function logout() {
+  const session = await getSession();
+
+  if (session && isSupabaseAdminConfigured()) {
+    try {
+      await bumpSessionVersion(session.id);
+    } catch (error) {
+      console.error("[auth] Révocation des sessions impossible", error);
+    }
+  }
+
   (await cookies()).delete(SESSION_COOKIE);
   redirect("/");
 }

@@ -1,7 +1,12 @@
 import { isMediaType, isTmdbId } from "@/lib/favorites";
 import { advanceProgress } from "@/lib/progress";
 import { getSession } from "@/lib/auth";
-import { allowByIp, MINUTE, tooManyRequests } from "@/lib/rate-limit";
+import {
+  allowByIp,
+  allowByUser,
+  MINUTE,
+  tooManyRequests,
+} from "@/lib/rate-limit";
 import { isSupabaseAdminConfigured } from "@/lib/supabase";
 
 const MAX_TICK_SECONDS = 180;
@@ -25,6 +30,13 @@ function positiveInteger(value: unknown): number | null {
 
 const QUOTA = { limit: 60, windowMs: MINUTE };
 
+/**
+ * Le client annonce lui-même le temps écoulé. Un compte ne peut donc pas gonfler
+ * son historique plus vite qu'un lecteur réel : un tick couvre au plus
+ * `MAX_TICK_SECONDS`, et on n'en accepte qu'un nombre borné par minute.
+ */
+const USER_QUOTA = { limit: 12, windowMs: MINUTE };
+
 export async function POST(request: Request) {
   if (!(await allowByIp("progress", QUOTA))) return tooManyRequests(MINUTE);
 
@@ -35,6 +47,10 @@ export async function POST(request: Request) {
   const user = await getSession();
   if (!user) {
     return new Response(null, { status: 204 });
+  }
+
+  if (!allowByUser("progress", user.id, USER_QUOTA)) {
+    return tooManyRequests(MINUTE);
   }
 
   let body: TickBody;

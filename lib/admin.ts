@@ -4,10 +4,21 @@ import type { UserRow } from "./users";
 
 export const USERS_PAGE_SIZE = 20;
 
+/**
+ * Vue de liste : volontairement sans `password_hash` ni `session_version`. Le
+ * condensat ne sert à rien pour afficher un tableau, et une ligne qui ne le
+ * porte pas ne peut pas le laisser fuiter si elle finit un jour dans un
+ * composant client.
+ */
+export type UserSummary = Omit<UserRow, "password_hash" | "session_version">;
+
 export interface UserListing {
-  users: UserRow[];
+  users: UserSummary[];
   total: number;
 }
+
+const LIST_COLUMNS =
+  "id, email, name, avatar, discord_id, discord_username, role";
 
 export async function currentAdmin(): Promise<UserRow | null> {
   if (!isSupabaseAdminConfigured()) return null;
@@ -25,10 +36,7 @@ export async function listUsers(options: {
 
   let request = supabaseAdmin()
     .from("users")
-    .select(
-      "id, email, password_hash, name, avatar, discord_id, discord_username, role",
-      { count: "exact" },
-    )
+    .select(LIST_COLUMNS, { count: "exact" })
     .order("created_at", { ascending: false })
     .range(from, from + USERS_PAGE_SIZE - 1);
 
@@ -44,5 +52,5 @@ export async function listUsers(options: {
     throw new Error(`Supabase users: ${error.message}`);
   }
 
-  return { users: (data ?? []) as UserRow[], total: count ?? 0 };
+  return { users: (data ?? []) as UserSummary[], total: count ?? 0 };
 }

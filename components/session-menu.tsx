@@ -7,6 +7,7 @@ import { Button } from "@appica/ui-react/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuGroupLabel,
   DropdownMenuItem,
   DropdownMenuSeparator,
@@ -89,8 +90,12 @@ export function SessionMenu({
         )}
 
         <DropdownMenuSeparator />
-        <DropdownMenuGroupLabel>{t("session.language")}</DropdownMenuGroupLabel>
-        <LocaleMenuItems />
+        <DropdownMenuGroup>
+          <DropdownMenuGroupLabel>
+            {t("session.language")}
+          </DropdownMenuGroupLabel>
+          <LocaleMenuItems />
+        </DropdownMenuGroup>
 
         <DropdownMenuSeparator />
         <DropdownMenuItem

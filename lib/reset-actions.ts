@@ -13,7 +13,12 @@ import {
   RESET_TTL_MINUTES,
   storeReset,
 } from "./password-resets";
-import { allowByIp, allowByIpAndSubject, HOUR, MINUTE } from "./rate-limit";
+import {
+  allowByIpAndSubject,
+  allowByIpShared,
+  HOUR,
+  MINUTE,
+} from "./rate-limit";
 import { isSupabaseAdminConfigured } from "./supabase";
 import { findUserByEmail, findUserById, setCredentials } from "./users";
 import { isEmail, readField } from "./validation";
@@ -121,7 +126,7 @@ export async function resetPassword(
     return { error: t("error.noDatabase") };
   }
 
-  if (!(await allowByIp("reset-submit", RESET_QUOTA))) {
+  if (!(await allowByIpShared("reset-submit", RESET_QUOTA))) {
     return { error: t("error.tooManyAttempts") };
   }
 

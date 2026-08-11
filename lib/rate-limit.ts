@@ -1,4 +1,5 @@
 import { headers } from "next/headers";
+import { isSupabaseAdminConfigured, supabaseAdmin } from "./supabase";
 
 /**
  * Compteur en mémoire, fenêtre fixe. Suffisant pour freiner le bruteforce et
@@ -49,6 +50,38 @@ export function consume(key: string, quota: Quota): boolean {
 }
 
 /**
+ * Compteur partagé par tout le déploiement. Les scopes sensibles (connexion,
+ * inscription, réinitialisation) passent par là : le compteur en mémoire ne
+ * vaut que pour une instance, donc la limite réelle serait multipliée par le
+ * nombre de processus et remise à zéro à chaque redémarrage.
+ *
+ * Sans base, ou si la base répond mal, on retombe sur le compteur local : mieux
+ * vaut une limite approximative qu'aucune limite.
+ */
+export async function consumeShared(
+  key: string,
+  quota: Quota,
+): Promise<boolean> {
+  if (!isSupabaseAdminConfigured()) return consume(key, quota);
+
+  try {
+    const { data, error } = await supabaseAdmin().rpc("consume_rate_limit", {
+      p_key: key,
+      p_limit: quota.limit,
+      p_window_ms: quota.windowMs,
+    });
+
+    if (error || typeof data !== "boolean") {
+      throw error ?? new Error("réponse inattendue");
+    }
+    return data;
+  } catch (error) {
+    console.error("[rate-limit] Compteur partagé indisponible", error);
+    return consume(key, quota);
+  }
+}
+
+/**
  * Adresse de l'appelant. Derrière un proxy de confiance (Vercel), le premier
  * maillon de `x-forwarded-for` est l'IP cliente.
  */
@@ -70,18 +103,38 @@ export async function allowByIp(
   return consume(`${scope}:${await clientIp()}`, quota);
 }
 
-/** Limite par IP *et* par identifiant visé (email, compte…). */
+/** Limite par IP, comptée dans le store partagé (voir `consumeShared`). */
+export async function allowByIpShared(
+  scope: string,
+  quota: Quota,
+): Promise<boolean> {
+  return consumeShared(`${scope}:${await clientIp()}`, quota);
+}
+
+/** Limite par compte connecté, pour brider un abus qui change d'adresse. */
+export function allowByUser(
+  scope: string,
+  userId: string,
+  quota: Quota,
+): boolean {
+  return consume(`${scope}:user:${userId}`, quota);
+}
+
+/**
+ * Limite par IP *et* par identifiant visé (email, compte…). Toujours comptée
+ * dans le store partagé : c'est le rempart contre le bruteforce.
+ */
 export async function allowByIpAndSubject(
   scope: string,
   subject: string,
   quota: Quota,
 ): Promise<boolean> {
   const ip = await clientIp();
-  const perIp = consume(`${scope}:ip:${ip}`, quota);
-  const perSubject = consume(
-    `${scope}:subject:${subject.toLowerCase()}`,
-    quota,
-  );
+  /** Les deux compteurs sont consommés, même si le premier refuse déjà. */
+  const [perIp, perSubject] = await Promise.all([
+    consumeShared(`${scope}:ip:${ip}`, quota),
+    consumeShared(`${scope}:subject:${subject.toLowerCase()}`, quota),
+  ]);
   return perIp && perSubject;
 }
 
