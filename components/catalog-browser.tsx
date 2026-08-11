@@ -44,14 +44,14 @@ function requestUrl(state: CatalogState): string {
   return `/api/catalog?${params.toString()}`;
 }
 
-function sameState(a: CatalogState, b: CatalogState): boolean {
-  return (
-    a.type === b.type &&
-    a.sort === b.sort &&
-    a.page === b.page &&
-    a.genreIds.length === b.genreIds.length &&
-    a.genreIds.every((id, index) => id === b.genreIds[index])
-  );
+/** Signature d'un état, pour savoir ce qui est déjà affiché. */
+function stateKey(state: CatalogState): string {
+  return [
+    state.type,
+    state.sort,
+    state.page,
+    [...state.genreIds].sort((a, b) => a - b).join("."),
+  ].join("|");
 }
 
 /**
@@ -84,11 +84,21 @@ export function CatalogBrowser({
   const [totalPages, setTotalPages] = useState(initialTotalPages);
   const [loading, setLoading] = useState(false);
 
-  /** L'état servi par le serveur : tant qu'on n'en a pas bougé, aucun fetch. */
-  const initialRef = useRef(initial);
+  /**
+   * Signature de ce qui est actuellement à l'écran. Au départ c'est la grille
+   * rendue par le serveur, d'où l'absence de requête au montage.
+   *
+   * La comparaison porte bien sur le dernier état chargé et non sur l'état
+   * initial : revenir sur Films après être passé aux Séries redonne exactement
+   * l'état de départ, et comparer à celui-ci ferait sauter le rechargement en
+   * laissant les séries affichées.
+   */
+  const loadedKey = useRef(stateKey(initial));
 
   useEffect(() => {
-    if (sameState(state, initialRef.current)) return;
+    const key = stateKey(state);
+    if (key === loadedKey.current) return;
+    loadedKey.current = key;
 
     const controller = new AbortController();
     setLoading(true);
@@ -98,12 +108,14 @@ export function CatalogBrowser({
         const response = await fetch(requestUrl(state), {
           signal: controller.signal,
         });
-        if (!response.ok) return;
+        if (!response.ok) throw new Error(`catalogue: ${response.status}`);
         const data = (await response.json()) as CatalogPayload;
         setItems(data.items);
         setTotalPages(data.totalPages);
       } catch {
-        // Requête annulée ou réseau coupé : on garde la grille précédente.
+        // Échec ou annulation : on garde la grille précédente, et on oublie
+        // cette signature pour que la même sélection puisse être retentée.
+        if (!controller.signal.aborted) loadedKey.current = "";
         return;
       } finally {
         if (!controller.signal.aborted) setLoading(false);
