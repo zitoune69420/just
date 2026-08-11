@@ -74,40 +74,53 @@ export function SessionMenu({
         <div className="flex items-center gap-2 px-2.5 pt-1.5 pb-1 text-xs text-foreground-subtle">
           <span className="truncate">{name}</span>
         </div>
-        <DropdownMenuItem render={<Link href="/favorites" />}>
-          <Heart size={16} className="-ms-px" />
-          {t("session.favorites")}
-        </DropdownMenuItem>
-        <DropdownMenuItem render={<Link href="/watchlist" />}>
-          <Bookmark size={16} className="-ms-px" />
-          {t("session.watchlist")}
-        </DropdownMenuItem>
-        <DropdownMenuItem render={<Link href="/lists" />}>
-          <ListDetails size={16} className="-ms-px" />
-          {t("session.lists")}
-        </DropdownMenuItem>
-        <DropdownMenuItem render={<Link href="/history" />}>
-          <History size={16} className="-ms-px" />
-          {t("session.history")}
-        </DropdownMenuItem>
-        <DropdownMenuItem render={<Link href="/account" />}>
-          <Settings size={16} />
-          {t("session.myAccount")}
-        </DropdownMenuItem>
-        {isAdmin && (
-          <DropdownMenuItem render={<Link href="/admin" />}>
-            <Users size={16} />
-            {t("session.admin")}
+        {/* Ce qu'on a mis de côté d'un côté, ce qui règle le compte de l'autre. */}
+        <DropdownMenuGroup>
+          <DropdownMenuGroupLabel>
+            {t("session.library")}
+          </DropdownMenuGroupLabel>
+          <DropdownMenuItem render={<Link href="/favorites" />}>
+            <Heart size={16} className="-ms-px" />
+            {t("session.favorites")}
           </DropdownMenuItem>
-        )}
-        {canLinkDiscord && (
-          <DropdownMenuItem
-            render={<a href={discordSignInHref("/account")} />}
-          >
-            <DiscordMark size={16} className="text-[#5865F2]" />
-            {t("session.linkDiscord")}
+          <DropdownMenuItem render={<Link href="/watchlist" />}>
+            <Bookmark size={16} className="-ms-px" />
+            {t("session.watchlist")}
           </DropdownMenuItem>
-        )}
+          <DropdownMenuItem render={<Link href="/lists" />}>
+            <ListDetails size={16} className="-ms-px" />
+            {t("session.lists")}
+          </DropdownMenuItem>
+          <DropdownMenuItem render={<Link href="/history" />}>
+            <History size={16} className="-ms-px" />
+            {t("session.history")}
+          </DropdownMenuItem>
+        </DropdownMenuGroup>
+
+        <DropdownMenuSeparator />
+        <DropdownMenuGroup>
+          <DropdownMenuGroupLabel>
+            {t("session.settings")}
+          </DropdownMenuGroupLabel>
+          <DropdownMenuItem render={<Link href="/account" />}>
+            <Settings size={16} />
+            {t("session.myAccount")}
+          </DropdownMenuItem>
+          {isAdmin && (
+            <DropdownMenuItem render={<Link href="/admin" />}>
+              <Users size={16} />
+              {t("session.admin")}
+            </DropdownMenuItem>
+          )}
+          {canLinkDiscord && (
+            <DropdownMenuItem
+              render={<a href={discordSignInHref("/account")} />}
+            >
+              <DiscordMark size={16} className="text-[#5865F2]" />
+              {t("session.linkDiscord")}
+            </DropdownMenuItem>
+          )}
+        </DropdownMenuGroup>
 
         <DropdownMenuSeparator />
         <DropdownMenuGroup>

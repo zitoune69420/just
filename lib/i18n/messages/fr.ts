@@ -20,6 +20,8 @@ export const fr: Messages = {
   "session.watchlist": "À voir plus tard",
   "session.history": "Historique",
   "session.lists": "Mes listes",
+  "session.library": "Bibliothèque",
+  "session.settings": "Paramètres",
   "session.myAccount": "Mon compte",
   "session.admin": "Administration",
   "session.linkDiscord": "Lier Discord",

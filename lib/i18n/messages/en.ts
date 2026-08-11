@@ -22,6 +22,8 @@ export const en = {
   "session.watchlist": "Watchlist",
   "session.history": "History",
   "session.lists": "My lists",
+  "session.library": "Library",
+  "session.settings": "Settings",
   "session.myAccount": "My account",
   "session.admin": "Administration",
   "session.linkDiscord": "Link Discord",
