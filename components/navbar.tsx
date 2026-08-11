@@ -22,7 +22,7 @@ import { ThemeToggle } from "./theme-toggle";
  */
 const NAV_LINKS = [
   { href: "/", key: "nav.home", match: "/" },
-  { href: "/catalog/movies", key: "nav.catalog", match: "/catalog" },
+  { href: "/catalog", key: "nav.catalog", match: "/catalog" },
   { href: "/new", key: "nav.new", match: "/new" },
   { href: "/search", key: "nav.search", match: "/search" },
 ] as const satisfies readonly {

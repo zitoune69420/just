@@ -80,8 +80,18 @@ const nextConfig: NextConfig = {
        * `/movies` et `/series` ont fusionné sous une seule entrée de
        * navigation. Les adresses partagées avant la fusion restent valides.
        */
-      { source: "/movies", destination: "/catalog/movies", permanent: true },
-      { source: "/series", destination: "/catalog/series", permanent: true },
+      { source: "/movies", destination: "/catalog", permanent: true },
+      { source: "/series", destination: "/catalog?type=tv", permanent: true },
+      /**
+       * Le type a quitté le chemin pour la requête : la bascule ne navigue plus,
+       * elle ne recharge que la grille. Les adresses de l'époque restent valides.
+       */
+      { source: "/catalog/movies", destination: "/catalog", permanent: true },
+      {
+        source: "/catalog/series",
+        destination: "/catalog?type=tv",
+        permanent: true,
+      },
     ];
   },
   images: {

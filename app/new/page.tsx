@@ -108,7 +108,7 @@ async function NowPlayingRow() {
   return (
     <MediaRow
       title={t("new.nowPlaying")}
-      moreHref="/catalog/movies"
+      moreHref="/catalog"
       items={data.results.map((item) => toMedia(item, "movie"))}
     />
   );
@@ -142,7 +142,7 @@ async function OnTheAirRow() {
   return (
     <MediaRow
       title={t("new.onTheAir")}
-      moreHref="/catalog/series"
+      moreHref="/catalog?type=tv"
       items={data.results.map((item) => toMedia(item, "tv"))}
     />
   );

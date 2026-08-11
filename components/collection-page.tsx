@@ -116,7 +116,7 @@ export async function CollectionPage({
               variant="outline"
               size="sm"
               className="rounded-full"
-              render={<Link href="/catalog/movies" />}
+              render={<Link href="/catalog" />}
             >
               {t(key("browse"))}
             </Button>

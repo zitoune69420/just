@@ -236,7 +236,7 @@ async function PopularMoviesRow() {
   return (
     <MediaRow
       title={t("home.popularMovies")}
-      moreHref="/catalog/movies"
+      moreHref="/catalog"
       items={data.results.map((item) => toMedia(item, "movie"))}
     />
   );
@@ -248,7 +248,7 @@ async function PopularSeriesRow() {
   return (
     <MediaRow
       title={t("home.popularSeries")}
-      moreHref="/catalog/series"
+      moreHref="/catalog?type=tv"
       items={data.results.map((item) => toMedia(item, "tv"))}
     />
   );

@@ -1,7 +1,6 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState, useTransition } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Checkbox } from "@appica/ui-react/checkbox";
 import {
   Collapsible,
@@ -20,45 +19,33 @@ const SORT_OPTIONS: { value: SortKey; label: string }[] = [
   { value: "title", label: "A-Z" },
 ];
 
+/**
+ * Composant contrôlé : il ne navigue pas et ne connaît pas d'adresse. Cocher un
+ * genre remonte au parent, qui recharge la seule grille — c'est ce qui évite de
+ * démonter la page à chaque changement de filtre.
+ */
 interface CatalogFiltersProps {
-  basePath: string;
   genres: TmdbGenre[];
   selectedGenreIds: number[];
   sort: SortKey;
-}
-
-function buildHref(
-  basePath: string,
-  genreIds: number[],
-  sort: SortKey,
-): string {
-  const params = new URLSearchParams();
-  if (genreIds.length > 0) params.set("genres", genreIds.join(","));
-  if (sort !== "popularity") params.set("sort", sort);
-  const query = params.toString();
-  return query ? `${basePath}?${query}` : basePath;
+  /** Vrai pendant que la grille se recharge, pour l'atténuer sans la figer. */
+  busy?: boolean;
+  onGenresChange: (genreIds: number[]) => void;
+  onSortChange: (sort: SortKey) => void;
+  onReset: () => void;
 }
 
 export function CatalogFilters({
-  basePath,
   genres,
   selectedGenreIds,
   sort,
+  busy = false,
+  onGenresChange,
+  onSortChange,
+  onReset,
 }: CatalogFiltersProps) {
-  const router = useRouter();
   const [sortOpen, setSortOpen] = useState(true);
   const [genresOpen, setGenresOpen] = useState(true);
-
-  /**
-   * Une navigation nue remplace aussitôt la grille par son squelette. Passée en
-   * transition, React garde les résultats précédents à l'écran jusqu'à ce que
-   * les nouveaux soient prêts : on change de filtre sans que la page clignote.
-   */
-  const [pending, startTransition] = useTransition();
-
-  function navigate(href: string) {
-    startTransition(() => router.push(href));
-  }
 
   const hasActiveFilters = selectedGenreIds.length > 0 || sort !== "popularity";
 
@@ -95,17 +82,18 @@ export function CatalogFilters({
   }, []);
 
   function toggleGenre(genreId: number) {
-    const next = selectedGenreIds.includes(genreId)
-      ? selectedGenreIds.filter((id) => id !== genreId)
-      : [...selectedGenreIds, genreId];
-    navigate(buildHref(basePath, next, sort));
+    onGenresChange(
+      selectedGenreIds.includes(genreId)
+        ? selectedGenreIds.filter((id) => id !== genreId)
+        : [...selectedGenreIds, genreId],
+    );
   }
 
   return (
     <aside
-      aria-busy={pending}
+      aria-busy={busy}
       className={`flex max-h-[60vh] w-full flex-col rounded-3xl border border-border/60 bg-background-subtle/60 p-5 backdrop-blur-sm transition-opacity duration-200 lg:sticky lg:top-20 lg:h-[80vh] lg:max-h-[calc(100vh-6rem)] lg:w-72 lg:shrink-0 ${
-        pending ? "opacity-60" : "opacity-100"
+        busy ? "opacity-60" : "opacity-100"
       }`}
     >
       <div
@@ -119,7 +107,7 @@ export function CatalogFilters({
             {hasActiveFilters && (
               <button
                 type="button"
-                onClick={() => navigate(basePath)}
+                onClick={onReset}
                 className="text-xs text-foreground-muted transition-colors hover:text-foreground-strong"
               >
                 Réinitialiser
@@ -139,9 +127,7 @@ export function CatalogFilters({
                 id={`sort-${option.value}`}
                 label={option.label}
                 checked={sort === option.value}
-                onCheckedChange={() => {
-                  navigate(buildHref(basePath, selectedGenreIds, option.value));
-                }}
+                onCheckedChange={() => onSortChange(option.value)}
               />
             ))}
           </FilterSection>
