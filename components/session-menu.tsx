@@ -71,9 +71,6 @@ export function SessionMenu({
         }
       />
       <DropdownMenuContent align="end" className="w-56">
-        <div className="flex items-center gap-2 px-2.5 pt-1.5 pb-1 text-xs text-foreground-subtle">
-          <span className="truncate">{name}</span>
-        </div>
         {/* Ce qu'on a mis de côté d'un côté, ce qui règle le compte de l'autre. */}
         <DropdownMenuGroup>
           <DropdownMenuGroupLabel>

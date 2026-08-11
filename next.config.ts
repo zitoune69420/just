@@ -17,8 +17,19 @@ const SECURITY_HEADERS = [
   { key: "X-Content-Type-Options", value: "nosniff" },
   { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
   {
+    /**
+     * `fullscreen=*` est nécessaire, pas laxiste : sans mention explicite la
+     * fonctionnalité retombe sur son défaut `self`, et une iframe d'origine
+     * tierce — le lecteur — ne peut alors jamais recevoir la délégation, quoi
+     * qu'on écrive dans son attribut `allow`.
+     *
+     * Ce n'est pas une autorisation accordée à tout le monde : l'en-tête
+     * autorise seulement la délégation, c'est l'attribut `allow` de chaque
+     * iframe qui décide réellement qui en profite.
+     */
     key: "Permissions-Policy",
-    value: "camera=(), microphone=(), geolocation=(), browsing-topics=()",
+    value:
+      "camera=(), microphone=(), geolocation=(), browsing-topics=(), fullscreen=*",
   },
   {
     key: "Strict-Transport-Security",
