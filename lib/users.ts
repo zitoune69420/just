@@ -11,10 +11,11 @@ export interface UserRow {
   discord_id: string | null;
   discord_username: string | null;
   role: Role;
+  session_version: number;
 }
 
 const COLUMNS =
-  "id, email, password_hash, name, avatar, discord_id, discord_username, role";
+  "id, email, password_hash, name, avatar, discord_id, discord_username, role, session_version";
 
 const DUPLICATE_CODE = "23505";
 
@@ -97,6 +98,26 @@ async function update(id: string, patch: Record<string, unknown>) {
   return data;
 }
 
+/**
+ * Incrémente le numéro de session du compte : tous les cookies émis avant cet
+ * appel cessent d'être reconnus. Renvoie le nouveau numéro, pour ré-émettre un
+ * jeton à l'utilisateur qui est à l'origine du changement.
+ */
+export async function bumpSessionVersion(id: string): Promise<number> {
+  const { data, error } = await supabaseAdmin().rpc("bump_session_version", {
+    p_user_id: id,
+  });
+
+  if (error) {
+    throw new Error(`Supabase bump_session_version: ${error.message}`);
+  }
+  return typeof data === "number" ? data : 0;
+}
+
+/**
+ * Change le mot de passe et révoque au passage toutes les sessions ouvertes :
+ * un cookie volé ne survit pas à une réinitialisation.
+ */
 export async function setCredentials(
   id: string,
   input: { email?: string; passwordHash: string },
@@ -119,7 +140,8 @@ export async function setCredentials(
     }
     throw new Error(`Supabase users: ${error.message}`);
   }
-  return data;
+
+  return { ...data, session_version: await bumpSessionVersion(id) };
 }
 
 export async function linkDiscordToUser(

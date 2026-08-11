@@ -1,4 +1,5 @@
 import { getLocaleAndTranslator } from "@/lib/i18n/server";
+import { allowByIp, MINUTE, tooManyRequests } from "@/lib/rate-limit";
 import { toMedia, toPerson } from "@/lib/media";
 import {
   getAcclaimedMovies,
@@ -7,6 +8,8 @@ import {
   searchPeople,
 } from "@/lib/tmdb";
 import type { Media } from "@/lib/types";
+
+const QUOTA = { limit: 30, windowMs: MINUTE };
 
 const LIMIT = 8;
 
@@ -25,6 +28,9 @@ function toHit(media: Media) {
 }
 
 export async function GET(request: Request) {
+  /** Route publique adossée à une clé TMDB facturée : on borne les appels. */
+  if (!(await allowByIp("search", QUOTA))) return tooManyRequests(MINUTE);
+
   const query =
     new URL(request.url).searchParams.get("q")?.trim().slice(0, 100) ?? "";
 

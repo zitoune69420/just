@@ -4,7 +4,7 @@ import { isDiscordConfigured } from "@/lib/discord";
 import { getTranslator } from "@/lib/i18n/server";
 import type { Role } from "@/lib/roles";
 import { LocaleToggle } from "./locale-picker";
-import { getSession } from "@/lib/session";
+import { getSession } from "@/lib/auth";
 import { isSupabaseAdminConfigured } from "@/lib/supabase";
 import { findUserById } from "@/lib/users";
 import { SessionMenu } from "./session-menu";

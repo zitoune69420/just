@@ -14,7 +14,7 @@ import { getLocaleAndTranslator } from "@/lib/i18n/server";
 import { toMedia } from "@/lib/media";
 import { getRecentProgress } from "@/lib/progress";
 import { getBecauseYouWatched, getForYou } from "@/lib/recommendations";
-import { getSession } from "@/lib/session";
+import { getSession } from "@/lib/auth";
 import { isSupabaseAdminConfigured } from "@/lib/supabase";
 import {
   getMediaSummary,

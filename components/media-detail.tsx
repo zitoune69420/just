@@ -7,7 +7,7 @@ import { CalendarEvent, StarFilled } from "@appica/icons-react";
 import { getTranslator } from "@/lib/i18n/server";
 import { tmdbImage } from "@/lib/media";
 import { getProgressFor } from "@/lib/progress";
-import { getSession } from "@/lib/session";
+import { getSession } from "@/lib/auth";
 import { isStreamConfigured } from "@/lib/stream-url";
 import { isSupabaseAdminConfigured } from "@/lib/supabase";
 import type { MediaDetails } from "@/lib/types";

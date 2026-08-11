@@ -7,6 +7,7 @@ import { hashPassword, PASSWORD_MIN_LENGTH } from "./password";
 import { isRole } from "./roles";
 import { supabaseAdmin } from "./supabase";
 import {
+  bumpSessionVersion,
   createUserWithPassword,
   EmailTakenError,
   normalizeEmail,
@@ -133,7 +134,18 @@ export async function saveUser(
         success: null,
       };
     }
-    return { error: `Échec de l’enregistrement : ${error.message}`, success: null };
+    /** Le détail reste dans les logs : l'interface n'expose pas le schéma. */
+    console.error("[admin] Échec de la mise à jour du compte", error);
+    return { error: "Échec de l’enregistrement du compte.", success: null };
+  }
+
+  /** Nouveau mot de passe posé par un admin : on coupe les sessions en cours. */
+  if (password) {
+    try {
+      await bumpSessionVersion(id);
+    } catch (bumpError) {
+      console.error("[admin] Révocation des sessions impossible", bumpError);
+    }
   }
 
   revalidatePath("/admin");

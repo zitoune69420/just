@@ -1,6 +1,6 @@
-import { getSession } from "./session";
+import { currentUser } from "./auth";
 import { isSupabaseAdminConfigured, supabaseAdmin } from "./supabase";
-import { findUserById, type UserRow } from "./users";
+import type { UserRow } from "./users";
 
 export const USERS_PAGE_SIZE = 20;
 
@@ -12,15 +12,8 @@ export interface UserListing {
 export async function currentAdmin(): Promise<UserRow | null> {
   if (!isSupabaseAdminConfigured()) return null;
 
-  const session = await getSession();
-  if (!session) return null;
-
-  try {
-    const user = await findUserById(session.id);
-    return user?.role === "admin" ? user : null;
-  } catch {
-    return null;
-  }
+  const user = await currentUser();
+  return user?.role === "admin" ? user : null;
 }
 
 export async function listUsers(options: {

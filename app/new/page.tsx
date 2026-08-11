@@ -7,7 +7,7 @@ import { RowSkeleton } from "@/components/skeletons";
 import { UpcomingEpisodes } from "@/components/upcoming-episodes";
 import { getLocaleAndTranslator } from "@/lib/i18n/server";
 import { toMedia } from "@/lib/media";
-import { getSession } from "@/lib/session";
+import { getSession } from "@/lib/auth";
 import { isSupabaseAdminConfigured } from "@/lib/supabase";
 import {
   getAiringTodayTv,

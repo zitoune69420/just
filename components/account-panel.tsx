@@ -15,7 +15,7 @@ import {
   roleSummaryKey,
   type Role,
 } from "@/lib/roles";
-import { getSession } from "@/lib/session";
+import { getSession } from "@/lib/auth";
 import { isSupabaseAdminConfigured } from "@/lib/supabase";
 import { findUserById } from "@/lib/users";
 import { DiscordMark, DiscordSignInButton } from "./discord-sign-in";

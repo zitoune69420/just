@@ -136,8 +136,16 @@ export function WatchDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="w-full max-w-[min(72rem,calc((100dvh-2rem)*16/9))] overflow-hidden border-border-overlay bg-background p-0 [&>[data-slot=dialog-content]]:pt-0! [&>[data-slot=dialog-content]]:pb-0!">
         <div className="aspect-video w-full">
+          {/**
+           * Le lecteur vient d'une origine tierce : `sandbox` lui retire le
+           * droit de naviguer l'onglet (hameçonnage par redirection du haut de
+           * page) et de lire nos cookies. `allow-scripts` + `allow-same-origin`
+           * restent nécessaires au lecteur lui-même.
+           */}
           <iframe
             src={src}
+            sandbox="allow-scripts allow-same-origin allow-presentation allow-popups allow-popups-to-escape-sandbox"
+            referrerPolicy="no-referrer"
             allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
             allowFullScreen
             className="size-full border-0"

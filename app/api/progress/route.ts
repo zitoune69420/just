@@ -1,6 +1,7 @@
 import { isMediaType, isTmdbId } from "@/lib/favorites";
 import { advanceProgress } from "@/lib/progress";
-import { getSession } from "@/lib/session";
+import { getSession } from "@/lib/auth";
+import { allowByIp, MINUTE, tooManyRequests } from "@/lib/rate-limit";
 import { isSupabaseAdminConfigured } from "@/lib/supabase";
 
 const MAX_TICK_SECONDS = 180;
@@ -22,7 +23,11 @@ function positiveInteger(value: unknown): number | null {
     : null;
 }
 
+const QUOTA = { limit: 60, windowMs: MINUTE };
+
 export async function POST(request: Request) {
+  if (!(await allowByIp("progress", QUOTA))) return tooManyRequests(MINUTE);
+
   if (!isSupabaseAdminConfigured()) {
     return new Response(null, { status: 204 });
   }

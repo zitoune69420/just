@@ -2,17 +2,18 @@ import type { MediaType } from "./types";
 
 const DEFAULT_SUBTITLE_LANG = "fr";
 
+/**
+ * Uniquement des variables serveur : préfixées `NEXT_PUBLIC_`, elles seraient
+ * inscrites en clair dans le bundle client et l'adresse du serveur de flux
+ * n'aurait plus rien de confidentiel.
+ */
 function base(): string | null {
-  const value =
-    process.env.STREAM_BASE_URL || process.env.NEXT_PUBLIC_STREAM_BASE_URL;
+  const value = process.env.STREAM_BASE_URL;
   return value ? value.replace(/\/+$/, "") : null;
 }
 
 function subtitleLang(): string | null {
-  const value =
-    process.env.STREAM_SUBTITLE_LANG ??
-    process.env.NEXT_PUBLIC_STREAM_SUBTITLE_LANG ??
-    DEFAULT_SUBTITLE_LANG;
+  const value = process.env.STREAM_SUBTITLE_LANG ?? DEFAULT_SUBTITLE_LANG;
   const code = value.trim().toLowerCase();
   return /^[a-z]{2,3}$/.test(code) ? code : null;
 }

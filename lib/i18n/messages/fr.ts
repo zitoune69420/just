@@ -358,6 +358,10 @@ export const fr: Messages = {
   "error.databaseUnreachable": "Base de données injoignable. Réessayez.",
   "error.resetInvalid": "Lien de réinitialisation invalide.",
   "error.resetExpired": "Lien expiré ou déjà utilisé. Refaites une demande.",
+  "error.tooManyAttempts":
+    "Trop de tentatives. Réessayez dans quelques minutes.",
+  "error.resetNotConfigured":
+    "Réinitialisation indisponible : NEXT_PUBLIC_APP_URL n'est pas définie.",
 
   // Administration
   "admin.title": "Administration",

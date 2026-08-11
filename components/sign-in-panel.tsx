@@ -6,7 +6,8 @@ import { AlertCircle, Check } from "@appica/icons-react";
 import { isDiscordConfigured } from "@/lib/discord";
 import { getTranslator } from "@/lib/i18n/server";
 import type { MessageKey } from "@/lib/i18n/translate";
-import { getSession, hasSessionSecret } from "@/lib/session";
+import { getSession } from "@/lib/auth";
+import { hasSessionSecret } from "@/lib/session";
 import { CredentialsForm } from "./credentials-form";
 import { DiscordSignInButton } from "./discord-sign-in";
 

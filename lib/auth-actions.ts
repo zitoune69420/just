@@ -4,6 +4,8 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { getTranslator } from "./i18n/server";
 import { hashPassword, PASSWORD_MIN_LENGTH, verifyPassword } from "./password";
+import { allowByIp, allowByIpAndSubject, MINUTE, HOUR } from "./rate-limit";
+import { safeInternalPathOr } from "./redirects";
 import { SESSION_COOKIE, sealSession, sessionCookieOptions } from "./session";
 import { isSupabaseAdminConfigured } from "./supabase";
 import {
@@ -21,8 +23,17 @@ export interface CredentialsState {
 
 const NAME_MAX_LENGTH = 40;
 
-const DUMMY_HASH =
-  "scrypt$00000000000000000000000000000000$00000000000000000000000000000000";
+/** Cinq essais par quart d'heure, par IP et par adresse visée. */
+const SIGN_IN_QUOTA = { limit: 5, windowMs: 15 * MINUTE };
+
+const SIGN_UP_QUOTA = { limit: 5, windowMs: HOUR };
+
+/**
+ * Condensat factice aux paramètres courants : une adresse inconnue coûte le
+ * même temps de calcul qu'une adresse connue, sinon la latence trahit
+ * l'existence du compte.
+ */
+const DUMMY_HASH = `scrypt$65536$8$2$${"0".repeat(32)}$${"0".repeat(128)}`;
 
 function field(formData: FormData, name: string): string {
   const value = formData.get(name);
@@ -30,15 +41,14 @@ function field(formData: FormData, name: string): string {
 }
 
 function safeReturnTo(formData: FormData): string {
-  const path = field(formData, "returnTo");
-  return path.startsWith("/") && !path.startsWith("//") ? path : "/";
+  return safeInternalPathOr(field(formData, "returnTo"), "/");
 }
 
 async function startSession(user: UserRow): Promise<void> {
   const store = await cookies();
   store.set(
     SESSION_COOKIE,
-    sealSession(toSessionUser(user)),
+    sealSession(toSessionUser(user), user.session_version),
     sessionCookieOptions(),
   );
 }
@@ -58,6 +68,10 @@ export async function signIn(
 
   if (!isEmail(email) || password.length === 0) {
     return { error: t("error.invalidCredentials") };
+  }
+
+  if (!(await allowByIpAndSubject("sign-in", email, SIGN_IN_QUOTA))) {
+    return { error: t("error.tooManyAttempts") };
   }
 
   const user = await findUserByEmail(email);
@@ -98,6 +112,10 @@ export async function signUp(
     return {
       error: t("error.passwordTooShort", { min: PASSWORD_MIN_LENGTH }),
     };
+  }
+
+  if (!(await allowByIp("sign-up", SIGN_UP_QUOTA))) {
+    return { error: t("error.tooManyAttempts") };
   }
 
   let user: UserRow;

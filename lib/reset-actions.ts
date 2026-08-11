@@ -1,6 +1,5 @@
 "use server";
 
-import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { getTranslator } from "./i18n/server";
 import { sendMail } from "./mailer";
@@ -14,6 +13,7 @@ import {
   RESET_TTL_MINUTES,
   storeReset,
 } from "./password-resets";
+import { allowByIp, allowByIpAndSubject, HOUR, MINUTE } from "./rate-limit";
 import { isSupabaseAdminConfigured } from "./supabase";
 import { findUserByEmail, findUserById, setCredentials } from "./users";
 import { isEmail, readField } from "./validation";
@@ -30,14 +30,24 @@ export interface ResetState {
 /** Réponse volontairement identique que l'adresse existe ou non. */
 const GENERIC_SENT: ResetRequestState = { error: null, sent: true };
 
-async function appOrigin(): Promise<string> {
+const REQUEST_QUOTA = { limit: 3, windowMs: 15 * MINUTE };
+
+const RESET_QUOTA = { limit: 10, windowMs: HOUR };
+
+/**
+ * Origine du lien de réinitialisation.
+ *
+ * Elle ne doit jamais venir de l'en-tête `Host` : il est fourni par l'appelant,
+ * et un attaquant déclenchant l'envoi pour la boîte d'une victime pourrait
+ * ainsi faire pointer le lien — jeton compris — vers son propre domaine. En
+ * l'absence de `NEXT_PUBLIC_APP_URL`, on n'envoie rien plutôt que d'envoyer un
+ * lien empoisonné ; en développement, `http://localhost:3000` reste le défaut.
+ */
+function appOrigin(): string | null {
   const configured = process.env.NEXT_PUBLIC_APP_URL;
   if (configured) return configured.replace(/\/+$/, "");
-
-  const store = await headers();
-  const host = store.get("host") ?? "localhost:3000";
-  const protocol = host.startsWith("localhost") ? "http" : "https";
-  return `${protocol}://${host}`;
+  if (process.env.NODE_ENV !== "production") return "http://localhost:3000";
+  return null;
 }
 
 export async function requestPasswordReset(
@@ -53,6 +63,15 @@ export async function requestPasswordReset(
   const email = readField(formData, "email");
   if (!isEmail(email)) {
     return { error: t("error.invalidEmail"), sent: false };
+  }
+
+  const origin = appOrigin();
+  if (!origin) {
+    return { error: t("error.resetNotConfigured"), sent: false };
+  }
+
+  if (!(await allowByIpAndSubject("reset-request", email, REQUEST_QUOTA))) {
+    return { error: t("error.tooManyAttempts"), sent: false };
   }
 
   let user: Awaited<ReturnType<typeof findUserByEmail>>;
@@ -73,7 +92,7 @@ export async function requestPasswordReset(
     return { error: t("error.databaseUnreachable"), sent: false };
   }
 
-  const link = `${await appOrigin()}/reset-password?token=${token}`;
+  const link = `${origin}/reset-password?token=${token}`;
 
   await sendMail({
     to: email,
@@ -100,6 +119,10 @@ export async function resetPassword(
 
   if (!isSupabaseAdminConfigured()) {
     return { error: t("error.noDatabase") };
+  }
+
+  if (!(await allowByIp("reset-submit", RESET_QUOTA))) {
+    return { error: t("error.tooManyAttempts") };
   }
 
   const token = readField(formData, "token");

@@ -1,8 +1,13 @@
 import { getLocaleAndTranslator } from "@/lib/i18n/server";
+import { allowByIp, MINUTE, tooManyRequests } from "@/lib/rate-limit";
 import { toEpisode } from "@/lib/media";
 import { getTvSeason, isTmdbConfigured } from "@/lib/tmdb";
 
+const QUOTA = { limit: 60, windowMs: MINUTE };
+
 export async function GET(request: Request) {
+  if (!(await allowByIp("season", QUOTA))) return tooManyRequests(MINUTE);
+
   const params = new URL(request.url).searchParams;
   const tvId = Number(params.get("tv"));
   const season = Number(params.get("season"));

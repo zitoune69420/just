@@ -342,6 +342,9 @@ export const en = {
   "error.databaseUnreachable": "Database unreachable. Try again.",
   "error.resetInvalid": "Invalid reset link.",
   "error.resetExpired": "Link expired or already used. Request a new one.",
+  "error.tooManyAttempts": "Too many attempts. Try again in a few minutes.",
+  "error.resetNotConfigured":
+    "Password reset is unavailable: NEXT_PUBLIC_APP_URL is not set.",
 
   // Administration
   "admin.title": "Administration",

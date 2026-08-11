@@ -7,8 +7,9 @@ import {
   OAUTH_STATE_COOKIE,
   signInWithCode,
 } from "@/lib/discord";
+import { getSession } from "@/lib/auth";
+import { safeInternalPathOr } from "@/lib/redirects";
 import {
-  getSession,
   sealSession,
   SESSION_COOKIE,
   sessionCookieOptions,
@@ -19,6 +20,7 @@ import {
   linkDiscordToUser,
   toSessionUser,
   upsertDiscordUser,
+  type UserRow,
 } from "@/lib/users";
 
 function matches(a: string, b: string): boolean {
@@ -73,17 +75,19 @@ export async function GET(request: NextRequest) {
   let token: string;
   try {
     if (!isSupabaseAdminConfigured()) {
-      token = sealSession({
-        id: profile.discordId,
-        name: profile.name,
-        avatar: profile.avatar,
-      });
-    } else if (session) {
       token = sealSession(
-        toSessionUser(await linkDiscordToUser(session.id, profile)),
+        {
+          id: profile.discordId,
+          name: profile.name,
+          avatar: profile.avatar,
+        },
+        0,
       );
     } else {
-      token = sealSession(toSessionUser(await upsertDiscordUser(profile)));
+      const row: UserRow = session
+        ? await linkDiscordToUser(session.id, profile)
+        : await upsertDiscordUser(profile);
+      token = sealSession(toSessionUser(row), row.session_version);
     }
   } catch (error) {
     if (error instanceof DiscordTakenError) {
@@ -92,7 +96,15 @@ export async function GET(request: NextRequest) {
     return failure(request, "database", errorPath);
   }
 
-  const returnTo = request.cookies.get(OAUTH_RETURN_COOKIE)?.value ?? "/";
+  /**
+   * Le cookie a été écrit par nous, mais on le revalide quand même : c'est la
+   * dernière barrière avant une redirection, et un cookie peut être posé par
+   * un sous-domaine.
+   */
+  const returnTo = safeInternalPathOr(
+    request.cookies.get(OAUTH_RETURN_COOKIE)?.value,
+    "/",
+  );
   const response = clearFlowCookies(
     NextResponse.redirect(new URL(returnTo, request.nextUrl.origin)),
   );

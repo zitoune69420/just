@@ -9,7 +9,7 @@ import { MediaCard } from "@/components/media-card";
 import { GridSkeleton } from "@/components/skeletons";
 import { getLocaleAndTranslator } from "@/lib/i18n/server";
 import { toMedia } from "@/lib/media";
-import { getSession } from "@/lib/session";
+import { getSession } from "@/lib/auth";
 import { isSupabaseAdminConfigured } from "@/lib/supabase";
 import { getMediaSummary, isTmdbConfigured } from "@/lib/tmdb";
 import { getWatchlist } from "@/lib/watchlist";

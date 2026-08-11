@@ -2,7 +2,7 @@
 
 import { isMediaType, isTmdbId } from "./favorites";
 import { clearProgress, saveProgress } from "./progress";
-import { getSession } from "./session";
+import { getSession } from "./auth";
 import { isSupabaseAdminConfigured } from "./supabase";
 import type { MediaType } from "./types";
 

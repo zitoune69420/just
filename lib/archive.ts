@@ -70,5 +70,15 @@ export async function findArchiveMovie(
   const match = docs.find((doc) => normalize(firstTitle(doc)) === wanted);
   if (!match) return null;
 
-  return { kind: "embed", url: `https://vidsrc-embed.ru/embed/movie/${match.identifier}` };
+  /**
+   * L'identifiant vient d'archive.org : le lecteur doit rester sur archive.org.
+   * Le renvoyer vers un autre domaine reviendrait à faire lire à l'utilisateur,
+   * dans une iframe, du contenu servi par un tiers que nous ne contrôlons pas.
+   */
+  if (!/^[A-Za-z0-9._-]+$/.test(match.identifier)) return null;
+
+  return {
+    kind: "embed",
+    url: `https://archive.org/embed/${encodeURIComponent(match.identifier)}`,
+  };
 }

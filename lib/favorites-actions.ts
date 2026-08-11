@@ -1,7 +1,7 @@
 "use server";
 
 import { isMediaType, isTmdbId } from "./favorites";
-import { getSession } from "./session";
+import { getSession } from "./auth";
 import { isSupabaseAdminConfigured } from "./supabase";
 import { addToWatchlist, removeFromWatchlist } from "./watchlist";
 import type { MediaType } from "./types";
