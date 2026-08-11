@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 import { Checkbox } from "@appica/ui-react/checkbox";
 import {
   Collapsible,
@@ -49,6 +49,17 @@ export function CatalogFilters({
   const [sortOpen, setSortOpen] = useState(true);
   const [genresOpen, setGenresOpen] = useState(true);
 
+  /**
+   * Une navigation nue remplace aussitôt la grille par son squelette. Passée en
+   * transition, React garde les résultats précédents à l'écran jusqu'à ce que
+   * les nouveaux soient prêts : on change de filtre sans que la page clignote.
+   */
+  const [pending, startTransition] = useTransition();
+
+  function navigate(href: string) {
+    startTransition(() => router.push(href));
+  }
+
   const hasActiveFilters = selectedGenreIds.length > 0 || sort !== "popularity";
 
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -87,11 +98,16 @@ export function CatalogFilters({
     const next = selectedGenreIds.includes(genreId)
       ? selectedGenreIds.filter((id) => id !== genreId)
       : [...selectedGenreIds, genreId];
-    router.push(buildHref(basePath, next, sort));
+    navigate(buildHref(basePath, next, sort));
   }
 
   return (
-    <aside className="flex max-h-[60vh] w-full flex-col rounded-3xl border border-border/60 bg-background-subtle/60 p-5 backdrop-blur-sm lg:sticky lg:top-20 lg:h-[80vh] lg:max-h-[calc(100vh-6rem)] lg:w-72 lg:shrink-0">
+    <aside
+      aria-busy={pending}
+      className={`flex max-h-[60vh] w-full flex-col rounded-3xl border border-border/60 bg-background-subtle/60 p-5 backdrop-blur-sm transition-opacity duration-200 lg:sticky lg:top-20 lg:h-[80vh] lg:max-h-[calc(100vh-6rem)] lg:w-72 lg:shrink-0 ${
+        pending ? "opacity-60" : "opacity-100"
+      }`}
+    >
       <div
         ref={scrollRef}
         data-fade-top={fade.top}
@@ -103,7 +119,7 @@ export function CatalogFilters({
             {hasActiveFilters && (
               <button
                 type="button"
-                onClick={() => router.push(basePath)}
+                onClick={() => navigate(basePath)}
                 className="text-xs text-foreground-muted transition-colors hover:text-foreground-strong"
               >
                 Réinitialiser
@@ -124,9 +140,7 @@ export function CatalogFilters({
                 label={option.label}
                 checked={sort === option.value}
                 onCheckedChange={() => {
-                  router.push(
-                    buildHref(basePath, selectedGenreIds, option.value),
-                  );
+                  navigate(buildHref(basePath, selectedGenreIds, option.value));
                 }}
               />
             ))}

@@ -1,15 +1,16 @@
 import Link from "next/link";
 import { Suspense } from "react";
 import { Button } from "@appica/ui-react/button";
+import { Skeleton } from "@appica/ui-react/skeleton";
 import { ChevronLeft, ChevronRight, FilterOff } from "@appica/icons-react";
-import { getLocaleAndTranslator } from "@/lib/i18n/server";
-import type { MessageKey, Translate } from "@/lib/i18n/translate";
+import { getLocaleAndTranslator, getTranslator } from "@/lib/i18n/server";
+import type { MessageKey } from "@/lib/i18n/translate";
 import { toMedia } from "@/lib/media";
 import { discoverMedia, getGenres, type SortKey } from "@/lib/tmdb";
 import type { MediaType } from "@/lib/types";
 import { CatalogFilters } from "./catalog-filters";
 import { MediaCard } from "./media-card";
-import { CatalogSkeleton } from "./skeletons";
+import { PosterSkeleton } from "./skeletons";
 
 const MAX_PAGE = 500;
 
@@ -27,21 +28,81 @@ interface CatalogProps {
   searchParams: Promise<CatalogSearchParams>;
 }
 
+/**
+ * Trois zones, trois frontières de chargement distinctes.
+ *
+ * Tout tenait auparavant dans un seul `Suspense` : changer un genre effaçait
+ * la barre de filtres et la bascule en même temps que la grille, ce qui donnait
+ * l'impression d'un rechargement complet. Seule la grille dépend réellement des
+ * filtres — le reste doit rester à l'écran pendant qu'elle se recharge.
+ */
 export function Catalog({ type, basePath, searchParams }: CatalogProps) {
   return (
-    <div className="mx-auto w-full max-w-7xl space-y-8 px-4 py-10 sm:px-6 lg:px-8">
-      <Suspense fallback={<CatalogSkeleton />}>
-        {searchParams.then((params) => (
-          <CatalogResults
-            type={type}
-            basePath={basePath}
-            page={parsePage(params.page)}
-            genreIds={parseGenres(params.genres)}
-            sort={parseSort(params.sort)}
-          />
-        ))}
-      </Suspense>
+    <div className="mx-auto w-full max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+      <div className="flex flex-col gap-8 lg:flex-row lg:items-start">
+        <Suspense
+          fallback={
+            <Skeleton className="h-96 w-full rounded-3xl lg:w-72 lg:shrink-0" />
+          }
+        >
+          {searchParams.then((params) => (
+            <CatalogSidebar
+              type={type}
+              basePath={basePath}
+              genreIds={parseGenres(params.genres)}
+              sort={parseSort(params.sort)}
+            />
+          ))}
+        </Suspense>
+
+        <div className="min-w-0 flex-1 space-y-8">
+          <Suspense fallback={<Skeleton className="h-12 w-56 rounded-full" />}>
+            {searchParams.then((params) => (
+              <TypeSwitch
+                basePath={basePath}
+                sort={parseSort(params.sort)}
+              />
+            ))}
+          </Suspense>
+
+          <Suspense fallback={<CatalogGridSkeleton />}>
+            {searchParams.then((params) => (
+              <CatalogGrid
+                type={type}
+                basePath={basePath}
+                page={parsePage(params.page)}
+                genreIds={parseGenres(params.genres)}
+                sort={parseSort(params.sort)}
+              />
+            ))}
+          </Suspense>
+        </div>
+      </div>
     </div>
+  );
+}
+
+async function CatalogSidebar({
+  type,
+  basePath,
+  genreIds,
+  sort,
+}: {
+  type: MediaType;
+  basePath: string;
+  genreIds: number[];
+  sort: SortKey;
+}) {
+  const { locale } = await getLocaleAndTranslator();
+  const genres = await getGenres(locale, type);
+
+  return (
+    <CatalogFilters
+      basePath={basePath}
+      genres={genres}
+      selectedGenreIds={genreIds}
+      sort={sort}
+    />
   );
 }
 
@@ -91,15 +152,15 @@ const TYPE_TABS = [
  * abandonnés au passage — les identifiants TMDB ne veulent pas dire la même
  * chose d'un type à l'autre — alors que le tri, lui, garde son sens.
  */
-function TypeSwitch({
+async function TypeSwitch({
   basePath,
   sort,
-  t,
 }: {
   basePath: string;
   sort: SortKey;
-  t: Translate;
 }) {
+  const t = await getTranslator();
+
   return (
     <div
       role="tablist"
@@ -128,7 +189,17 @@ function TypeSwitch({
   );
 }
 
-async function CatalogResults({
+function CatalogGridSkeleton() {
+  return (
+    <div className="grid grid-cols-2 gap-x-4 gap-y-8 md:grid-cols-3 xl:grid-cols-4">
+      {Array.from({ length: 12 }, (_, index) => (
+        <PosterSkeleton key={index} />
+      ))}
+    </div>
+  );
+}
+
+async function CatalogGrid({
   type,
   basePath,
   page,
@@ -142,27 +213,15 @@ async function CatalogResults({
   sort: SortKey;
 }) {
   const { locale, t } = await getLocaleAndTranslator();
-  const [genres, data] = await Promise.all([
-    getGenres(locale, type),
-    discoverMedia(locale, type, { page, genreIds, sort }),
-  ]);
+  const data = await discoverMedia(locale, type, { page, genreIds, sort });
   const items = data.results.map((item) => toMedia(item, type));
   const totalPages = Math.min(data.total_pages, MAX_PAGE);
 
   const hasActiveFilters = genreIds.length > 0 || sort !== "popularity";
 
   return (
-    <div className="enter flex flex-col gap-8 lg:flex-row lg:items-start">
-      <CatalogFilters
-        basePath={basePath}
-        genres={genres}
-        selectedGenreIds={genreIds}
-        sort={sort}
-      />
-
-      <div className="min-w-0 flex-1 space-y-8">
-        <TypeSwitch basePath={basePath} sort={sort} t={t} />
-
+    <>
+      <div className="enter space-y-8">
         {items.length === 0 ? (
           <div className="flex flex-col items-center gap-3 py-24 text-center">
             <div className="grid size-14 place-items-center rounded-2xl bg-background-muted text-foreground-subtle">
@@ -234,6 +293,6 @@ async function CatalogResults({
           </nav>
         )}
       </div>
-    </div>
+    </>
   );
 }
