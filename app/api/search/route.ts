@@ -1,12 +1,8 @@
 import { getLocaleAndTranslator } from "@/lib/i18n/server";
 import { allowByIp, MINUTE, tooManyRequests } from "@/lib/rate-limit";
-import { toMedia, toPerson } from "@/lib/media";
-import {
-  getAcclaimedMovies,
-  isTmdbConfigured,
-  searchMedia,
-  searchPeople,
-} from "@/lib/tmdb";
+import { toMedia } from "@/lib/media";
+import { unifiedSearch } from "@/lib/search";
+import { getAcclaimedMovies, isTmdbConfigured } from "@/lib/tmdb";
 import type { Media } from "@/lib/types";
 
 const QUOTA = { limit: 30, windowMs: MINUTE };
@@ -35,7 +31,7 @@ export async function GET(request: Request) {
     new URL(request.url).searchParams.get("q")?.trim().slice(0, 100) ?? "";
 
   if (!isTmdbConfigured()) {
-    return Response.json({ results: [], people: [] });
+    return Response.json({ results: [], people: [], corrected: null });
   }
 
   const { locale, t } = await getLocaleAndTranslator();
@@ -46,26 +42,29 @@ export async function GET(request: Request) {
       .filter((item) => item.poster_path)
       .slice(0, SUGGESTIONS)
       .map((item) => toHit(toMedia(item, "movie")));
-    return Response.json({ results, people: [] });
+    return Response.json({ results, people: [], corrected: null });
   }
 
   if (query.length < 2) {
-    return Response.json({ results: [], people: [] });
+    return Response.json({ results: [], people: [], corrected: null });
   }
 
-  const [data, peopleData] = await Promise.all([
-    searchMedia(locale, query),
-    searchPeople(locale, query),
-  ]);
+  /**
+   * Le menu de commande garde ses deux colonnes, mais elles sont désormais
+   * découpées dans une liste unique déjà classée : un acteur très pertinent
+   * remonte au lieu d'être noyé sous huit titres approximatifs.
+   */
+  const { hits, corrected } = await unifiedSearch(locale, t, query);
 
-  const results = data.results
+  const results = hits
+    .filter((hit) => hit.kind === "media")
     .slice(0, LIMIT)
-    .map((item) => toHit(toMedia(item)));
+    .map((hit) => toHit(hit.media));
 
-  const people = peopleData.results
-    .filter((item) => item.profile_path)
+  const people = hits
+    .filter((hit) => hit.kind === "person")
     .slice(0, PEOPLE_LIMIT)
-    .map((item) => toPerson(item, t));
+    .map((hit) => hit.person);
 
-  return Response.json({ results, people });
+  return Response.json({ results, people, corrected });
 }

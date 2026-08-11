@@ -2,6 +2,11 @@
 
 import { useState } from "react";
 import { Button } from "@appica/ui-react/button";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@appica/ui-react/tooltip";
 import { Heart, HeartFilled } from "@appica/icons-react";
 import { useCollections } from "./collections-provider";
 import { useTranslations } from "./i18n-provider";
@@ -112,35 +117,31 @@ export function FavoriteButton({
 
   if (variant === "inline") {
     return (
-      <Button
-        variant="outline"
-        size="lg"
-        className={`group relative overflow-visible rounded-full ${className}`}
-        aria-pressed={favorite}
-        aria-busy={busy}
-        aria-label={t(favorite ? "detail.favoriteRemoveLabel" : "detail.favoriteAddLabel", { title })}
-        onClick={handleClick}
-      >
-        <HeartSwap favorite={favorite} burst={burst} size={20} />
-        <span className="grid">
-          <span
-            aria-hidden={favorite}
-            className={`col-start-1 row-start-1 transition-[opacity,translate] duration-200 ease-out motion-reduce:translate-y-0 ${
-              favorite ? "translate-y-1 opacity-0" : "translate-y-0 opacity-100"
-            }`}
-          >
-            {t("detail.favoriteAdd")}
-          </span>
-          <span
-            aria-hidden={!favorite}
-            className={`col-start-1 row-start-1 transition-[opacity,translate] duration-200 ease-out motion-reduce:translate-y-0 ${
-              favorite ? "translate-y-0 opacity-100" : "-translate-y-1 opacity-0"
-            }`}
-          >
-            {t("detail.favoriteRemove")}
-          </span>
-        </span>
-      </Button>
+      <Tooltip>
+        <TooltipTrigger
+          render={
+            <Button
+              variant="outline"
+              size="icon-lg"
+              className={`group relative overflow-visible rounded-full ${className}`}
+              aria-pressed={favorite}
+              aria-busy={busy}
+              aria-label={t(
+                favorite
+                  ? "detail.favoriteRemoveLabel"
+                  : "detail.favoriteAddLabel",
+                { title },
+              )}
+              onClick={handleClick}
+            >
+              <HeartSwap favorite={favorite} burst={burst} size={20} />
+            </Button>
+          }
+        />
+        <TooltipContent>
+          {t(favorite ? "detail.favoriteRemove" : "detail.favoriteAdd")}
+        </TooltipContent>
+      </Tooltip>
     );
   }
 

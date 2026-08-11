@@ -15,13 +15,21 @@ import { CommandMenu } from "./command-menu";
 import { useTranslations } from "./i18n-provider";
 import { ThemeToggle } from "./theme-toggle";
 
+/**
+ * Films et séries tiennent dans une seule entrée : le catalogue les bascule
+ * lui-même par ses filtres. `match` sert à garder l'entrée active sur les deux
+ * types, puisque le lien ne pointe que sur l'un des deux.
+ */
 const NAV_LINKS = [
-  { href: "/", key: "nav.home" },
-  { href: "/movies", key: "nav.movies" },
-  { href: "/series", key: "nav.series" },
-  { href: "/new", key: "nav.new" },
-  { href: "/search", key: "nav.search" },
-] as const satisfies readonly { href: string; key: MessageKey }[];
+  { href: "/", key: "nav.home", match: "/" },
+  { href: "/catalog/movies", key: "nav.catalog", match: "/catalog" },
+  { href: "/new", key: "nav.new", match: "/new" },
+  { href: "/search", key: "nav.search", match: "/search" },
+] as const satisfies readonly {
+  href: string;
+  key: MessageKey;
+  match: string;
+}[];
 
 export function Navbar({ session }: { session: React.ReactNode }) {
   const t = useTranslations();
@@ -81,9 +89,9 @@ function NavLinks({ pathname }: { pathname: string | null }) {
       {NAV_LINKS.map((link) => {
         const active =
           pathname !== null &&
-          (link.href === "/"
+          (link.match === "/"
             ? pathname === "/"
-            : pathname.startsWith(link.href));
+            : pathname.startsWith(link.match));
         return (
           <Link
             key={link.href}

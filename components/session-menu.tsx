@@ -17,6 +17,7 @@ import {
   Bookmark,
   Heart,
   History,
+  ListDetails,
   Logout,
   Settings,
   Users,
@@ -80,6 +81,10 @@ export function SessionMenu({
         <DropdownMenuItem render={<Link href="/watchlist" />}>
           <Bookmark size={16} className="-ms-px" />
           {t("session.watchlist")}
+        </DropdownMenuItem>
+        <DropdownMenuItem render={<Link href="/lists" />}>
+          <ListDetails size={16} className="-ms-px" />
+          {t("session.lists")}
         </DropdownMenuItem>
         <DropdownMenuItem render={<Link href="/history" />}>
           <History size={16} className="-ms-px" />

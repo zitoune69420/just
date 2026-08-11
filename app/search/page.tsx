@@ -4,15 +4,14 @@ import { Suspense } from "react";
 import { Button } from "@appica/ui-react/button";
 import { ArrowLeft, Search, SearchOff } from "@appica/icons-react";
 import { MediaCard } from "@/components/media-card";
-import { MediaRow } from "@/components/media-row";
 import { PersonCard } from "@/components/person-card";
-import { PersonRow } from "@/components/person-row";
 import { SearchForm } from "@/components/search-form";
 import { SetupNotice } from "@/components/setup-notice";
 import { GridSkeleton } from "@/components/skeletons";
 import { getLocaleAndTranslator } from "@/lib/i18n/server";
 import { plural, type Translate } from "@/lib/i18n/translate";
 import { toMedia, toPerson } from "@/lib/media";
+import { hitKey, unifiedSearch } from "@/lib/search";
 import { isTmdbConfigured, searchMedia, searchPeople } from "@/lib/tmdb";
 
 export const metadata: Metadata = {
@@ -119,17 +118,13 @@ async function SearchScreen({ query, view }: { query: string; view: View }) {
     );
   }
 
-  const [data, peopleData] = await Promise.all([
-    searchMedia(locale, query),
-    searchPeople(locale, query),
-  ]);
+  const { hits, corrected, totalMedia, totalPeople } = await unifiedSearch(
+    locale,
+    t,
+    query,
+  );
 
-  const items = data.results.map((item) => toMedia(item));
-  const people = peopleData.results
-    .filter((item) => item.profile_path)
-    .map((item) => toPerson(item, t));
-
-  if (items.length === 0 && people.length === 0) {
+  if (hits.length === 0) {
     return (
       <>
         <Header t={t} query={query} />
@@ -145,31 +140,59 @@ async function SearchScreen({ query, view }: { query: string; view: View }) {
   return (
     <>
       <Header t={t} query={query} />
-      <div className="enter space-y-12">
-        <MediaRow
-          title={plural(t, "search.titles", data.total_results, {
-            count: data.total_results,
-            query,
-          })}
-          items={items}
-          moreHref={
-            data.total_results > items.length
-              ? seeAllHref(query, "titles")
-              : undefined
-          }
-          moreLabel={t("search.seeAll")}
-        />
+      <div className="enter space-y-6">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h2 className="text-lg font-semibold tracking-tight sm:text-xl">
+            {/* Une requête rattrapée s'annonce : sinon le décalage est incompréhensible. */}
+            {corrected
+              ? t("search.corrected", { query, corrected })
+              : plural(t, "search.results", hits.length, {
+                  count: hits.length,
+                  query,
+                })}
+          </h2>
 
-        <PersonRow
-          title={t("search.people")}
-          people={people}
-          moreHref={
-            peopleData.total_results > people.length
-              ? seeAllHref(query, "people")
-              : undefined
-          }
-          moreLabel={t("search.seeAll")}
-        />
+          <div className="flex flex-wrap gap-2">
+            {totalMedia > 0 && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="rounded-full"
+                render={<Link href={seeAllHref(query, "titles")} />}
+              >
+                {t("search.filterTitles")}
+              </Button>
+            )}
+            {totalPeople > 0 && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="rounded-full"
+                render={<Link href={seeAllHref(query, "people")} />}
+              >
+                {t("search.filterPeople")}
+              </Button>
+            )}
+          </div>
+        </div>
+
+        <div className={GRID_CLASSES}>
+          {hits.map((hit) =>
+            hit.kind === "media" ? (
+              <MediaCard
+                key={hitKey(hit)}
+                media={hit.media}
+                sizes={GRID_SIZES}
+              />
+            ) : (
+              <PersonCard
+                key={hitKey(hit)}
+                person={hit.person}
+                sizes={GRID_SIZES}
+              />
+            ),
+          )}
+        </div>
       </div>
     </>
   );

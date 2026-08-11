@@ -1,6 +1,11 @@
 "use client";
 
 import { Button } from "@appica/ui-react/button";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@appica/ui-react/tooltip";
 import { Bookmark, BookmarkFilled } from "@appica/icons-react";
 import { useCollections } from "./collections-provider";
 import { useTranslations } from "./i18n-provider";
@@ -61,35 +66,26 @@ export function WatchlistButton({
 
   if (variant === "inline") {
     return (
-      <Button
-        variant="outline"
-        size="lg"
-        className={`group relative overflow-visible rounded-full ${className}`}
-        aria-pressed={saved}
-        aria-busy={busy}
-        aria-label={label}
-        onClick={() => toggle("watchlist", mediaType, tmdbId)}
-      >
-        <BookmarkSwap saved={saved} size={20} />
-        <span className="grid">
-          <span
-            aria-hidden={saved}
-            className={`col-start-1 row-start-1 transition-[opacity,translate] duration-200 ease-out motion-reduce:translate-y-0 ${
-              saved ? "translate-y-1 opacity-0" : "translate-y-0 opacity-100"
-            }`}
-          >
-            {t("detail.watchlistAdd")}
-          </span>
-          <span
-            aria-hidden={!saved}
-            className={`col-start-1 row-start-1 transition-[opacity,translate] duration-200 ease-out motion-reduce:translate-y-0 ${
-              saved ? "translate-y-0 opacity-100" : "-translate-y-1 opacity-0"
-            }`}
-          >
-            {t("detail.watchlistRemove")}
-          </span>
-        </span>
-      </Button>
+      <Tooltip>
+        <TooltipTrigger
+          render={
+            <Button
+              variant="outline"
+              size="icon-lg"
+              className={`group relative overflow-visible rounded-full ${className}`}
+              aria-pressed={saved}
+              aria-busy={busy}
+              aria-label={label}
+              onClick={() => toggle("watchlist", mediaType, tmdbId)}
+            >
+              <BookmarkSwap saved={saved} size={20} />
+            </Button>
+          }
+        />
+        <TooltipContent>
+          {t(saved ? "detail.watchlistRemove" : "detail.watchlistAdd")}
+        </TooltipContent>
+      </Tooltip>
     );
   }
 

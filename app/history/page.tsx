@@ -141,7 +141,7 @@ async function HistoryContent({ page }: { page: number }) {
               variant="outline"
               size="sm"
               className="rounded-full"
-              render={<Link href="/movies" />}
+              render={<Link href="/catalog/movies" />}
             >
               {t("history.browse")}
             </Button>

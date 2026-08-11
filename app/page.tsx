@@ -14,7 +14,11 @@ import { getLocaleAndTranslator } from "@/lib/i18n/server";
 import { toMedia } from "@/lib/media";
 import { getRecentProgress } from "@/lib/progress";
 import { resolveResume } from "@/lib/resume";
-import { getBecauseYouWatched, getForYou } from "@/lib/recommendations";
+import {
+  getBecauseYouWatched,
+  getCollaborative,
+  getForYou,
+} from "@/lib/recommendations";
 import { getFollowedReleases } from "@/lib/following-releases";
 import { getSession } from "@/lib/auth";
 import { isSupabaseAdminConfigured } from "@/lib/supabase";
@@ -49,6 +53,9 @@ export default function HomePage() {
       </Suspense>
       <Suspense fallback={null}>
         <ForYouRow />
+      </Suspense>
+      <Suspense fallback={null}>
+        <CollaborativeRow />
       </Suspense>
       <Suspense fallback={null}>
         <FollowedPeopleRow />
@@ -166,6 +173,23 @@ async function ForYouRow() {
   return <MediaRow title={t("home.forYou")} items={items} />;
 }
 
+async function CollaborativeRow() {
+  const { locale, t } = await getLocaleAndTranslator();
+  const userId = await currentUserId();
+  if (!userId) return null;
+
+  let items: Awaited<ReturnType<typeof getCollaborative>>;
+  try {
+    items = await getCollaborative(locale, userId);
+  } catch {
+    return null;
+  }
+
+  if (items.length === 0) return null;
+
+  return <MediaRow title={t("home.viewersLikeYou")} items={items} />;
+}
+
 async function FollowedPeopleRow() {
   const { locale, t } = await getLocaleAndTranslator();
   const userId = await currentUserId();
@@ -212,7 +236,7 @@ async function PopularMoviesRow() {
   return (
     <MediaRow
       title={t("home.popularMovies")}
-      moreHref="/movies"
+      moreHref="/catalog/movies"
       items={data.results.map((item) => toMedia(item, "movie"))}
     />
   );
@@ -224,7 +248,7 @@ async function PopularSeriesRow() {
   return (
     <MediaRow
       title={t("home.popularSeries")}
-      moreHref="/series"
+      moreHref="/catalog/series"
       items={data.results.map((item) => toMedia(item, "tv"))}
     />
   );

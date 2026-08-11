@@ -13,6 +13,8 @@ import { getSession } from "@/lib/auth";
 import { isStreamConfigured } from "@/lib/stream-url";
 import { isSupabaseAdminConfigured } from "@/lib/supabase";
 import type { MediaDetails } from "@/lib/types";
+import { getUserLists, listsContaining } from "@/lib/lists";
+import { AddToList } from "./add-to-list";
 import { FavoriteButton } from "./favorite-button";
 import { WatchlistButton } from "./watchlist-button";
 import { MediaRow } from "./media-row";
@@ -33,6 +35,25 @@ async function resumePoint(
   try {
     const entry = await getProgressFor(session.id, type, id);
     return entry ? await resolveResume(locale, entry) : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Listes du compte et appartenance du titre, chargées ensemble. `null` quand il
+ * n'y a personne de connecté : le sélecteur n'a alors rien à proposer.
+ */
+async function listPickerData(type: MediaDetails["type"], id: number) {
+  if (!isSupabaseAdminConfigured()) return null;
+  const session = await getSession();
+  if (!session) return null;
+  try {
+    const [lists, containing] = await Promise.all([
+      getUserLists(session.id),
+      listsContaining(session.id, id, type),
+    ]);
+    return { lists, containing };
   } catch {
     return null;
   }
@@ -63,6 +84,7 @@ export async function MediaDetailView({ details }: { details: MediaDetails }) {
     : null;
 
   const resume = await resumePoint(locale, details.type, details.id);
+  const listPicker = await listPickerData(details.type, details.id);
   const streamAvailable = isStreamConfigured();
 
   return (
@@ -179,6 +201,14 @@ export async function MediaDetailView({ details }: { details: MediaDetails }) {
                     title={details.title}
                     variant="inline"
                 />
+                {listPicker && (
+                    <AddToList
+                        mediaType={details.type}
+                        tmdbId={details.id}
+                        lists={listPicker.lists}
+                        containing={listPicker.containing}
+                    />
+                )}
               </div>
             </div>
           </header>

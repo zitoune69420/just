@@ -21,12 +21,12 @@ const SORT_OPTIONS: { value: SortKey; label: string }[] = [
 ];
 
 const TYPE_ITEMS = [
-  { basePath: "/movies", label: "Films" },
-  { basePath: "/series", label: "Séries" },
+  { basePath: "/catalog/movies", label: "Films" },
+  { basePath: "/catalog/series", label: "Séries" },
 ] as const;
 
 interface CatalogFiltersProps {
-  basePath: "/movies" | "/series";
+  basePath: string;
   genres: TmdbGenre[];
   selectedGenreIds: number[];
   sort: SortKey;

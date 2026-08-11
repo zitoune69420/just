@@ -1,9 +1,11 @@
 import type { Locale } from "./i18n/locales";
 import { toMedia } from "./media";
 import { getRecentProgress } from "./progress";
+import { supabaseAdmin } from "./supabase";
 import {
   discoverMedia,
   getMediaGenreIds,
+  getMediaSummary,
   getMovieDetails,
   getTvDetails,
 } from "./tmdb";
@@ -86,6 +88,50 @@ export async function getBecauseYouWatched(
       .slice(0, ROW_LIMIT)
       .map((item) => toMedia(item, "tv")),
   };
+}
+
+interface CollaborativeRow {
+  media_type: MediaType;
+  tmdb_id: number;
+  score: number;
+}
+
+/**
+ * « Ceux qui regardent comme vous » : titres portés par les comptes dont
+ * l'historique recoupe le nôtre, pondérés par la taille de leur bibliothèque.
+ *
+ * Le signal n'existe pas sur une base vide ou presque : sans voisin partageant
+ * au moins un titre, la fonction SQL ne renvoie rien et la rangée disparaît
+ * d'elle-même. C'est le comportement voulu — mieux vaut pas de rangée qu'une
+ * rangée de hasard présentée comme un avis collectif.
+ */
+export async function getCollaborative(
+  locale: Locale,
+  userId: string,
+): Promise<Media[]> {
+  const { data, error } = await supabaseAdmin().rpc(
+    "collaborative_recommendations",
+    { p_user_id: userId, p_limit: ROW_LIMIT },
+  );
+
+  if (error) {
+    throw new Error(`Supabase collaborative: ${error.message}`);
+  }
+
+  const rows = (data ?? []) as CollaborativeRow[];
+  if (rows.length === 0) return [];
+
+  const summaries = await Promise.all(
+    rows.map((row) => getMediaSummary(locale, row.media_type, row.tmdb_id)),
+  );
+
+  return summaries
+    .map((summary, index) =>
+      summary && summary.poster_path
+        ? toMedia(summary, rows[index].media_type)
+        : null,
+    )
+    .filter((media): media is Media => media !== null);
 }
 
 /**

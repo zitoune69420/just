@@ -1,7 +1,17 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { openSession, SESSION_COOKIE } from "@/lib/session";
 
-const PUBLIC_PATHS = ["/login", "/forgot-password", "/reset-password"];
+/**
+ * `/list` en fait partie : une liste partagée n'a d'intérêt que si le
+ * destinataire du lien peut l'ouvrir sans compte. La page vérifie elle-même
+ * que la liste est bien publiée avant de montrer quoi que ce soit.
+ */
+const PUBLIC_PATHS = [
+  "/login",
+  "/forgot-password",
+  "/reset-password",
+  "/list",
+];
 
 /**
  * Images de métadonnées générées (`/opengraph-image`, `/movie/12/twitter-image`…).

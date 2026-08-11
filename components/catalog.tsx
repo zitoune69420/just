@@ -22,7 +22,7 @@ export interface CatalogSearchParams {
 
 interface CatalogProps {
   type: MediaType;
-  basePath: "/movies" | "/series";
+  basePath: string;
   searchParams: Promise<CatalogSearchParams>;
 }
 
@@ -84,7 +84,7 @@ async function CatalogResults({
   sort,
 }: {
   type: MediaType;
-  basePath: "/movies" | "/series";
+  basePath: string;
   page: number;
   genreIds: number[];
   sort: SortKey;

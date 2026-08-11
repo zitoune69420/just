@@ -43,10 +43,35 @@ const nextConfig: NextConfig = {
           { key: "Referrer-Policy", value: "no-referrer" },
         ],
       },
+      {
+        /**
+         * Seule route de l'application faite pour vivre dans une iframe : c'est
+         * elle que le lecteur charge. La règle générale ci-dessus lui collait
+         * `frame-ancestors 'none'` et `X-Frame-Options: DENY`, ce qui revenait à
+         * interdire au navigateur d'afficher notre propre lecteur.
+         *
+         * On ne lève pas la protection, on la resserre sur la bonne cible :
+         * `self` autorise nos pages à l'encadrer et personne d'autre.
+         */
+        source: "/api/stream",
+        headers: [
+          ...SECURITY_HEADERS,
+          { key: "Content-Security-Policy", value: "frame-ancestors 'self'" },
+          { key: "X-Frame-Options", value: "SAMEORIGIN" },
+        ],
+      },
     ];
   },
   async redirects() {
-    return [{ source: "/register", destination: "/login", permanent: false }];
+    return [
+      { source: "/register", destination: "/login", permanent: false },
+      /**
+       * `/movies` et `/series` ont fusionné sous une seule entrée de
+       * navigation. Les adresses partagées avant la fusion restent valides.
+       */
+      { source: "/movies", destination: "/catalog/movies", permanent: true },
+      { source: "/series", destination: "/catalog/series", permanent: true },
+    ];
   },
   images: {
     remotePatterns: [

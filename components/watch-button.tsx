@@ -4,7 +4,12 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Button } from "@appica/ui-react/button";
 import { Dialog, DialogContent } from "@appica/ui-react/dialog";
-import { PlayerPlayFilled, PlayerTrackNext } from "@appica/icons-react";
+import {
+  AlertTriangle,
+  PlayerPlayFilled,
+  PlayerTrackNext,
+  X,
+} from "@appica/icons-react";
 import {
   fetchSeasonEpisodes,
   nextEpisodeAfter,
@@ -116,6 +121,9 @@ function useWatchTimer(open: boolean, track: WatchTrack | undefined) {
   }, [open, type, id, season, episode, runtime]);
 }
 
+/** Durée d'affichage de l'avertissement publicitaire avant effacement. */
+const HINT_MS = 12_000;
+
 export function WatchDialog({
   src,
   open,
@@ -132,24 +140,60 @@ export function WatchDialog({
   const t = useTranslations();
   useWatchTimer(open, track);
 
+  /**
+   * Le lecteur ouvre deux onglets publicitaires aux premiers clics et rien de
+   * notre côté ne peut les empêcher : ils sont ouverts par une page tierce, ce
+   * ne sont pas des éléments de notre document. Prévenir est donc tout ce qui
+   * reste — et l'avertissement doit reparaître à chaque ouverture, puisque la
+   * gêne se reproduit à chaque ouverture. Le composant n'étant monté que
+   * pendant la lecture, l'état initial suffit à le faire reparaître.
+   */
+  const [hint, setHint] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setHint(false), HINT_MS);
+    return () => clearTimeout(timer);
+  }, []);
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="w-full max-w-[min(72rem,calc((100dvh-2rem)*16/9))] overflow-hidden border-border-overlay bg-background p-0 [&>[data-slot=dialog-content]]:pt-0! [&>[data-slot=dialog-content]]:pb-0!">
-        <div className="aspect-video w-full">
+        <div className="relative aspect-video w-full">
+          {hint && (
+            <div
+              role="status"
+              className="pointer-events-none absolute inset-x-0 top-0 z-10 flex justify-center p-3"
+            >
+              <div className="pointer-events-auto flex max-w-lg items-start gap-2.5 rounded-2xl bg-black/85 px-4 py-3 text-sm text-white shadow-2xl ring-1 ring-white/15 backdrop-blur-sm">
+                <AlertTriangle size={18} className="mt-px shrink-0 text-warning" />
+                <p className="min-w-0 flex-1">{t("detail.adsWarning")}</p>
+                <button
+                  type="button"
+                  onClick={() => setHint(false)}
+                  aria-label={t("detail.adsWarningDismiss")}
+                  className="-me-1 -mt-1 shrink-0 rounded-full p-1 text-white/70 outline-none transition-colors hover:text-white focus-visible:ring-2 focus-visible:ring-white"
+                >
+                  <X size={16} />
+                </button>
+              </div>
+            </div>
+          )}
+
           {/**
-           * Pas d'attribut `sandbox` ici : le lecteur vient d'une origine
-           * tierce et détecte l'encadrement bridé, il refuse alors de démarrer.
-           * Même la liste permissive (`allow-scripts allow-same-origin
-           * allow-forms allow-modals allow-popups …`) ne suffisait pas, et
-           * `allow-scripts` + `allow-same-origin` réunis annulent de toute
-           * façon l'essentiel de l'isolement.
+           * Pas d'attribut `sandbox` : mesuré, le lecteur refuse de démarrer dès
+           * qu'il en détecte un, même réduit aux droits qu'une page de lecture
+           * utilise vraiment. Le blocage n'était donc pas seulement l'ancien
+           * `X-Frame-Options` de `/api/stream`, corrigé par ailleurs.
            *
-           * Ce qui protège encore : l'iframe reste sur son origine à elle,
-           * donc hors de portée de nos cookies (`SameSite`, `HttpOnly`) ; la
+           * Le prix payé est connu : le lecteur est financé par la publicité et
+           * ouvre des onglets parasites au clic. Seul `sandbox` peut les
+           * refuser, et il coûte la lecture — arbitrage assumé en faveur de la
+           * lecture, à rejuger si la source change.
+           *
+           * Ce qui protège encore : l'iframe reste sur son origine à elle, donc
+           * hors de portée de nos cookies (`SameSite`, `HttpOnly`) ; la
            * `Permissions-Policy` de l'app coupe caméra, micro et géoloc ; et
-           * `referrerPolicy="no-referrer"` empêche la fuite de l'URL de la
-           * fiche. Le risque résiduel assumé est la redirection de l'onglet
-           * par le lecteur (hameçonnage), inhérent à ce type d'embed.
+           * `referrerPolicy="no-referrer"` empêche la fuite de l'URL de la fiche.
            */}
           <iframe
             src={src}
