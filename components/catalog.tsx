@@ -3,6 +3,7 @@ import { Suspense } from "react";
 import { Button } from "@appica/ui-react/button";
 import { ChevronLeft, ChevronRight, FilterOff } from "@appica/icons-react";
 import { getLocaleAndTranslator } from "@/lib/i18n/server";
+import type { MessageKey, Translate } from "@/lib/i18n/translate";
 import { toMedia } from "@/lib/media";
 import { discoverMedia, getGenres, type SortKey } from "@/lib/tmdb";
 import type { MediaType } from "@/lib/types";
@@ -76,6 +77,57 @@ function pageHref(
   return query ? `${basePath}?${query}` : basePath;
 }
 
+const TYPE_TABS = [
+  { basePath: "/catalog/movies", key: "nav.movies" },
+  { basePath: "/catalog/series", key: "nav.series" },
+] as const satisfies readonly { basePath: string; key: MessageKey }[];
+
+/**
+ * Bascule films / séries, posée au-dessus de la grille plutôt que noyée dans
+ * les filtres : c'est le choix le plus structurant de la page.
+ *
+ * Des liens, pas des boutons : chaque type est une adresse à part entière, donc
+ * partageable et ouvrable dans un nouvel onglet. Les genres sont volontairement
+ * abandonnés au passage — les identifiants TMDB ne veulent pas dire la même
+ * chose d'un type à l'autre — alors que le tri, lui, garde son sens.
+ */
+function TypeSwitch({
+  basePath,
+  sort,
+  t,
+}: {
+  basePath: string;
+  sort: SortKey;
+  t: Translate;
+}) {
+  return (
+    <div
+      role="tablist"
+      aria-label={t("catalog.type")}
+      className="inline-flex items-center gap-1 rounded-full border border-border bg-background-subtle p-1"
+    >
+      {TYPE_TABS.map((tab) => {
+        const active = tab.basePath === basePath;
+        return (
+          <Link
+            key={tab.basePath}
+            href={pageHref(tab.basePath, 1, [], sort)}
+            role="tab"
+            aria-selected={active}
+            className={`rounded-full px-5 py-2 text-sm font-medium transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+              active
+                ? "bg-background text-foreground-strong shadow-sm"
+                : "text-foreground-muted hover:text-foreground-strong"
+            }`}
+          >
+            {t(tab.key)}
+          </Link>
+        );
+      })}
+    </div>
+  );
+}
+
 async function CatalogResults({
   type,
   basePath,
@@ -109,6 +161,8 @@ async function CatalogResults({
       />
 
       <div className="min-w-0 flex-1 space-y-8">
+        <TypeSwitch basePath={basePath} sort={sort} t={t} />
+
         {items.length === 0 ? (
           <div className="flex flex-col items-center gap-3 py-24 text-center">
             <div className="grid size-14 place-items-center rounded-2xl bg-background-muted text-foreground-subtle">
