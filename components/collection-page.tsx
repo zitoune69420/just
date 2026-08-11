@@ -87,21 +87,30 @@ export async function CollectionPage({
     );
   }
 
-  if (!isSupabaseAdminConfigured() || !isTmdbConfigured()) {
-    return (
-      <>
-        {header}
-        <div className="max-w-lg space-y-4 rounded-3xl border border-border bg-background-subtle p-8">
-          <Badge variant="soft" className="rounded-full">
-            {t(key("configRequired"))}
-          </Badge>
-          <p className="text-sm text-foreground-muted">{t(key("configHint"))}</p>
-        </div>
-      </>
-    );
-  }
+  const unavailable = (
+    <>
+      {header}
+      <div className="max-w-lg space-y-4 rounded-3xl border border-border bg-background-subtle p-8">
+        <Badge variant="soft" className="rounded-full">
+          {t(key("configRequired"))}
+        </Badge>
+        <p className="text-sm text-foreground-muted">{t(key("configHint"))}</p>
+      </div>
+    </>
+  );
 
-  const entries = await getCollection(user.id, kind);
+  if (!isSupabaseAdminConfigured() || !isTmdbConfigured()) return unavailable;
+
+  /**
+   * Une migration en retard sur l'environnement fait échouer la requête. Mieux
+   * vaut l'annoncer que rendre toute la page en erreur.
+   */
+  let entries: Awaited<ReturnType<typeof getCollection>>;
+  try {
+    entries = await getCollection(user.id, kind);
+  } catch {
+    return unavailable;
+  }
 
   if (entries.length === 0) {
     return (

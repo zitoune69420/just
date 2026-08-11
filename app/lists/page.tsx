@@ -57,21 +57,30 @@ async function ListsContent() {
     );
   }
 
-  if (!isSupabaseAdminConfigured()) {
-    return (
-      <>
-        {header}
-        <div className="max-w-lg space-y-4 rounded-3xl border border-border bg-background-subtle p-8">
-          <Badge variant="soft" className="rounded-full">
-            {t("lists.configRequired")}
-          </Badge>
-          <p className="text-sm text-foreground-muted">{t("lists.configHint")}</p>
-        </div>
-      </>
-    );
-  }
+  const unavailable = (
+    <>
+      {header}
+      <div className="max-w-lg space-y-4 rounded-3xl border border-border bg-background-subtle p-8">
+        <Badge variant="soft" className="rounded-full">
+          {t("lists.configRequired")}
+        </Badge>
+        <p className="text-sm text-foreground-muted">{t("lists.configHint")}</p>
+      </div>
+    </>
+  );
 
-  const lists = await getUserLists(user.id);
+  if (!isSupabaseAdminConfigured()) return unavailable;
+
+  /**
+   * Une migration en retard sur l'environnement fait échouer la requête. Mieux
+   * vaut l'annoncer que rendre toute la page en erreur.
+   */
+  let lists: Awaited<ReturnType<typeof getUserLists>>;
+  try {
+    lists = await getUserLists(user.id);
+  } catch {
+    return unavailable;
+  }
 
   return (
     <>

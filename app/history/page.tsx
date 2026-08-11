@@ -111,23 +111,33 @@ async function HistoryContent({ page }: { page: number }) {
     );
   }
 
-  if (!isSupabaseAdminConfigured() || !isTmdbConfigured()) {
-    return (
-      <>
-        {header(false)}
-        <div className="max-w-lg space-y-4 rounded-3xl border border-border bg-background-subtle p-8">
-          <Badge variant="soft" className="rounded-full">
-            {t("history.configRequired")}
-          </Badge>
-          <p className="text-sm text-foreground-muted">
-            {t("history.configHint")}
-          </p>
-        </div>
-      </>
-    );
-  }
+  const unavailable = (
+    <>
+      {header(false)}
+      <div className="max-w-lg space-y-4 rounded-3xl border border-border bg-background-subtle p-8">
+        <Badge variant="soft" className="rounded-full">
+          {t("history.configRequired")}
+        </Badge>
+        <p className="text-sm text-foreground-muted">
+          {t("history.configHint")}
+        </p>
+      </div>
+    </>
+  );
 
-  const { entries, hasMore } = await getProgressHistory(user.id, page);
+  if (!isSupabaseAdminConfigured() || !isTmdbConfigured()) return unavailable;
+
+  /**
+   * Une migration en retard sur l'environnement fait échouer la requête. Mieux
+   * vaut l'annoncer que rendre toute la page en erreur.
+   */
+  let entries: Awaited<ReturnType<typeof getProgressHistory>>["entries"];
+  let hasMore: boolean;
+  try {
+    ({ entries, hasMore } = await getProgressHistory(user.id, page));
+  } catch {
+    return unavailable;
+  }
 
   if (entries.length === 0) {
     return (
