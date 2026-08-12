@@ -7,6 +7,7 @@ import { Input } from "@appica/ui-react/input";
 import { Spinner } from "@appica/ui-react/spinner";
 import { AlertCircle, Check } from "@appica/icons-react";
 import { savePassword, type AccountState } from "@/lib/account-actions";
+import { useTranslations } from "./i18n-provider";
 
 const INITIAL: AccountState = { error: null, success: null };
 
@@ -17,13 +18,14 @@ export function PasswordForm({
   hasPassword: boolean;
   hasEmail: boolean;
 }) {
+  const t = useTranslations();
   const [state, formAction, pending] = useActionState(savePassword, INITIAL);
 
   return (
     <form action={formAction} className="space-y-4">
       {!hasEmail && (
         <Field className="gap-1.5">
-          <FieldLabel htmlFor="account-email">Adresse e-mail</FieldLabel>
+          <FieldLabel htmlFor="account-email">{t("auth.email")}</FieldLabel>
           <Input
             id="account-email"
             name="email"
@@ -33,7 +35,7 @@ export function PasswordForm({
             inputMode="email"
             autoCapitalize="none"
             spellCheck={false}
-            placeholder="vous@exemple.com"
+            placeholder={t("form.emailPlaceholder")}
           />
         </Field>
       )}
@@ -41,7 +43,7 @@ export function PasswordForm({
       {hasPassword && (
         <Field className="gap-1.5">
           <FieldLabel htmlFor="account-current">
-            Mot de passe actuel
+            {t("form.currentPassword")}
           </FieldLabel>
           <Input
             id="account-current"
@@ -56,7 +58,7 @@ export function PasswordForm({
 
       <Field className="gap-1.5">
         <FieldLabel htmlFor="account-password">
-          {hasPassword ? "Nouveau mot de passe" : "Mot de passe"}
+          {hasPassword ? t("form.newPassword") : t("auth.password")}
         </FieldLabel>
         <Input
           id="account-password"
@@ -65,12 +67,12 @@ export function PasswordForm({
           required
           minLength={8}
           autoComplete="new-password"
-          placeholder="8 caractères minimum"
+          placeholder={t("form.passwordPlaceholder")}
         />
       </Field>
 
       <Field className="gap-1.5">
-        <FieldLabel htmlFor="account-confirm">Confirmation</FieldLabel>
+        <FieldLabel htmlFor="account-confirm">{t("reset.confirm")}</FieldLabel>
         <Input
           id="account-confirm"
           name="confirmPassword"
@@ -78,7 +80,7 @@ export function PasswordForm({
           required
           minLength={8}
           autoComplete="new-password"
-          placeholder="Retapez le mot de passe"
+          placeholder={t("form.confirmPlaceholder")}
         />
       </Field>
 
@@ -115,7 +117,7 @@ export function PasswordForm({
               pending ? "translate-y-1 opacity-0" : "translate-y-0 opacity-100"
             }`}
           >
-            {hasPassword ? "Changer le mot de passe" : "Définir le mot de passe"}
+            {hasPassword ? t("form.changePassword") : t("form.setPassword")}
           </span>
           <span
             aria-hidden={!pending}
@@ -125,7 +127,7 @@ export function PasswordForm({
             }`}
           >
             <Spinner className="text-base" />
-            Un instant…
+            {t("reset.pending")}
           </span>
         </span>
       </Button>

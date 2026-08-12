@@ -11,10 +11,12 @@ import {
   requestPasswordReset,
   type ResetRequestState,
 } from "@/lib/reset-actions";
+import { useTranslations } from "./i18n-provider";
 
 const INITIAL: ResetRequestState = { error: null, sent: false };
 
 export function ForgotPasswordForm() {
+  const t = useTranslations();
   const [state, formAction, pending] = useActionState(
     requestPasswordReset,
     INITIAL,
@@ -28,15 +30,14 @@ export function ForgotPasswordForm() {
           className="flex items-start gap-2 rounded-2xl bg-background-muted px-3.5 py-3 text-sm text-foreground-muted"
         >
           <Mail size={20} className="mt-0.5 shrink-0" />
-          Si un compte existe avec cette adresse, un lien de réinitialisation
-          vient d’être envoyé. Il est valable une heure.
+          {t("reset.sent")}
         </p>
         <Button
           variant="outline"
           className="w-full rounded-full"
           render={<Link href="/login" />}
         >
-          Retour à la connexion
+          {t("reset.backToSignIn")}
         </Button>
       </div>
     );
@@ -45,7 +46,7 @@ export function ForgotPasswordForm() {
   return (
     <form action={formAction} className="space-y-4">
       <Field className="gap-1.5">
-        <FieldLabel htmlFor="forgot-email">Adresse e-mail</FieldLabel>
+        <FieldLabel htmlFor="forgot-email">{t("auth.email")}</FieldLabel>
         <Input
           id="forgot-email"
           name="email"
@@ -56,7 +57,7 @@ export function ForgotPasswordForm() {
           inputMode="email"
           autoCapitalize="none"
           spellCheck={false}
-          placeholder="vous@exemple.com"
+          placeholder={t("form.emailPlaceholder")}
         />
       </Field>
 
@@ -76,7 +77,7 @@ export function ForgotPasswordForm() {
         disabled={pending}
       >
         {pending ? <Spinner className="text-base" /> : null}
-        {pending ? "Envoi…" : "Envoyer le lien"}
+        {pending ? t("reset.requestPending") : t("reset.requestSubmit")}
       </Button>
 
       <p className="text-center text-sm text-foreground-muted">
@@ -84,7 +85,7 @@ export function ForgotPasswordForm() {
           href="/login"
           className="rounded-full underline underline-offset-4 outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
-          Retour à la connexion
+          {t("reset.backToSignIn")}
         </Link>
       </p>
     </form>

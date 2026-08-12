@@ -9,14 +9,16 @@ import {
 } from "@appica/ui-react/collapsible";
 import { Separator } from "@appica/ui-react/separator";
 import { ArrowsSort, ChevronDown, Tags } from "@appica/icons-react";
+import type { MessageKey } from "@/lib/i18n/translate";
 import type { SortKey } from "@/lib/tmdb";
 import type { TmdbGenre } from "@/lib/types";
+import { useTranslations } from "./i18n-provider";
 
-const SORT_OPTIONS: { value: SortKey; label: string }[] = [
-  { value: "popularity", label: "Popularité" },
-  { value: "rating", label: "Mieux notés" },
-  { value: "year", label: "Plus récents" },
-  { value: "title", label: "A-Z" },
+const SORT_OPTIONS: { value: SortKey; key: MessageKey }[] = [
+  { value: "popularity", key: "catalog.sort.popularity" },
+  { value: "rating", key: "catalog.sort.rating" },
+  { value: "year", key: "catalog.sort.year" },
+  { value: "title", key: "catalog.sort.title" },
 ];
 
 /**
@@ -44,6 +46,7 @@ export function CatalogFilters({
   onSortChange,
   onReset,
 }: CatalogFiltersProps) {
+  const t = useTranslations();
   const [sortOpen, setSortOpen] = useState(true);
   const [genresOpen, setGenresOpen] = useState(true);
 
@@ -110,14 +113,14 @@ export function CatalogFilters({
                 onClick={onReset}
                 className="text-xs text-foreground-muted transition-colors hover:text-foreground-strong"
               >
-                Réinitialiser
+                {t("catalog.reset")}
               </button>
             )}
           </div>
 
           <FilterSection
             icon={ArrowsSort}
-            title="Trier par"
+            title={t("catalog.sort")}
             open={sortOpen}
             onOpenChange={setSortOpen}
           >
@@ -125,7 +128,7 @@ export function CatalogFilters({
               <FilterCheckboxRow
                 key={option.value}
                 id={`sort-${option.value}`}
-                label={option.label}
+                label={t(option.key)}
                 checked={sort === option.value}
                 onCheckedChange={() => onSortChange(option.value)}
               />
@@ -136,7 +139,7 @@ export function CatalogFilters({
 
           <FilterSection
             icon={Tags}
-            title="Genres"
+            title={t("catalog.genres")}
             open={genresOpen}
             onOpenChange={setGenresOpen}
           >

@@ -5,8 +5,10 @@ import { Button } from "@appica/ui-react/button";
 import { Input } from "@appica/ui-react/input";
 import { Search } from "@appica/icons-react";
 import { rememberSearch } from "@/lib/search-history";
+import { useTranslations } from "./i18n-provider";
 
 export function SearchForm({ initialQuery }: { initialQuery: string }) {
+  const t = useTranslations();
   const router = useRouter();
 
   function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
@@ -29,8 +31,8 @@ export function SearchForm({ initialQuery }: { initialQuery: string }) {
         name="q"
         inputSize="lg"
         defaultValue={initialQuery}
-        placeholder="Titre d’un film ou d’une série…"
-        aria-label="Rechercher un film ou une série"
+        placeholder={t("search.placeholder")}
+        aria-label={t("search.label")}
         startSlot={<Search size={18} />}
         autoFocus={initialQuery === ""}
         className="flex-1 rounded-full"
@@ -41,7 +43,7 @@ export function SearchForm({ initialQuery }: { initialQuery: string }) {
         className="press shrink-0 rounded-full bg-white text-black before:border before:border-border before:bg-white hover:before:bg-white/85 max-sm:px-4"
       >
         <Search size={18} className="sm:hidden" />
-        <span className="max-sm:hidden">Rechercher</span>
+        <span className="max-sm:hidden">{t("search.submit")}</span>
       </Button>
     </form>
   );

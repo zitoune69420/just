@@ -8,10 +8,12 @@ import { Input } from "@appica/ui-react/input";
 import { Spinner } from "@appica/ui-react/spinner";
 import { AlertCircle } from "@appica/icons-react";
 import { resetPassword, type ResetState } from "@/lib/reset-actions";
+import { useTranslations } from "./i18n-provider";
 
 const INITIAL: ResetState = { error: null };
 
 export function ResetPasswordForm({ token }: { token: string }) {
+  const t = useTranslations();
   const [state, formAction, pending] = useActionState(resetPassword, INITIAL);
 
   return (
@@ -19,7 +21,7 @@ export function ResetPasswordForm({ token }: { token: string }) {
       <input type="hidden" name="token" value={token} />
 
       <Field className="gap-1.5">
-        <FieldLabel htmlFor="reset-password">Nouveau mot de passe</FieldLabel>
+        <FieldLabel htmlFor="reset-password">{t("reset.newPassword")}</FieldLabel>
         <Input
           id="reset-password"
           name="password"
@@ -28,12 +30,12 @@ export function ResetPasswordForm({ token }: { token: string }) {
           autoFocus
           minLength={8}
           autoComplete="new-password"
-          placeholder="8 caractères minimum"
+          placeholder={t("form.passwordPlaceholder")}
         />
       </Field>
 
       <Field className="gap-1.5">
-        <FieldLabel htmlFor="reset-confirm">Confirmation</FieldLabel>
+        <FieldLabel htmlFor="reset-confirm">{t("reset.confirm")}</FieldLabel>
         <Input
           id="reset-confirm"
           name="confirmPassword"
@@ -41,7 +43,7 @@ export function ResetPasswordForm({ token }: { token: string }) {
           required
           minLength={8}
           autoComplete="new-password"
-          placeholder="Retapez le mot de passe"
+          placeholder={t("form.confirmPlaceholder")}
         />
       </Field>
 
@@ -61,7 +63,7 @@ export function ResetPasswordForm({ token }: { token: string }) {
         disabled={pending}
       >
         {pending ? <Spinner className="text-base" /> : null}
-        {pending ? "Un instant…" : "Changer le mot de passe"}
+        {pending ? t("reset.pending") : t("reset.submit")}
       </Button>
 
       <p className="text-center text-sm text-foreground-muted">
@@ -69,7 +71,7 @@ export function ResetPasswordForm({ token }: { token: string }) {
           href="/forgot-password"
           className="rounded-full underline underline-offset-4 outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
-          Demander un nouveau lien
+          {t("reset.askNewLink")}
         </Link>
       </p>
     </form>
