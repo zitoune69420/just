@@ -164,14 +164,14 @@ export function WatchDialog({
               role="status"
               className="pointer-events-none absolute inset-x-0 top-0 z-10 flex justify-center p-3"
             >
-              <div className="pointer-events-auto flex max-w-lg items-start gap-2.5 rounded-2xl bg-black/85 px-4 py-3 text-sm text-white shadow-2xl ring-1 ring-white/15 backdrop-blur-sm">
-                <AlertTriangle size={18} className="mt-px shrink-0 text-warning" />
+              <div className="pointer-events-auto flex max-w-lg items-start gap-2.5 rounded-md bg-warning px-4 py-3 text-sm font-medium text-warning-foreground shadow-2xl ring-1 ring-black/10">
+                <AlertTriangle size={18} className="mt-px shrink-0" />
                 <p className="min-w-0 flex-1">{t("detail.adsWarning")}</p>
                 <button
                   type="button"
                   onClick={() => setHint(false)}
                   aria-label={t("detail.adsWarningDismiss")}
-                  className="-me-1 -mt-1 shrink-0 rounded-full p-1 text-white/70 outline-none transition-colors hover:text-white focus-visible:ring-2 focus-visible:ring-white"
+                  className="-me-1 -mt-1 shrink-0 rounded-sm p-1 text-warning-foreground/70 outline-none transition-colors hover:text-warning-foreground focus-visible:ring-2 focus-visible:ring-warning-foreground"
                 >
                   <X size={16} />
                 </button>
@@ -195,10 +195,23 @@ export function WatchDialog({
            * `Permissions-Policy` de l'app coupe caméra, micro et géoloc ; et
            * `referrerPolicy="no-referrer"` empêche la fuite de l'URL de la fiche.
            */}
+          {/**
+           * Chaque capacité porte `*` au lieu de son défaut implicite `'src'`.
+           * `'src'` désigne l'origine de l'URL écrite dans `src` — ici la nôtre,
+           * puisque l'iframe passe par `/api/stream`. Or cette route redirige
+           * vers le serveur de flux : le document finalement chargé est sur une
+           * autre origine, absente de la liste, et la délégation tombe. Le
+           * lecteur se retrouvait avec `document.fullscreenEnabled` à faux, donc
+           * un bouton plein écran sans effet ni message d'erreur.
+           *
+           * `*` ne rouvre rien au-delà de cette iframe : la délégation reste
+           * bornée par l'en-tête `Permissions-Policy` de l'application, qui
+           * refuse toujours caméra, micro et géolocalisation à tout le monde.
+           */}
           <iframe
             src={src}
             referrerPolicy="no-referrer"
-            allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
+            allow="autoplay *; encrypted-media *; picture-in-picture *; fullscreen *"
             allowFullScreen
             className="size-full border-0"
           />
