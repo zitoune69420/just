@@ -51,6 +51,9 @@ export const metadata: Metadata = {
     title: "JUST — Films & Séries",
     description: DESCRIPTION,
   },
+  other: {
+    heleket: "a0ca1a59",
+  },
 };
 
 /**
