@@ -2,28 +2,21 @@ import { NextResponse, type NextRequest } from "next/server";
 import { openSession, SESSION_COOKIE } from "@/lib/session";
 
 /**
- * `/list` en fait partie : une liste partagée n'a d'intérêt que si le
- * destinataire du lien peut l'ouvrir sans compte. La page vérifie elle-même
- * que la liste est bien publiée avant de montrer quoi que ce soit.
+ * Le catalogue se visite sans compte : la connexion ne conditionne pas la
+ * navigation, seulement la lecture. Celle-ci est refusée côté serveur par
+ * `/api/playback` et `/api/stream`, qui vérifient session et droits — ce sont
+ * eux le verrou, pas ce fichier.
+ *
+ * Restent ici les routes qui n'ont aucun sens sans compte et dont on préfère
+ * qu'elles n'apparaissent jamais, même une fraction de seconde. Les pages
+ * personnelles (`/favorites`, `/watchlist`, `/history`, `/lists`, `/account`)
+ * n'en font pas partie : elles affichent d'elles-mêmes une invitation à se
+ * connecter, ce qui vaut mieux qu'une redirection sèche.
  */
-const PUBLIC_PATHS = [
-  "/login",
-  "/forgot-password",
-  "/reset-password",
-  "/list",
-];
+const PRIVATE_PATHS = ["/admin"];
 
-/**
- * Images de métadonnées générées (`/opengraph-image`, `/movie/12/twitter-image`…).
- * Elles n'ont pas d'extension dans l'URL, donc le matcher ne les écarte pas :
- * sans cette exception les robots des réseaux sociaux reçoivent la page de
- * connexion à la place de l'aperçu. Elles n'exposent que des données TMDB.
- */
-const METADATA_IMAGE = /(^|\/)(opengraph|twitter)-image$/;
-
-function isPublic(pathname: string): boolean {
-  if (METADATA_IMAGE.test(pathname)) return true;
-  return PUBLIC_PATHS.some(
+function isPrivate(pathname: string): boolean {
+  return PRIVATE_PATHS.some(
     (path) => pathname === path || pathname.startsWith(`${path}/`),
   );
 }
@@ -31,7 +24,7 @@ function isPublic(pathname: string): boolean {
 export function proxy(request: NextRequest) {
   const { pathname, search } = request.nextUrl;
 
-  if (isPublic(pathname)) {
+  if (!isPrivate(pathname)) {
     return NextResponse.next();
   }
 
@@ -47,14 +40,10 @@ export function proxy(request: NextRequest) {
   }
 
   const login = new URL("/login", request.nextUrl.origin);
-  if (pathname !== "/") {
-    login.searchParams.set("returnTo", `${pathname}${search}`);
-  }
+  login.searchParams.set("returnTo", `${pathname}${search}`);
   return NextResponse.redirect(login);
 }
 
 export const config = {
-  matcher: [
-    "/((?!api|_next/static|_next/image|favicon.ico|.*\\.(?:png|jpg|jpeg|gif|svg|webp|ico|txt|xml)$).*)",
-  ],
+  matcher: ["/admin/:path*", "/admin"],
 };

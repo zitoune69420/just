@@ -34,8 +34,19 @@ function getDismissed(): readonly string[] {
   return snapshot;
 }
 
-export function getServerDismissed(): readonly string[] {
-  return EMPTY;
+/**
+ * `null` — et non la liste vide — parce que le serveur ne sait pas ce qui a été
+ * rejeté : il ne peut pas conclure « rien ». Renvoyer `EMPTY` faisait rendre
+ * l'avis *ouvert* dans le HTML, donc un modal et son verrou de pointeur posés
+ * sur une page qui, une fois hydratée, n'avait aucun avis à montrer : plus rien
+ * n'était cliquable jusqu'à la navigation suivante.
+ *
+ * React réutilise cet instantané pour le premier rendu client, le temps de
+ * l'hydratation : l'avis n'apparaît donc qu'ensuite, quand la réponse est
+ * connue.
+ */
+export function getServerDismissed(): readonly string[] | null {
+  return null;
 }
 
 export function subscribeDismissed(listener: () => void): () => void {

@@ -28,7 +28,8 @@ export function BetaNotice() {
     getServerDismissed,
   );
 
-  const open = !dismissed.includes(NOTICE_ID);
+  /** `null` tant que le stockage n'a pas été lu : dans le doute, rien ne s'ouvre. */
+  const open = dismissed !== null && !dismissed.includes(NOTICE_ID);
 
   return (
     <Dialog

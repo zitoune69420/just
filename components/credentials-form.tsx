@@ -77,13 +77,13 @@ export function CredentialsForm({
   const signup = mode === "signup";
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       <form action={formAction} className="flex flex-col">
         <input type="hidden" name="mode" value={mode} />
         {returnTo && <input type="hidden" name="returnTo" value={returnTo} />}
 
         <Collapse open={signup}>
-          <div className="pb-4">
+          <div className="pb-3">
             <Field className="gap-1.5">
               <FieldLabel htmlFor="credentials-name">{t("auth.name")}</FieldLabel>
               <Input
@@ -101,7 +101,7 @@ export function CredentialsForm({
           </div>
         </Collapse>
 
-        <div className="pb-4">
+        <div className="pb-3">
           <Field className="gap-1.5">
             <FieldLabel htmlFor="credentials-email">{t("auth.email")}</FieldLabel>
             <Input
@@ -118,7 +118,7 @@ export function CredentialsForm({
           </Field>
         </div>
 
-        <div className="pb-4">
+        <div className="pb-3">
           <Field className="gap-1.5">
             <FieldLabel htmlFor="credentials-password">
               {t("auth.password")}
@@ -136,7 +136,7 @@ export function CredentialsForm({
         </div>
 
         <Collapse open={Boolean(state.error)}>
-          <div className="pb-4">
+          <div className="pb-3">
             <p
               role="alert"
               className="flex items-center gap-2 rounded-2xl bg-background-muted px-3.5 py-3 text-sm text-foreground-muted"
@@ -149,7 +149,6 @@ export function CredentialsForm({
 
         <Button
           type="submit"
-          size="lg"
           className="press w-full rounded-full"
           disabled={pending}
         >

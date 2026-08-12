@@ -122,11 +122,9 @@ export async function SignInPanel({
   }
 
   return (
-    <div className='max-w-sm space-y-4 flex flex-col mx-auto h-140 my-auto'>
-      <div className="space-y-1.5">
-        <h1 className="text-2xl font-bold tracking-tight">
-          {t("auth.title")}
-        </h1>
+    <div className="enter mx-auto flex w-full max-w-xs flex-1 flex-col justify-center gap-3.5 px-4 py-10">
+      <div className="space-y-1">
+        <h1 className="text-xl font-bold tracking-tight">{t("auth.title")}</h1>
         <p className="text-sm text-foreground-muted">{t("auth.subtitle")}</p>
       </div>
 
@@ -174,11 +172,7 @@ export async function SignInPanel({
             <Separator className="flex-1" />
           </div>
 
-          <DiscordSignInButton
-            size="lg"
-            returnTo={destination}
-            className="w-full"
-          />
+          <DiscordSignInButton returnTo={destination} className="w-full" />
         </>
       )}
     </div>

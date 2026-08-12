@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { Button } from "@appica/ui-react/button";
 import { Dialog, DialogContent } from "@appica/ui-react/dialog";
 import { Lock } from "@appica/icons-react";
@@ -15,6 +16,14 @@ export function AccessDialog({
   onClose: () => void;
 }) {
   const t = useTranslations();
+
+  /**
+   * Un visiteur sans compte n'a pas d'offre à consulter : on l'envoie se
+   * connecter, et il revient sur la fiche qu'il essayait de lancer.
+   */
+  const anonymous = denied?.reason === "anonymous";
+  const returnTo = usePathname();
+
   return (
     <Dialog
       open={denied !== null}
@@ -41,9 +50,22 @@ export function AccessDialog({
             >
               {t("playback.close")}
             </Button>
-            <Button className="rounded-full" render={<Link href="/account" />}>
-              {t("playback.myPlan")}
-            </Button>
+            {anonymous ? (
+              <Button
+                className="rounded-full"
+                render={
+                  <Link
+                    href={`/login?returnTo=${encodeURIComponent(returnTo)}`}
+                  />
+                }
+              >
+                {t("session.signIn")}
+              </Button>
+            ) : (
+              <Button className="rounded-full" render={<Link href="/account" />}>
+                {t("playback.myPlan")}
+              </Button>
+            )}
           </div>
         </div>
       </DialogContent>
