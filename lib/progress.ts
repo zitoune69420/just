@@ -8,6 +8,12 @@ export interface ProgressEntry {
   episode: number | null;
   positionSeconds: number;
   durationSeconds: number | null;
+  /**
+   * Vrai quand `positionSeconds` vient du lecteur. Faux quand il vient du
+   * compteur de repli, qui additionne du temps d'ouverture et ne désigne aucun
+   * point du média : cette valeur-là ne doit jamais servir de reprise.
+   */
+  positionExact: boolean;
   updatedAt: string;
 }
 
@@ -18,11 +24,12 @@ interface ProgressRow {
   episode: number | null;
   position_seconds: number;
   duration_seconds: number | null;
+  position_exact: boolean;
   updated_at: string;
 }
 
 const COLUMNS =
-  "tmdb_id, media_type, season, episode, position_seconds, duration_seconds, updated_at";
+  "tmdb_id, media_type, season, episode, position_seconds, duration_seconds, position_exact, updated_at";
 
 const RECENT_LIMIT = 20;
 
@@ -37,6 +44,7 @@ function toEntry(row: ProgressRow): ProgressEntry {
     episode: row.episode,
     positionSeconds: row.position_seconds,
     durationSeconds: row.duration_seconds,
+    positionExact: row.position_exact,
     updatedAt: row.updated_at,
   };
 }
@@ -152,6 +160,36 @@ export async function advanceProgress(
     p_season: input.season,
     p_episode: input.episode,
     p_seconds: input.seconds,
+    p_duration: input.durationSeconds,
+  });
+
+  if (error) {
+    throw new Error(`Supabase progress: ${error.message}`);
+  }
+}
+
+/**
+ * Position exacte rapportée par le lecteur : elle remplace la valeur stockée.
+ * `advanceProgress` reste le repli quand le lecteur n'émet rien.
+ */
+export async function setProgress(
+  userId: string,
+  input: {
+    tmdbId: number;
+    mediaType: MediaType;
+    season: number | null;
+    episode: number | null;
+    positionSeconds: number;
+    durationSeconds: number | null;
+  },
+): Promise<void> {
+  const { error } = await supabaseAdmin().rpc("set_progress", {
+    p_user_id: userId,
+    p_tmdb_id: input.tmdbId,
+    p_media_type: input.mediaType,
+    p_season: input.season,
+    p_episode: input.episode,
+    p_position: input.positionSeconds,
     p_duration: input.durationSeconds,
   });
 

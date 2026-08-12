@@ -22,11 +22,18 @@ export function isStreamConfigured(): boolean {
   return base() !== null;
 }
 
+/**
+ * En deçà, reprendre n'apporte rien : on est encore au générique de début, et
+ * un `startAt` de quelques secondes coûte plus qu'il ne rend.
+ */
+const MIN_RESUME_SECONDS = 30;
+
 export function buildStreamUrl(
   mediaType: MediaType,
   tmdbId: number,
   season: number | null,
   episode: number | null,
+  startAtSeconds: number | null = null,
 ): string | null {
   const root = base();
   if (!root) return null;
@@ -41,6 +48,10 @@ export function buildStreamUrl(
 
   const lang = subtitleLang();
   if (lang) params.set("ds_lang", lang);
+
+  if (startAtSeconds !== null && startAtSeconds >= MIN_RESUME_SECONDS) {
+    params.set("startAt", String(Math.floor(startAtSeconds)));
+  }
 
   return `${root}/${path}?${params.toString()}`;
 }

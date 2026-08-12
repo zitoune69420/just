@@ -15,6 +15,7 @@ import {
 } from "@appica/ui-react/dropdown-menu";
 import {
   Bookmark,
+  Flag,
   Heart,
   History,
   ListDetails,
@@ -104,10 +105,16 @@ export function SessionMenu({
             {t("session.myAccount")}
           </DropdownMenuItem>
           {isAdmin && (
-            <DropdownMenuItem render={<Link href="/admin" />}>
-              <Users size={16} />
-              {t("session.admin")}
-            </DropdownMenuItem>
+            <>
+              <DropdownMenuItem render={<Link href="/admin" />}>
+                <Users size={16} />
+                {t("session.admin")}
+              </DropdownMenuItem>
+              <DropdownMenuItem render={<Link href="/admin/reports" />}>
+                <Flag size={16} />
+                {t("admin.reports")}
+              </DropdownMenuItem>
+            </>
           )}
           {canLinkDiscord && (
             <DropdownMenuItem

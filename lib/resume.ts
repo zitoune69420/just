@@ -10,7 +10,7 @@ import { getTvDetails, getTvSeason } from "./tmdb";
  * souvent dans les dix dernières pour cent, et personne ne veut se voir
  * reproposer un épisode qu'il a laissé au générique.
  */
-const FINISHED_RATIO = 0.9;
+export const FINISHED_RATIO = 0.9;
 
 export interface ResumeTarget {
   season: number | null;

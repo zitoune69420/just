@@ -1,3 +1,4 @@
+import { cacheHeaders } from "@/lib/http-cache";
 import { getLocaleAndTranslator } from "@/lib/i18n/server";
 import { allowByIp, MINUTE, tooManyRequests } from "@/lib/rate-limit";
 import { toEpisode } from "@/lib/media";
@@ -25,9 +26,12 @@ export async function GET(request: Request) {
   const { locale, t } = await getLocaleAndTranslator();
   const data = await getTvSeason(locale, tvId, season);
 
-  return Response.json({
-    episodes: (data?.episodes ?? []).map((episode) =>
-      toEpisode(episode, { locale, t }),
-    ),
-  });
+  return Response.json(
+    {
+      episodes: (data?.episodes ?? []).map((episode) =>
+        toEpisode(episode, { locale, t }),
+      ),
+    },
+    { headers: cacheHeaders(600) },
+  );
 }

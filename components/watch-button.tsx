@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { Button } from "@appica/ui-react/button";
 import { Dialog, DialogContent } from "@appica/ui-react/dialog";
@@ -23,6 +23,7 @@ import { recordProgress } from "@/lib/progress-actions";
 import type { MediaType, Season } from "@/lib/types";
 import { useTranslations } from "./i18n-provider";
 import { AccessDialog } from "./access-dialog";
+import { ReportButton } from "./report-button";
 
 export const WATCH_ANCHOR = "regarder";
 
@@ -44,7 +45,77 @@ const TICK_MS = 60_000;
 
 const MIN_FLUSH_SECONDS = 10;
 
-function useWatchTimer(open: boolean, track: WatchTrack | undefined) {
+/** Dernier état connu du lecteur, ou `null` tant qu'il n'a rien émis. */
+interface PlayerState {
+  positionSeconds: number;
+  durationSeconds: number | null;
+}
+
+interface PlayerEventData {
+  player_status?: unknown;
+  player_progress?: unknown;
+  player_duration?: unknown;
+}
+
+function readPlayerEvent(data: unknown): PlayerState | null {
+  if (typeof data !== "object" || data === null) return null;
+
+  const message = data as { type?: unknown; data?: unknown };
+  if (message.type !== "PLAYER_EVENT") return null;
+
+  const payload = message.data as PlayerEventData | undefined;
+  const progress = payload?.player_progress;
+  if (typeof progress !== "number" || !Number.isFinite(progress)) return null;
+
+  const duration = payload?.player_duration;
+
+  return {
+    positionSeconds: Math.max(Math.round(progress), 0),
+    durationSeconds:
+      typeof duration === "number" && Number.isFinite(duration) && duration > 0
+        ? Math.round(duration)
+        : null,
+  };
+}
+
+/**
+ * Position réelle du lecteur, qu'il diffuse par `postMessage` toutes les cinq
+ * secondes environ, et à chaque pause ou déplacement dans la vidéo.
+ *
+ * L'origine du lecteur n'est pas connue du client — c'est tout l'intérêt du
+ * détour par `/api/stream` — donc elle ne peut pas servir de filtre. On vérifie
+ * à la place que le message vient bien de notre iframe, ce qui est une garantie
+ * plus forte : une autre fenêtre ne peut pas se faire passer pour elle.
+ */
+function usePlayerPosition(
+  open: boolean,
+  frame: React.RefObject<HTMLIFrameElement | null>,
+): React.RefObject<PlayerState | null> {
+  const state = useRef<PlayerState | null>(null);
+
+  useEffect(() => {
+    if (!open) return;
+
+    function onMessage(event: MessageEvent) {
+      if (!frame.current || event.source !== frame.current.contentWindow) {
+        return;
+      }
+      const next = readPlayerEvent(event.data);
+      if (next) state.current = next;
+    }
+
+    window.addEventListener("message", onMessage);
+    return () => window.removeEventListener("message", onMessage);
+  }, [open, frame]);
+
+  return state;
+}
+
+function useWatchTimer(
+  open: boolean,
+  track: WatchTrack | undefined,
+  player: React.RefObject<PlayerState | null>,
+) {
   const type = track?.type;
   const id = track?.id;
   const season = track?.season ?? null;
@@ -67,7 +138,16 @@ function useWatchTimer(open: boolean, track: WatchTrack | undefined) {
     function send(beacon: boolean) {
       collect();
       const seconds = Math.round(pending / 1000);
-      if (seconds < MIN_FLUSH_SECONDS) return;
+      const state = player.current;
+
+      /**
+       * Le seuil ne protège que le comptage à l'aveugle, dont les petites
+       * miettes ne valent pas un appel. Une position connue est envoyée quoi
+       * qu'il arrive : elle remplace la valeur stockée au lieu de s'y ajouter,
+       * et c'est justement la fermeture rapide après un déplacement dans la
+       * vidéo qu'il ne faut pas perdre.
+       */
+      if (state === null && seconds < MIN_FLUSH_SECONDS) return;
       pending = 0;
 
       const payload = JSON.stringify({
@@ -76,7 +156,9 @@ function useWatchTimer(open: boolean, track: WatchTrack | undefined) {
         season,
         episode,
         seconds,
-        durationSeconds: runtime !== null ? runtime * 60 : null,
+        positionSeconds: state?.positionSeconds ?? null,
+        durationSeconds:
+          state?.durationSeconds ?? (runtime !== null ? runtime * 60 : null),
       });
 
       if (beacon && navigator.sendBeacon) {
@@ -118,7 +200,7 @@ function useWatchTimer(open: boolean, track: WatchTrack | undefined) {
       window.removeEventListener("pagehide", onPageHide);
       send(true);
     };
-  }, [open, type, id, season, episode, runtime]);
+  }, [open, type, id, season, episode, runtime, player]);
 }
 
 /** Durée d'affichage de l'avertissement publicitaire avant effacement. */
@@ -138,7 +220,9 @@ export function WatchDialog({
   next?: NextUp | null;
 }) {
   const t = useTranslations();
-  useWatchTimer(open, track);
+  const frame = useRef<HTMLIFrameElement>(null);
+  const player = usePlayerPosition(open, frame);
+  useWatchTimer(open, track, player);
 
   /**
    * Le lecteur ouvre deux onglets publicitaires aux premiers clics et rien de
@@ -209,6 +293,7 @@ export function WatchDialog({
            * refuse toujours caméra, micro et géolocalisation à tout le monde.
            */}
           <iframe
+            ref={frame}
             src={src}
             referrerPolicy="no-referrer"
             allow="autoplay *; encrypted-media *; picture-in-picture *; fullscreen *"
@@ -216,19 +301,41 @@ export function WatchDialog({
             className="size-full border-0"
           />
         </div>
-        {next && (
+        {/**
+         * Le signalement vit ici parce que c'est ici qu'on découvre le
+         * problème : un titre annoncé au catalogue mais que le lecteur ne sert
+         * pas. Le proposer sur la fiche seulement obligerait à ressortir du
+         * lecteur pour dire qu'il ne marche pas.
+         */}
+        {(next || track) && (
           <div className="flex items-center justify-between gap-3 border-t border-border-overlay bg-background px-4 py-3">
-            <p className="min-w-0 truncate text-sm text-foreground-muted">
-              {t("detail.upNext", { label: next.label })}
-            </p>
-            <Button
-              size="sm"
-              className="shrink-0 rounded-full"
-              onClick={next.onPlay}
-              disabled={next.pending}
-            >
-              <PlayerTrackNext size={16} /> {t("detail.nextEpisode")}
-            </Button>
+            {next ? (
+              <p className="min-w-0 truncate text-sm text-foreground-muted">
+                {t("detail.upNext", { label: next.label })}
+              </p>
+            ) : (
+              <span className="min-w-0 flex-1" />
+            )}
+            <div className="flex shrink-0 items-center gap-2">
+              {track && (
+                <ReportButton
+                  mediaType={track.type}
+                  tmdbId={track.id}
+                  season={track.season}
+                  episode={track.episode}
+                />
+              )}
+              {next && (
+                <Button
+                  size="sm"
+                  className="shrink-0 rounded-full"
+                  onClick={next.onPlay}
+                  disabled={next.pending}
+                >
+                  <PlayerTrackNext size={16} /> {t("detail.nextEpisode")}
+                </Button>
+              )}
+            </div>
           </div>
         )}
       </DialogContent>

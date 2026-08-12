@@ -1,4 +1,5 @@
 import { isMediaType } from "@/lib/collections";
+import { cacheHeaders } from "@/lib/http-cache";
 import { getLocale } from "@/lib/i18n/server";
 import { toMedia } from "@/lib/media";
 import { allowByIp, MINUTE, tooManyRequests } from "@/lib/rate-limit";
@@ -59,8 +60,11 @@ export async function GET(request: Request) {
     sort: parseSort(params.get("sort")),
   });
 
-  return Response.json({
-    items: data.results.map((item) => toMedia(item, type)),
-    totalPages: Math.min(data.total_pages, MAX_PAGE),
-  } satisfies CatalogPayload);
+  return Response.json(
+    {
+      items: data.results.map((item) => toMedia(item, type)),
+      totalPages: Math.min(data.total_pages, MAX_PAGE),
+    } satisfies CatalogPayload,
+    { headers: cacheHeaders(300) },
+  );
 }

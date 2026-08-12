@@ -163,7 +163,7 @@ export async function getGenres(
   type: MediaType,
 ): Promise<TmdbGenre[]> {
   "use cache";
-  cacheLife("days");
+  cacheLife("reference");
   const data = await tmdbFetch<{ genres: TmdbGenre[] }>(
     `/genre/${type}/list`,
     locale,
@@ -247,7 +247,7 @@ export async function getPersonDetails(
   id: number,
 ): Promise<TmdbPersonDetails | null> {
   "use cache";
-  cacheLife("days");
+  cacheLife("reference");
   try {
     return await tmdbFetch<TmdbPersonDetails>(`/person/${id}`, locale, {
       append_to_response: "combined_credits",
@@ -265,7 +265,7 @@ export async function getMediaGenreIds(
   id: number,
 ): Promise<number[]> {
   "use cache";
-  cacheLife("days");
+  cacheLife("reference");
   try {
     const data = await tmdbFetch<{ genres?: TmdbGenre[] }>(
       `/${type}/${id}`,

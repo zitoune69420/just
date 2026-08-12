@@ -1,3 +1,4 @@
+import { cacheHeaders } from "@/lib/http-cache";
 import { getLocaleAndTranslator } from "@/lib/i18n/server";
 import { allowByIp, MINUTE, tooManyRequests } from "@/lib/rate-limit";
 import { toMedia } from "@/lib/media";
@@ -66,5 +67,13 @@ export async function GET(request: Request) {
     .slice(0, PEOPLE_LIMIT)
     .map((hit) => hit.person);
 
-  return Response.json({ results, people, corrected });
+  /**
+   * Court, mais suffisant : le menu de commande rappelle la route à chaque
+   * frappe, et effacer une lettre redemande une requête déjà posée une seconde
+   * plus tôt.
+   */
+  return Response.json(
+    { results, people, corrected },
+    { headers: cacheHeaders(60) },
+  );
 }

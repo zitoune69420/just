@@ -39,6 +39,21 @@ const SECURITY_HEADERS = [
 
 const nextConfig: NextConfig = {
   cacheComponents: true,
+  /**
+   * Profils propres au projet, pour les données TMDB qui ne bougent
+   * pratiquement jamais : la liste des genres, une fiche de personne, les
+   * épisodes d'une saison déjà diffusée. Les profils intégrés s'arrêtent à
+   * `days`, ce qui fait redemander chaque jour des réponses identiques sur une
+   * clé d'API facturée.
+   */
+  cacheLife: {
+    /** Référentiel quasi figé : genres, biographies. */
+    reference: {
+      stale: 60 * 60 * 24 * 7,
+      revalidate: 60 * 60 * 24 * 7,
+      expire: 60 * 60 * 24 * 30,
+    },
+  },
   poweredByHeader: false,
   async headers() {
     return [
