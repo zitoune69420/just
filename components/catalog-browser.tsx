@@ -203,13 +203,7 @@ export function CatalogBrowser({
       <div className="contents max-lg:hidden">{filters(false)}</div>
 
       <div className="min-w-0 flex-1 space-y-8">
-        {/*
-          `items-stretch` plutôt qu'une hauteur en dur sur le bouton : la barre
-          d'onglets tire la sienne de son texte et de ses rembourrages, donc
-          toute constante finirait par diverger. Le bouton s'aligne dessus, et
-          `aspect-square` lui rend sa largeur.
-        */}
-        <div className="flex items-stretch gap-2">
+        <div className="flex items-center gap-2">
         <div
           role="tablist"
           aria-label={t("catalog.type")}
@@ -250,7 +244,7 @@ export function CatalogBrowser({
                 <Button
                   variant="outline"
                   size="icon-lg"
-                  className="relative aspect-square size-auto rounded-full lg:hidden"
+                  className="relative rounded-full lg:hidden"
                   aria-label={t("catalog.filters")}
                   onClick={() => setFiltersOpen(true)}
                 >

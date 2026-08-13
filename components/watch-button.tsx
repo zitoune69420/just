@@ -253,18 +253,22 @@ export function WatchDialog({
        * où il ne dispute plus rien à la largeur.
        */}
       <DialogContent className="w-full max-w-[min(64rem,calc((100dvh-2rem)*16/9))] overflow-hidden border-border-overlay bg-background p-0 sm:max-w-[min(64rem,calc((100dvh-2rem)*16/9+3.5rem))] [&>[data-slot=dialog-content]]:pt-0! [&>[data-slot=dialog-content]]:pb-0!">
-        <div className="relative flex flex-col sm:flex-row">
+        <div className="flex flex-col">
         {/**
-         * L'avertissement se cale sur ce conteneur-ci, pas sur la vidéo : rangé
-         * dans la vidéo, son `inset-x-0` ne couvrait que celle-ci et le centrage
-         * ignorait la largeur du rail.
+         * Bandeau, pas surimpression : posé sur la vidéo, l'avertissement
+         * masquait le haut de l'image pendant douze secondes — soit le début de
+         * la lecture. Il pousse maintenant le lecteur vers le bas et lui rend
+         * son cadre entier.
+         *
+         * `pe-14` dégage la croix de fermeture du dialogue, en position absolue
+         * dans le coin supérieur droit.
          */}
         {hint && (
           <div
             role="status"
-            className="pointer-events-none absolute inset-x-0 top-0 z-10 flex justify-center p-3"
+            className="flex shrink-0 justify-center p-3 pe-14"
           >
-            <div className="pointer-events-auto flex max-w-lg items-start gap-2.5 rounded-md bg-warning px-4 py-3 text-sm font-medium text-warning-foreground shadow-2xl ring-1 ring-black/10">
+            <div className="flex max-w-lg items-start gap-2.5 rounded-md bg-warning px-4 py-3 text-sm font-medium text-warning-foreground ring-1 ring-black/10">
               <AlertTriangle size={18} className="mt-px shrink-0" />
               <p className="min-w-0 flex-1">{t("detail.adsWarning")}</p>
               <button
@@ -278,6 +282,7 @@ export function WatchDialog({
             </div>
           </div>
         )}
+        <div className="relative flex min-h-0 flex-col sm:flex-row">
         <div className="relative aspect-video min-w-0 flex-1">
           {/**
            * Pas d'attribut `sandbox` : mesuré, le lecteur refuse de démarrer dès
@@ -337,9 +342,15 @@ export function WatchDialog({
          * vaut `(largeur − bouton) / 2`. Cette largeur-là est la seule qui la
          * fasse tomber sur l'axe de la croix de fermeture. Rétrécir le rail les
          * décale vers la gauche.
+         *
+         * Sous `sm` le rail devient une barre : l'ordre vertical du desktop y
+         * est rejoué à l'horizontale, le signalement — en bas de colonne par
+         * `sm:mt-auto` — passant à gauche et l'épisode suivant à droite. `order`
+         * et `ms-auto` plutôt qu'un `justify-between` : quand un seul des deux
+         * boutons existe, chacun garde ainsi son propre bord.
          */}
         {(next || track) && (
-          <aside className="flex shrink-0 flex-row items-center justify-center gap-3 border-t border-border-overlay bg-background p-2 sm:w-14 sm:flex-col sm:justify-start sm:gap-4 sm:border-t-0 sm:border-s sm:px-3 sm:pt-13">
+          <aside className="flex shrink-0 flex-row items-center gap-3 border-t border-border-overlay bg-background p-2 sm:w-14 sm:flex-col sm:justify-start sm:gap-4 sm:border-t-0 sm:border-s sm:px-3 sm:pt-13">
             {/**
              * `icon-sm` + `rounded-sm` : exactement ce que porte la croix de
              * fermeture du dialogue, avec laquelle ces boutons cohabitent.
@@ -354,7 +365,7 @@ export function WatchDialog({
                       variant="primary"
                       size="icon-sm"
                       aria-label={`${t("detail.nextEpisode")} — ${next.label}`}
-                      className="rounded-sm"
+                      className="rounded-sm max-sm:ms-auto"
                       onClick={next.onPlay}
                       disabled={next.pending}
                     >
@@ -375,11 +386,12 @@ export function WatchDialog({
                 tmdbId={track.id}
                 season={track.season}
                 episode={track.episode}
-                className="sm:mt-auto"
+                className="max-sm:order-first sm:mt-auto"
               />
             )}
           </aside>
         )}
+        </div>
         </div>
       </DialogContent>
     </Dialog>

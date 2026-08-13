@@ -56,10 +56,15 @@ export function Navbar({ session }: { session: React.ReactNode }) {
 
         <div className="ms-auto flex shrink-0 items-center gap-2">
           <CommandMenu />
+          <ThemeToggle />
+          {session}
+          <Suspense fallback={<BurgerMenu pathname={null} />}>
+            <ActiveBurgerMenu />
+          </Suspense>
           {/*
-            Entre `md` et `lg` le rail de liens est visible mais le champ de
-            recherche (`max-lg:hidden`) ne l'est pas : ce raccourci comble ce
-            seul intervalle. Sous `md`, la recherche est dans le burger.
+            Le champ de recherche complet (`max-lg:hidden`) laisse un trou sous
+            `lg` : ce raccourci le comble, à droite du burger, pour que la
+            recherche reste à un geste sans passer par le menu.
           */}
           <Tooltip>
             <TooltipTrigger
@@ -67,7 +72,7 @@ export function Navbar({ session }: { session: React.ReactNode }) {
                 <Button
                   variant="ghost"
                   size="icon-sm"
-                  className="rounded-full max-md:hidden lg:hidden"
+                  className="rounded-full lg:hidden"
                   render={<Link href="/search" aria-label={t("nav.searchLabel")} />}
                 >
                   <Search size={18} />
@@ -76,11 +81,6 @@ export function Navbar({ session }: { session: React.ReactNode }) {
             />
             <TooltipContent>{t("nav.searchLabel")}</TooltipContent>
           </Tooltip>
-          <ThemeToggle />
-          {session}
-          <Suspense fallback={<BurgerMenu pathname={null} />}>
-            <ActiveBurgerMenu />
-          </Suspense>
         </div>
       </div>
     </header>
