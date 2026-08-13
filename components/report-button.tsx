@@ -110,7 +110,13 @@ export function ReportButton({
       </Tooltip>
 
       <Dialog open={open} onOpenChange={change}>
-        <DialogContent className="w-full max-w-md border-border-overlay bg-background">
+        {/**
+         * Le rembourrage horizontal se pose ici parce que le dialogue ne fournit
+         * que le vertical : l'horizontal est porté par `DialogHeader` et
+         * `DialogBody`, dont ce formulaire n'a pas l'usage. `px-6` reprend la
+         * valeur du `pt-6`/`pb-6` d'origine, pour un cadre régulier.
+         */}
+        <DialogContent className="w-full max-w-md border-border-overlay bg-background [&>[data-slot=dialog-content]]:px-6">
           {outcome ? (
             <div className="space-y-4 text-center">
               <div className="mx-auto grid size-12 place-items-center rounded-md bg-background-muted">
