@@ -345,7 +345,13 @@ export function WatchDialog({
          * groupes sans `justify-between`, qui collerait un bouton seul au
          * mauvais bord.
          */}
-        <aside className="flex shrink-0 flex-row items-center gap-3 border-t border-border-overlay bg-background p-2 sm:w-14 sm:flex-col sm:justify-start sm:gap-4 sm:border-t-0 sm:border-s sm:px-3 sm:pt-3">
+        {/**
+         * Le rembourrage horizontal ne bouge pas sous `sm` : la largeur du rail
+         * est fixe (`sm:w-14`) et `px-3` est exactement ce qui y centre un
+         * bouton de 2rem. C'est le dégagement vertical qui s'ouvre, puisque
+         * c'est lui qui rapproche les boutons des coins.
+         */}
+        <aside className="flex shrink-0 flex-row items-center gap-3 border-t border-border-overlay bg-background px-4 py-3 sm:w-14 sm:flex-col sm:justify-start sm:gap-4 sm:border-t-0 sm:border-s sm:px-3 sm:py-5">
             {/**
              * `icon-sm` + `rounded-sm` sur les trois : autrement le rail aligne
              * des boîtes de tailles et de rondeurs différentes.
