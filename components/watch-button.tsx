@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { Button } from "@appica/ui-react/button";
-import { Dialog, DialogContent } from "@appica/ui-react/dialog";
+import { Dialog, DialogClose, DialogContent } from "@appica/ui-react/dialog";
 import {
   Tooltip,
   TooltipContent,
@@ -252,21 +252,24 @@ export function WatchDialog({
        * ce calcul au lieu de rogner l'image. Sous `sm` le rail passe dessous,
        * où il ne dispute plus rien à la largeur.
        */}
-      <DialogContent className="w-full max-w-[min(64rem,calc((100dvh-2rem)*16/9))] overflow-hidden border-border-overlay bg-background p-0 sm:max-w-[min(64rem,calc((100dvh-2rem)*16/9+3.5rem))] [&>[data-slot=dialog-content]]:pt-0! [&>[data-slot=dialog-content]]:pb-0!">
+      {/**
+       * `closeButton={false}` : la croix par défaut est en position absolue
+       * dans le coin supérieur droit, hors du rail. Elle flottait donc seule
+       * au-dessus de la vidéo, à distance des deux autres commandes. Elle est
+       * reprise plus bas comme premier élément du rail, avec eux.
+       */}
+      <DialogContent closeButton={false} className="w-full max-w-[min(64rem,calc((100dvh-2rem)*16/9))] overflow-hidden border-border-overlay bg-background p-0 sm:max-w-[min(64rem,calc((100dvh-2rem)*16/9+3.5rem))] [&>[data-slot=dialog-content]]:pt-0! [&>[data-slot=dialog-content]]:pb-0!">
         <div className="flex flex-col">
         {/**
          * Bandeau, pas surimpression : posé sur la vidéo, l'avertissement
          * masquait le haut de l'image pendant douze secondes — soit le début de
          * la lecture. Il pousse maintenant le lecteur vers le bas et lui rend
          * son cadre entier.
-         *
-         * `pe-14` dégage la croix de fermeture du dialogue, en position absolue
-         * dans le coin supérieur droit.
          */}
         {hint && (
           <div
             role="status"
-            className="flex shrink-0 justify-center p-3 pe-14"
+            className="flex shrink-0 justify-center p-3"
           >
             <div className="flex max-w-lg items-start gap-2.5 rounded-md bg-warning px-4 py-3 text-sm font-medium text-warning-foreground ring-1 ring-black/10">
               <AlertTriangle size={18} className="mt-px shrink-0" />
@@ -331,32 +334,35 @@ export function WatchDialog({
          * découvre qu'un titre ne se lance pas ; le proposer sur la seule fiche
          * obligerait à ressortir du lecteur pour dire qu'il ne marche pas.
          *
-         * `sm:pt-14` n'est pas une marge décorative : la croix de fermeture du
-         * dialogue est en position absolue dans le coin supérieur droit
-         * (`top-3`, hauteur `2rem`), donc pile à l'entrée du rail. Sans ce
-         * dégagement le premier bouton passe dessous. Rien de tel sous `sm`, où
-         * le rail est sous l'image et ne croise plus la croix.
+         * Il porte les trois commandes, fermeture comprise : une croix flottant
+         * seule dans un coin ne se relie visuellement à rien.
          *
-         * `sm:w-14` + `sm:px-3` ne sont pas interchangeables avec d'autres
-         * valeurs : les boutons sont centrés, donc leur distance au bord droit
-         * vaut `(largeur − bouton) / 2`. Cette largeur-là est la seule qui la
-         * fasse tomber sur l'axe de la croix de fermeture. Rétrécir le rail les
-         * décale vers la gauche.
-         *
-         * Sous `sm` le rail devient une barre : l'ordre vertical du desktop y
-         * est rejoué à l'horizontale, le signalement — en bas de colonne par
-         * `sm:mt-auto` — passant à gauche et l'épisode suivant à droite. `order`
-         * et `ms-auto` plutôt qu'un `justify-between` : quand un seul des deux
-         * boutons existe, chacun garde ainsi son propre bord.
+         * Sous `sm` le rail devient une barre, et l'ordre vertical du desktop y
+         * est rejoué à l'horizontale : fermeture et épisode suivant — en haut de
+         * colonne — passent à droite, le signalement — en bas, par `sm:mt-auto`
+         * — passe à gauche. Les `order` explicites tiennent cet agencement quel
+         * que soit le nombre de boutons présents, et `ms-auto` sépare les deux
+         * groupes sans `justify-between`, qui collerait un bouton seul au
+         * mauvais bord.
          */}
-        {(next || track) && (
-          <aside className="flex shrink-0 flex-row items-center gap-3 border-t border-border-overlay bg-background p-2 sm:w-14 sm:flex-col sm:justify-start sm:gap-4 sm:border-t-0 sm:border-s sm:px-3 sm:pt-13">
+        <aside className="flex shrink-0 flex-row items-center gap-3 border-t border-border-overlay bg-background p-2 sm:w-14 sm:flex-col sm:justify-start sm:gap-4 sm:border-t-0 sm:border-s sm:px-3 sm:pt-3">
             {/**
-             * `icon-sm` + `rounded-sm` : exactement ce que porte la croix de
-             * fermeture du dialogue, avec laquelle ces boutons cohabitent.
-             * Toute autre combinaison pose côte à côte deux boîtes de tailles
-             * et de rondeurs différentes.
+             * `icon-sm` + `rounded-sm` sur les trois : autrement le rail aligne
+             * des boîtes de tailles et de rondeurs différentes.
              */}
+            <DialogClose
+              render={
+                <Button
+                  variant="outline"
+                  size="icon-sm"
+                  aria-label={t("playback.close")}
+                  className="rounded-sm max-sm:order-3"
+                >
+                  <X size={16} />
+                </Button>
+              }
+            />
+
             {next && (
               <Tooltip>
                 <TooltipTrigger
@@ -365,7 +371,7 @@ export function WatchDialog({
                       variant="primary"
                       size="icon-sm"
                       aria-label={`${t("detail.nextEpisode")} — ${next.label}`}
-                      className="rounded-sm max-sm:ms-auto"
+                      className="rounded-sm max-sm:order-2 max-sm:ms-auto"
                       onClick={next.onPlay}
                       disabled={next.pending}
                     >
@@ -386,11 +392,10 @@ export function WatchDialog({
                 tmdbId={track.id}
                 season={track.season}
                 episode={track.episode}
-                className="max-sm:order-first sm:mt-auto"
+                className="max-sm:order-1 sm:mt-auto"
               />
             )}
           </aside>
-        )}
         </div>
         </div>
       </DialogContent>
