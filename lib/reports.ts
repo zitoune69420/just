@@ -76,7 +76,7 @@ export async function createReport(input: ReportInput): Promise<boolean> {
         reason: input.reason,
       },
       {
-        onConflict: "user_id, tmdb_id, media_type, season, episode",
+        onConflict: "user_id,tmdb_id,media_type,season,episode",
         ignoreDuplicates: true,
       },
     )

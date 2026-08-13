@@ -12,6 +12,7 @@ import { resolveResume, type ResumeTarget } from "@/lib/resume";
 import { getSession } from "@/lib/auth";
 import { isStreamConfigured } from "@/lib/stream-url";
 import { isSupabaseAdminConfigured } from "@/lib/supabase";
+import { isTitleUnavailable } from "@/lib/title-flags";
 import type { MediaDetails } from "@/lib/types";
 import { getUserLists, listsContaining } from "@/lib/lists";
 import { AddToList } from "./add-to-list";
@@ -20,6 +21,7 @@ import { WatchlistButton } from "./watchlist-button";
 import { MediaRow } from "./media-row";
 import { RowCarousel } from "./row-carousel";
 import { SeasonPicker } from "./season-picker";
+import { UnavailableNotice } from "./unavailable-notice";
 import { TrailerPlayer } from "./trailer-player";
 import { WatchButton } from "./watch-button";
 import { WatchSection } from "./watch-section";
@@ -59,6 +61,22 @@ async function listPickerData(type: MediaDetails["type"], id: number) {
   }
 }
 
+/**
+ * Drapeau posé par l'administration. Silencieux si la table n'existe pas encore
+ * ou si Supabase n'est pas configuré : une fiche doit s'afficher sans base.
+ */
+async function unavailableFlag(
+  type: MediaDetails["type"],
+  id: number,
+): Promise<boolean> {
+  if (!isSupabaseAdminConfigured()) return false;
+  try {
+    return await isTitleUnavailable(type, id);
+  } catch {
+    return false;
+  }
+}
+
 const BACKDROP_FADE =
   "[-webkit-mask-image:linear-gradient(to_bottom,black_72%,#000b_85%,#0004_95%,transparent_100%)] [mask-image:linear-gradient(to_bottom,black_72%,#000b_85%,#0004_95%,transparent_100%)]";
 
@@ -86,9 +104,11 @@ export async function MediaDetailView({ details }: { details: MediaDetails }) {
   const resume = await resumePoint(locale, details.type, details.id);
   const listPicker = await listPickerData(details.type, details.id);
   const streamAvailable = isStreamConfigured();
+  const unavailable = await unavailableFlag(details.type, details.id);
 
   return (
       <article className="enter pb-16">
+        {unavailable && <UnavailableNotice />}
         <div
             className={`relative h-[45vh] min-h-80 w-full overflow-hidden ${BACKDROP_FADE}`}
         >
@@ -201,13 +221,19 @@ export async function MediaDetailView({ details }: { details: MediaDetails }) {
                     title={details.title}
                     variant="inline"
                 />
+                {/*
+                  Masqué sur mobile : la rangée d'actions y passait à la ligne,
+                  et le menu de listes reste accessible depuis `/lists`.
+                */}
                 {listPicker && (
-                    <AddToList
-                        mediaType={details.type}
-                        tmdbId={details.id}
-                        lists={listPicker.lists}
-                        containing={listPicker.containing}
-                    />
+                    <div className="max-sm:hidden">
+                      <AddToList
+                          mediaType={details.type}
+                          tmdbId={details.id}
+                          lists={listPicker.lists}
+                          containing={listPicker.containing}
+                      />
+                    </div>
                 )}
               </div>
             </div>
