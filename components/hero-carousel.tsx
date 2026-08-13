@@ -71,10 +71,15 @@ export function HeroCarousel({ items }: { items: Media[] }) {
                     >
                       <PlayerPlayFilled size={18} /> {t("detail.watch")}
                     </Button>
+                    {/*
+                      Sur mobile les deux boutons mènent à la même page : le
+                      second n'ajoutait qu'un doublon, dans la largeur où la
+                      place manque le plus.
+                    */}
                     <Button
                       variant="light"
                       size="lg"
-                      className="rounded-full"
+                      className="rounded-full max-sm:hidden"
                       render={<Link href={href} />}
                     >
                       <InfoCircle size={18} /> {t("hero.moreInfo")}

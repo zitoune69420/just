@@ -12,7 +12,7 @@ import {
 import { TopMediaRow } from "@/components/top-media-row";
 import { getLocaleAndTranslator } from "@/lib/i18n/server";
 import { toMedia } from "@/lib/media";
-import { getRecentProgress } from "@/lib/progress";
+import { getContinueWatching } from "@/lib/progress";
 import { resolveResume } from "@/lib/resume";
 import {
   getBecauseYouWatched,
@@ -98,9 +98,9 @@ async function ContinueWatchingRow() {
   const userId = await currentUserId();
   if (!userId) return null;
 
-  let entries: Awaited<ReturnType<typeof getRecentProgress>>;
+  let entries: Awaited<ReturnType<typeof getContinueWatching>>;
   try {
-    entries = await getRecentProgress(userId);
+    entries = await getContinueWatching(userId);
   } catch {
     return null;
   }

@@ -1,8 +1,9 @@
 "use client";
 
 import Image from "next/image";
-import { useTransition } from "react";
+import { useState, useTransition } from "react";
 import { Button } from "@appica/ui-react/button";
+import { Spinner } from "@appica/ui-react/spinner";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -42,6 +43,8 @@ export function LocaleFlag({
 export function LocaleMenuItems() {
   const current = useLocale();
   const [pending, startTransition] = useTransition();
+  /** Voir `LocaleCard` : le spinner ne s'allume que sur l'entrée cliquée. */
+  const [target, setTarget] = useState<Locale | null>(null);
 
   return (
     <>
@@ -50,12 +53,19 @@ export function LocaleMenuItems() {
           key={locale}
           disabled={pending}
           closeOnClick={false}
-          onClick={() => startTransition(() => setLocale(locale))}
+          onClick={() => {
+            setTarget(locale);
+            startTransition(() => setLocale(locale));
+          }}
         >
           <LocaleFlag locale={locale} />
           {LOCALE_LABELS[locale]}
-          {locale === current && (
-            <Check size={16} className="ms-auto text-success" />
+          {pending && locale === target ? (
+            <Spinner className="ms-auto text-base" />
+          ) : (
+            locale === current && (
+              <Check size={16} className="ms-auto text-success" />
+            )
           )}
         </DropdownMenuItem>
       ))}

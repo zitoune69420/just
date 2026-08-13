@@ -18,6 +18,7 @@ import { Kbd } from "@appica/ui-react/kbd";
 import { Separator } from "@appica/ui-react/separator";
 import { Spinner } from "@appica/ui-react/spinner";
 import { History, MovieOff, Search, UserOff, X } from "@appica/icons-react";
+import { readCache, writeCache } from "@/lib/client-cache";
 import { tmdbImage } from "@/lib/media";
 import {
   forgetSearch,
@@ -36,6 +37,11 @@ interface SearchHit {
   title: string;
   year: string | null;
   poster: string | null;
+}
+
+interface SearchPayload {
+  results?: SearchHit[];
+  people?: Person[];
 }
 
 type Entry =
@@ -87,20 +93,35 @@ export function CommandMenu() {
   useEffect(() => {
     if (!canSearch) return;
 
+    const key = `search:${term.toLowerCase()}`;
+
     let cancelled = false;
     const controller = new AbortController();
 
     const timer = setTimeout(async () => {
+      /**
+       * Une requête déjà tapée ressort du stockage : l'historique de recherche
+       * ramène souvent aux mêmes termes.
+       */
+      const cached = readCache<SearchPayload>(key);
+      if (cached) {
+        if (!cancelled) {
+          setHits(cached.results ?? []);
+          setPeople(cached.people ?? []);
+        }
+        return;
+      }
+
       setLoading(true);
       try {
         const response = await fetch(
           `/api/search?q=${encodeURIComponent(term)}`,
           { signal: controller.signal },
         );
-        const data = (await response.json()) as {
-          results?: SearchHit[];
-          people?: Person[];
-        };
+        const data = (await response.json()) as SearchPayload;
+        if (response.ok && (data.results?.length || data.people?.length)) {
+          writeCache(key, data);
+        }
         if (!cancelled) {
           setHits(data.results ?? []);
           setPeople(data.people ?? []);
@@ -121,12 +142,22 @@ export function CommandMenu() {
   useEffect(() => {
     if (!open || suggestions.length > 0) return;
 
+    const key = "search:suggestions";
+
     let cancelled = false;
     (async () => {
+      const cached = readCache<SearchHit[]>(key);
+      if (cached) {
+        if (!cancelled) setSuggestions(cached);
+        return;
+      }
+
       try {
         const response = await fetch("/api/search?q=");
         const data = (await response.json()) as { results?: SearchHit[] };
-        if (!cancelled) setSuggestions(data.results ?? []);
+        const results = data.results ?? [];
+        if (response.ok && results.length > 0) writeCache(key, results);
+        if (!cancelled) setSuggestions(results);
       } catch {}
     })();
 

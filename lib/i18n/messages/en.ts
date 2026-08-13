@@ -12,6 +12,7 @@ export const en = {
   "nav.new": "New",
   "nav.search": "Search",
   "nav.label": "Main navigation",
+  "nav.menu": "Menu",
   "nav.searchLabel": "Search",
   "footer.tmdb":
     "This product uses the TMDB API but is not endorsed or certified by TMDB.",
@@ -499,6 +500,13 @@ export const en = {
   "admin.reportDate": "Date",
   "admin.reportResolve": "Mark handled",
   "admin.reportReopen": "Reopen",
+  "admin.reportUnavailable": "Unavailable",
+  "admin.reportMarkUnavailable": "Warn members this title cannot be played",
+  "admin.reportsUnavailable":
+    "Reports cannot be read. A database migration is probably missing.",
+  "unavailable.title": "Not available",
+  "unavailable.body": "Boo hoo, not available.",
+  "unavailable.close": "Got it",
   "admin.backToUsers": "Accounts",
   "admin.editTitle": "Edit account",
   "admin.editDescription": "Name, email address and role.",

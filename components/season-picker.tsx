@@ -12,7 +12,7 @@ import {
 import { Spinner } from "@appica/ui-react/spinner";
 import { PlayerPlayFilled } from "@appica/icons-react";
 import { tmdbImage } from "@/lib/media";
-import { nextEpisodeAfter } from "@/lib/next-episode";
+import { fetchSeasonEpisodes, nextEpisodeAfter } from "@/lib/next-episode";
 import { useTranslations } from "./i18n-provider";
 import type { Episode, Season } from "@/lib/types";
 import {
@@ -64,16 +64,12 @@ export function SeasonPicker({
     const controller = new AbortController();
 
     (async () => {
-      try {
-        const response = await fetch(
-          `/api/season?tv=${tvId}&season=${season}`,
-          { signal: controller.signal },
-        );
-        const data = (await response.json()) as { episodes?: Episode[] };
-        if (!cancelled) setLoaded({ season, episodes: data.episodes ?? [] });
-      } catch {
-        if (!cancelled) setLoaded({ season, episodes: [] });
-      }
+      const episodes = await fetchSeasonEpisodes(
+        tvId,
+        season,
+        controller.signal,
+      );
+      if (!cancelled) setLoaded({ season, episodes });
     })();
 
     return () => {

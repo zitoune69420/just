@@ -2,8 +2,20 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Button } from "@appica/ui-react/button";
-import { ChevronLeft, ChevronRight, FilterOff } from "@appica/icons-react";
+import { Dialog, DialogContent } from "@appica/ui-react/dialog";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@appica/ui-react/tooltip";
+import {
+  ChevronLeft,
+  ChevronRight,
+  Filter,
+  FilterOff,
+} from "@appica/icons-react";
 import type { CatalogPayload } from "@/app/api/catalog/route";
+import { readCache, writeCache } from "@/lib/client-cache";
 import type { SortKey } from "@/lib/tmdb";
 import type { Media, MediaType, TmdbGenre } from "@/lib/types";
 import { CatalogFilters } from "./catalog-filters";
@@ -83,6 +95,7 @@ export function CatalogBrowser({
   const [items, setItems] = useState<Media[]>(initialItems);
   const [totalPages, setTotalPages] = useState(initialTotalPages);
   const [loading, setLoading] = useState(false);
+  const [filtersOpen, setFiltersOpen] = useState(false);
 
   /**
    * Signature de ce qui est actuellement à l'écran. Au départ c'est la grille
@@ -104,12 +117,26 @@ export function CatalogBrowser({
     setLoading(true);
 
     async function load() {
+      /**
+       * Une grille déjà parcourue est resservie sans requête, y compris après
+       * fermeture de l'onglet : c'est le retour arrière et le va-et-vient entre
+       * filtres qui coûtaient le plus d'appels à TMDB.
+       */
+      const cached = readCache<CatalogPayload>(`catalog:${key}`);
+      if (cached) {
+        setItems(cached.items);
+        setTotalPages(cached.totalPages);
+        setLoading(false);
+        return;
+      }
+
       try {
         const response = await fetch(requestUrl(state), {
           signal: controller.signal,
         });
         if (!response.ok) throw new Error(`catalogue: ${response.status}`);
         const data = (await response.json()) as CatalogPayload;
+        if (data.items.length > 0) writeCache(`catalog:${key}`, data);
         setItems(data.items);
         setTotalPages(data.totalPages);
       } catch {
@@ -147,19 +174,29 @@ export function CatalogBrowser({
   const hasActiveFilters =
     state.genreIds.length > 0 || state.sort !== "popularity";
 
+  const filters = (
+    <CatalogFilters
+      genres={genresByType[state.type]}
+      selectedGenreIds={state.genreIds}
+      sort={state.sort}
+      busy={loading}
+      onGenresChange={(genreIds) => update({ genreIds })}
+      onSortChange={(sort) => update({ sort })}
+      onReset={() => update({ genreIds: [], sort: "popularity" })}
+    />
+  );
+
   return (
     <div className="flex flex-col gap-8 lg:flex-row lg:items-start">
-      <CatalogFilters
-        genres={genresByType[state.type]}
-        selectedGenreIds={state.genreIds}
-        sort={state.sort}
-        busy={loading}
-        onGenresChange={(genreIds) => update({ genreIds })}
-        onSortChange={(sort) => update({ sort })}
-        onReset={() => update({ genreIds: [], sort: "popularity" })}
-      />
+      {/*
+        Le panneau latéral mangeait un écran entier de haut sur mobile : la
+        grille commençait sous la ligne de flottaison. Sous `lg` les mêmes
+        filtres passent dans un dialogue, ouvert depuis la barre d'onglets.
+      */}
+      <div className="contents max-lg:hidden">{filters}</div>
 
       <div className="min-w-0 flex-1 space-y-8">
+        <div className="flex items-center gap-2">
         <div
           role="tablist"
           aria-label={t("catalog.type")}
@@ -193,6 +230,40 @@ export function CatalogBrowser({
             );
           })}
         </div>
+
+          <Tooltip>
+            <TooltipTrigger
+              render={
+                <Button
+                  variant="outline"
+                  size="icon-lg"
+                  className="relative rounded-full lg:hidden"
+                  aria-label={t("catalog.filters")}
+                  onClick={() => setFiltersOpen(true)}
+                >
+                  <Filter size={20} />
+                  {/* Un filtre actif est invisible une fois le dialogue fermé. */}
+                  {hasActiveFilters && (
+                    <span
+                      aria-hidden="true"
+                      className="absolute end-1.5 top-1.5 size-2 rounded-full bg-accent"
+                    />
+                  )}
+                </Button>
+              }
+            />
+            <TooltipContent>{t("catalog.filters")}</TooltipContent>
+          </Tooltip>
+        </div>
+
+        <Dialog open={filtersOpen} onOpenChange={setFiltersOpen}>
+          <DialogContent className="w-full max-w-sm border-border-overlay bg-background [&>[data-slot=dialog-content]]:px-4">
+            <h2 className="px-1 pb-3 text-lg font-semibold tracking-tight">
+              {t("catalog.filters")}
+            </h2>
+            {filters}
+          </DialogContent>
+        </Dialog>
 
         <div
           aria-busy={loading}

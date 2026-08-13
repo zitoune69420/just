@@ -67,6 +67,36 @@ export async function getRecentProgress(
 }
 
 /**
+ * Rangée « reprendre » : uniquement ce qui a réellement démarré.
+ *
+ * `recordProgress` crée la ligne au clic sur lecture, avant toute lecture : la
+ * position vaut alors 0. C'est nécessaire pour retenir l'épisode visé, mais ça
+ * faisait entrer dans la rangée des titres ouverts puis refermés aussitôt.
+ * Seule une position non nulle atteste d'une lecture — elle vient soit du
+ * lecteur, soit du compteur de repli, et aucun des deux ne s'exprime avant que
+ * la vidéo ne soit restée ouverte.
+ *
+ * L'historique, lui, garde tout : y avoir cliqué reste un fait à consigner.
+ */
+export async function getContinueWatching(
+  userId: string,
+): Promise<ProgressEntry[]> {
+  const { data, error } = await supabaseAdmin()
+    .from("progress")
+    .select(COLUMNS)
+    .eq("user_id", userId)
+    .gt("position_seconds", 0)
+    .order("updated_at", { ascending: false })
+    .limit(RECENT_LIMIT);
+
+  if (error) {
+    throw new Error(`Supabase progress: ${error.message}`);
+  }
+
+  return (data ?? []).map((row: ProgressRow) => toEntry(row));
+}
+
+/**
  * Historique complet, paginé. `hasMore` évite un `count` séparé : on demande
  * une ligne de plus que la page et on la jette.
  */

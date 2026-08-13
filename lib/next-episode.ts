@@ -1,3 +1,4 @@
+import { readCache, writeCache } from "./client-cache";
 import type { Episode, Season } from "./types";
 
 export interface NextEpisode {
@@ -7,18 +8,41 @@ export interface NextEpisode {
   runtime: number | null;
 }
 
+export function seasonCacheKey(tvId: number, season: number): string {
+  return `season:${tvId}:${season}`;
+}
+
+/**
+ * Une saison entièrement diffusée ne bouge plus : c'est la seule qu'on garde.
+ *
+ * `released` est calculé au rendu à partir de la date de diffusion. Mettre en
+ * cache une saison en cours figerait ce calcul pendant des jours — l'épisode de
+ * la semaine resterait affiché comme non sorti, et injouable.
+ */
+function cacheable(episodes: Episode[]): boolean {
+  return episodes.length > 0 && episodes.every((episode) => episode.released);
+}
+
 /** Charge les épisodes d'une saison via la route interne. Tableau vide si échec. */
 export async function fetchSeasonEpisodes(
   tvId: number,
   season: number,
   signal?: AbortSignal,
 ): Promise<Episode[]> {
+  const key = seasonCacheKey(tvId, season);
+  const cached = readCache<Episode[]>(key);
+  if (cached) return cached;
+
   try {
     const response = await fetch(`/api/season?tv=${tvId}&season=${season}`, {
       signal,
     });
     const data = (await response.json()) as { episodes?: Episode[] };
-    return data.episodes ?? [];
+    const episodes = data.episodes ?? [];
+
+    if (response.ok && cacheable(episodes)) writeCache(key, episodes);
+
+    return episodes;
   } catch {
     return [];
   }

@@ -12,6 +12,7 @@ import {
   type ReportReason,
 } from "./reports";
 import { isSupabaseAdminConfigured } from "./supabase";
+import { setTitleUnavailable } from "./title-flags";
 import type { MediaType } from "./types";
 
 export type ReportResult =
@@ -68,9 +69,41 @@ export async function reportTitle(
       reason,
     });
     return { ok: true, duplicate: !created };
-  } catch {
+  } catch (error) {
+    console.error("[report] Enregistrement impossible", error);
     return { ok: false, reason: "unavailable" };
   }
+}
+
+/**
+ * Réservé à l'administration : signale aux comptes qu'un titre est injouable.
+ *
+ * Découplé de `markReportResolved` à dessein. Traiter un signalement veut dire
+ * « je l'ai lu » ; marquer le titre veut dire « c'est confirmé, prévenez tout le
+ * monde ». Les deux arrivent souvent ensemble, mais pas toujours : un
+ * signalement peut être infondé, et un titre peut tomber sans qu'on l'ait
+ * signalé.
+ */
+export async function markTitleUnavailable(
+  mediaType: MediaType,
+  tmdbId: number,
+  unavailable: boolean,
+): Promise<{ ok: boolean }> {
+  if (!isMediaType(mediaType) || !isTmdbId(tmdbId)) return { ok: false };
+
+  const admin = await currentAdmin();
+  if (!admin) return { ok: false };
+
+  try {
+    await setTitleUnavailable(mediaType, tmdbId, unavailable, admin.id);
+  } catch (error) {
+    console.error("[admin] Marquage du titre impossible", error);
+    return { ok: false };
+  }
+
+  revalidatePath("/admin/reports");
+  revalidatePath(`/${mediaType}/${tmdbId}`);
+  return { ok: true };
 }
 
 /** Réservé à l'administration : marque un signalement traité, ou le rouvre. */

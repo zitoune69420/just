@@ -10,6 +10,7 @@ export const fr: Messages = {
   "nav.new": "Nouveautés",
   "nav.search": "Recherche",
   "nav.label": "Navigation principale",
+  "nav.menu": "Menu",
   "nav.searchLabel": "Recherche",
   "footer.tmdb":
     "Ce produit utilise l’API TMDB sans être approuvé ni certifié par TMDB.",
@@ -521,6 +522,14 @@ export const fr: Messages = {
   "admin.reportDate": "Date",
   "admin.reportResolve": "Marquer traité",
   "admin.reportReopen": "Rouvrir",
+  "admin.reportUnavailable": "Indisponible",
+  "admin.reportMarkUnavailable":
+    "Prévenir les comptes que ce titre est injouable",
+  "admin.reportsUnavailable":
+    "Les signalements sont illisibles. Une migration manque probablement.",
+  "unavailable.title": "Pas disponible",
+  "unavailable.body": "Ouin ouin pas dispo.",
+  "unavailable.close": "Compris",
   "admin.backToUsers": "Comptes",
   "admin.editTitle": "Modifier le compte",
   "admin.editDescription": "Nom, adresse e-mail et rôle.",

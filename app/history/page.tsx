@@ -190,7 +190,7 @@ async function HistoryContent({ page }: { page: number }) {
         {rows.map(({ entry, resume, media }) => (
           <li
             key={`${media.type}-${media.id}`}
-            className="flex items-center gap-4 py-3"
+            className="flex items-center gap-3 py-3 sm:gap-4"
           >
             <div className="relative w-16 shrink-0 overflow-hidden rounded-xl bg-background-muted">
               <Link href={`/${media.type}/${media.id}`}>
@@ -221,9 +221,14 @@ async function HistoryContent({ page }: { page: number }) {
             </div>
 
             <div className="min-w-0 flex-1">
+              {/*
+                `block` n'est pas décoratif : `truncate` pose `overflow: hidden`,
+                qui reste sans effet sur une boîte en ligne. Le titre débordait
+                donc de sa colonne et allongeait la page en largeur.
+              */}
               <Link
                 href={`/${media.type}/${media.id}`}
-                className="truncate text-sm font-medium text-foreground-strong outline-none hover:underline focus-visible:underline"
+                className="block truncate text-sm font-medium text-foreground-strong outline-none hover:underline focus-visible:underline"
               >
                 {media.title}
               </Link>
