@@ -186,7 +186,13 @@ export async function MediaDetailView({ details }: { details: MediaDetails }) {
                     ))}
                   </div>
               )}
-              <div className="flex flex-wrap items-center gap-3 pt-1">
+              {/*
+                Pas de `flex-wrap` : les deux boutons ronds passaient à la ligne
+                dès que le libellé de lecture s'allongeait — « Reprendre S1 E2 »
+                plutôt que « Regarder ». C'est le bouton de lecture qui cède la
+                place maintenant, en tronquant son texte.
+              */}
+              <div className="flex items-center gap-2 pt-1 sm:gap-3">
                 {details.released ? (
                     <WatchButton
                         id={details.id}
@@ -202,7 +208,7 @@ export async function MediaDetailView({ details }: { details: MediaDetails }) {
                         available={streamAvailable}
                     />
                 ) : (
-                    <span className="inline-flex items-center gap-2 rounded-full bg-background-muted px-5 py-3 text-sm font-medium text-foreground-muted">
+                    <span className="inline-flex min-w-0 items-center gap-2 rounded-full bg-background-muted px-5 py-3 text-sm font-medium text-foreground-muted">
                       <CalendarEvent size={18} className="shrink-0"/>
                       {details.releaseDate
                           ? t("detail.releaseOn", { date: details.releaseDate })

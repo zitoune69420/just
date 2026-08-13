@@ -525,21 +525,28 @@ export function WatchButton({
 
   return (
     <>
+      {/*
+        `min-w-0` + `truncate` : sur la fiche, ce bouton partage sa ligne avec
+        les favoris et la watchlist, qui eux ne se compriment pas. Sans quoi un
+        libellé long les pousserait hors de l'écran.
+      */}
       <Button
         size="lg"
-        className="rounded-full"
+        className="min-w-0 rounded-full"
         onClick={() => void play(season, episode, runtime)}
         disabled={pending}
       >
-        <PlayerPlayFilled size={20} />
-        {resumed && season !== null && episode !== null
-          ? t(advanced ? "detail.playNext" : "detail.resume", {
-              season,
-              episode,
-            })
-          : resumed
-            ? t("detail.rewatch")
-            : t("detail.watch")}
+        <PlayerPlayFilled size={20} className="shrink-0" />
+        <span className="truncate">
+          {resumed && season !== null && episode !== null
+            ? t(advanced ? "detail.playNext" : "detail.resume", {
+                season,
+                episode,
+              })
+            : resumed
+              ? t("detail.rewatch")
+              : t("detail.watch")}
+        </span>
       </Button>
 
       {src && (
