@@ -2,7 +2,13 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Button } from "@appica/ui-react/button";
-import { Dialog, DialogContent } from "@appica/ui-react/dialog";
+import {
+  Dialog,
+  DialogBody,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@appica/ui-react/dialog";
 import {
   Tooltip,
   TooltipContent,
@@ -174,12 +180,13 @@ export function CatalogBrowser({
   const hasActiveFilters =
     state.genreIds.length > 0 || state.sort !== "popularity";
 
-  const filters = (
+  const filters = (bare: boolean) => (
     <CatalogFilters
       genres={genresByType[state.type]}
       selectedGenreIds={state.genreIds}
       sort={state.sort}
       busy={loading}
+      bare={bare}
       onGenresChange={(genreIds) => update({ genreIds })}
       onSortChange={(sort) => update({ sort })}
       onReset={() => update({ genreIds: [], sort: "popularity" })}
@@ -193,10 +200,16 @@ export function CatalogBrowser({
         grille commençait sous la ligne de flottaison. Sous `lg` les mêmes
         filtres passent dans un dialogue, ouvert depuis la barre d'onglets.
       */}
-      <div className="contents max-lg:hidden">{filters}</div>
+      <div className="contents max-lg:hidden">{filters(false)}</div>
 
       <div className="min-w-0 flex-1 space-y-8">
-        <div className="flex items-center gap-2">
+        {/*
+          `items-stretch` plutôt qu'une hauteur en dur sur le bouton : la barre
+          d'onglets tire la sienne de son texte et de ses rembourrages, donc
+          toute constante finirait par diverger. Le bouton s'aligne dessus, et
+          `aspect-square` lui rend sa largeur.
+        */}
+        <div className="flex items-stretch gap-2">
         <div
           role="tablist"
           aria-label={t("catalog.type")}
@@ -237,7 +250,7 @@ export function CatalogBrowser({
                 <Button
                   variant="outline"
                   size="icon-lg"
-                  className="relative rounded-full lg:hidden"
+                  className="relative aspect-square size-auto rounded-full lg:hidden"
                   aria-label={t("catalog.filters")}
                   onClick={() => setFiltersOpen(true)}
                 >
@@ -257,11 +270,13 @@ export function CatalogBrowser({
         </div>
 
         <Dialog open={filtersOpen} onOpenChange={setFiltersOpen}>
-          <DialogContent className="w-full max-w-sm border-border-overlay bg-background [&>[data-slot=dialog-content]]:px-4">
-            <h2 className="px-1 pb-3 text-lg font-semibold tracking-tight">
-              {t("catalog.filters")}
-            </h2>
-            {filters}
+          <DialogContent className="w-full max-w-sm">
+            <DialogHeader>
+              <DialogTitle className="text-lg">
+                {t("catalog.filters")}
+              </DialogTitle>
+            </DialogHeader>
+            <DialogBody>{filters(true)}</DialogBody>
           </DialogContent>
         </Dialog>
 
