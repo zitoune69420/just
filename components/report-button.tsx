@@ -4,6 +4,11 @@ import { useState, useTransition } from "react";
 import Link from "next/link";
 import { Button } from "@appica/ui-react/button";
 import { Dialog, DialogContent } from "@appica/ui-react/dialog";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@appica/ui-react/tooltip";
 import { AlertTriangle, Check, Flag } from "@appica/icons-react";
 import { reportTitle } from "@/lib/report-actions";
 import { REPORT_REASONS, type ReportReason } from "@/lib/reports";
@@ -83,14 +88,26 @@ export function ReportButton({
 
   return (
     <>
-      <Button
-        variant="ghost"
-        size="sm"
-        className={`rounded-md ${className}`}
-        onClick={() => change(true)}
-      >
-        <Flag size={16} /> {t("report.open")}
-      </Button>
+      {/**
+       * Même gabarit que la croix de fermeture du dialogue de lecture, dont ce
+       * bouton est voisin : `icon-sm` et `rounded-sm`.
+       */}
+      <Tooltip>
+        <TooltipTrigger
+          render={
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              aria-label={t("report.open")}
+              className={`rounded-sm ${className}`}
+              onClick={() => change(true)}
+            >
+              <Flag size={16} />
+            </Button>
+          }
+        />
+        <TooltipContent>{t("report.open")}</TooltipContent>
+      </Tooltip>
 
       <Dialog open={open} onOpenChange={change}>
         <DialogContent className="w-full max-w-md border-border-overlay bg-background">

@@ -107,7 +107,6 @@ export const fr: Messages = {
   "report.throttled":
     "Trop de signalements envoyés. Réessayez dans un moment.",
   "detail.nextEpisode": "Épisode suivant",
-  "detail.upNext": "À suivre : {label}",
   "detail.releaseOn": "Sortie le {date}",
   "detail.releaseUnknown": "Date de sortie inconnue",
   "detail.synopsis": "Synopsis",

@@ -107,7 +107,6 @@ export const en = {
   "report.error": "The report could not be recorded. Try again later.",
   "report.throttled": "Too many reports sent. Try again in a little while.",
   "detail.nextEpisode": "Next episode",
-  "detail.upNext": "Up next: {label}",
   "detail.releaseOn": "In theatres {date}",
   "detail.releaseUnknown": "Release date unknown",
   "detail.synopsis": "Synopsis",

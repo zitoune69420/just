@@ -5,6 +5,11 @@ import Link from "next/link";
 import { Button } from "@appica/ui-react/button";
 import { Dialog, DialogContent } from "@appica/ui-react/dialog";
 import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@appica/ui-react/tooltip";
+import {
   AlertTriangle,
   PlayerPlayFilled,
   PlayerTrackNext,
@@ -241,28 +246,39 @@ export function WatchDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="w-full max-w-[min(72rem,calc((100dvh-2rem)*16/9))] overflow-hidden border-border-overlay bg-background p-0 [&>[data-slot=dialog-content]]:pt-0! [&>[data-slot=dialog-content]]:pb-0!">
-        <div className="relative aspect-video w-full">
-          {hint && (
-            <div
-              role="status"
-              className="pointer-events-none absolute inset-x-0 top-0 z-10 flex justify-center p-3"
-            >
-              <div className="pointer-events-auto flex max-w-lg items-start gap-2.5 rounded-md bg-warning px-4 py-3 text-sm font-medium text-warning-foreground shadow-2xl ring-1 ring-black/10">
-                <AlertTriangle size={18} className="mt-px shrink-0" />
-                <p className="min-w-0 flex-1">{t("detail.adsWarning")}</p>
-                <button
-                  type="button"
-                  onClick={() => setHint(false)}
-                  aria-label={t("detail.adsWarningDismiss")}
-                  className="-me-1 -mt-1 shrink-0 rounded-sm p-1 text-warning-foreground/70 outline-none transition-colors hover:text-warning-foreground focus-visible:ring-2 focus-visible:ring-warning-foreground"
-                >
-                  <X size={16} />
-                </button>
-              </div>
+      {/**
+       * La borne de largeur réserve la place du rail : la vidéo garde son 16/9
+       * et doit tenir dans la hauteur visible, donc le rail s'ajoute par-dessus
+       * ce calcul au lieu de rogner l'image. Sous `sm` le rail passe dessous,
+       * où il ne dispute plus rien à la largeur.
+       */}
+      <DialogContent className="w-full max-w-[min(64rem,calc((100dvh-2rem)*16/9))] overflow-hidden border-border-overlay bg-background p-0 sm:max-w-[min(64rem,calc((100dvh-2rem)*16/9+3.5rem))] [&>[data-slot=dialog-content]]:pt-0! [&>[data-slot=dialog-content]]:pb-0!">
+        <div className="relative flex flex-col sm:flex-row">
+        {/**
+         * L'avertissement se cale sur ce conteneur-ci, pas sur la vidéo : rangé
+         * dans la vidéo, son `inset-x-0` ne couvrait que celle-ci et le centrage
+         * ignorait la largeur du rail.
+         */}
+        {hint && (
+          <div
+            role="status"
+            className="pointer-events-none absolute inset-x-0 top-0 z-10 flex justify-center p-3"
+          >
+            <div className="pointer-events-auto flex max-w-lg items-start gap-2.5 rounded-md bg-warning px-4 py-3 text-sm font-medium text-warning-foreground shadow-2xl ring-1 ring-black/10">
+              <AlertTriangle size={18} className="mt-px shrink-0" />
+              <p className="min-w-0 flex-1">{t("detail.adsWarning")}</p>
+              <button
+                type="button"
+                onClick={() => setHint(false)}
+                aria-label={t("detail.adsWarningDismiss")}
+                className="-me-1 -mt-1 shrink-0 rounded-sm p-1 text-warning-foreground/70 outline-none transition-colors hover:text-warning-foreground focus-visible:ring-2 focus-visible:ring-warning-foreground"
+              >
+                <X size={16} />
+              </button>
             </div>
-          )}
-
+          </div>
+        )}
+        <div className="relative aspect-video min-w-0 flex-1">
           {/**
            * Pas d'attribut `sandbox` : mesuré, le lecteur refuse de démarrer dès
            * qu'il en détecte un, même réduit aux droits qu'une page de lecture
@@ -302,42 +318,69 @@ export function WatchDialog({
           />
         </div>
         {/**
-         * Le signalement vit ici parce que c'est ici qu'on découvre le
-         * problème : un titre annoncé au catalogue mais que le lecteur ne sert
-         * pas. Le proposer sur la fiche seulement obligerait à ressortir du
-         * lecteur pour dire qu'il ne marche pas.
+         * Rail latéral. Le passage à l'épisode suivant y devient un vrai bouton,
+         * lisible sans attendre la fin : il était jusqu'ici coincé dans une
+         * barre sous l'image, à côté d'un simple libellé.
+         *
+         * Le signalement l'accompagne parce que c'est devant le lecteur qu'on
+         * découvre qu'un titre ne se lance pas ; le proposer sur la seule fiche
+         * obligerait à ressortir du lecteur pour dire qu'il ne marche pas.
+         *
+         * `sm:pt-14` n'est pas une marge décorative : la croix de fermeture du
+         * dialogue est en position absolue dans le coin supérieur droit
+         * (`top-3`, hauteur `2rem`), donc pile à l'entrée du rail. Sans ce
+         * dégagement le premier bouton passe dessous. Rien de tel sous `sm`, où
+         * le rail est sous l'image et ne croise plus la croix.
+         *
+         * `sm:w-14` + `sm:px-3` ne sont pas interchangeables avec d'autres
+         * valeurs : les boutons sont centrés, donc leur distance au bord droit
+         * vaut `(largeur − bouton) / 2`. Cette largeur-là est la seule qui la
+         * fasse tomber sur l'axe de la croix de fermeture. Rétrécir le rail les
+         * décale vers la gauche.
          */}
         {(next || track) && (
-          <div className="flex items-center justify-between gap-3 border-t border-border-overlay bg-background px-4 py-3">
-            {next ? (
-              <p className="min-w-0 truncate text-sm text-foreground-muted">
-                {t("detail.upNext", { label: next.label })}
-              </p>
-            ) : (
-              <span className="min-w-0 flex-1" />
-            )}
-            <div className="flex shrink-0 items-center gap-2">
-              {track && (
-                <ReportButton
-                  mediaType={track.type}
-                  tmdbId={track.id}
-                  season={track.season}
-                  episode={track.episode}
+          <aside className="flex shrink-0 flex-row items-center justify-center gap-3 border-t border-border-overlay bg-background p-2 sm:w-14 sm:flex-col sm:justify-start sm:gap-4 sm:border-t-0 sm:border-s sm:px-3 sm:pt-13">
+            {/**
+             * `icon-sm` + `rounded-sm` : exactement ce que porte la croix de
+             * fermeture du dialogue, avec laquelle ces boutons cohabitent.
+             * Toute autre combinaison pose côte à côte deux boîtes de tailles
+             * et de rondeurs différentes.
+             */}
+            {next && (
+              <Tooltip>
+                <TooltipTrigger
+                  render={
+                    <Button
+                      variant="primary"
+                      size="icon-sm"
+                      aria-label={`${t("detail.nextEpisode")} — ${next.label}`}
+                      className="rounded-sm"
+                      onClick={next.onPlay}
+                      disabled={next.pending}
+                    >
+                      <PlayerTrackNext size={16} />
+                    </Button>
+                  }
                 />
-              )}
-              {next && (
-                <Button
-                  size="sm"
-                  className="shrink-0 rounded-full"
-                  onClick={next.onPlay}
-                  disabled={next.pending}
-                >
-                  <PlayerTrackNext size={16} /> {t("detail.nextEpisode")}
-                </Button>
-              )}
-            </div>
-          </div>
+                {/** Le numéro d'épisode n'a plus d'autre endroit où s'afficher. */}
+                <TooltipContent>
+                  {t("detail.nextEpisode")} — {next.label}
+                </TooltipContent>
+              </Tooltip>
+            )}
+
+            {track && (
+              <ReportButton
+                mediaType={track.type}
+                tmdbId={track.id}
+                season={track.season}
+                episode={track.episode}
+                className="sm:mt-auto"
+              />
+            )}
+          </aside>
         )}
+        </div>
       </DialogContent>
     </Dialog>
   );
