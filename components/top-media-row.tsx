@@ -29,7 +29,7 @@ function TopMediaCard({ media, rank }: { media: Media; rank: number }) {
       <Link
         href={`/${media.type}/${media.id}`}
         aria-label={t("home.rank", { rank, title: media.title })}
-        className="press group relative z-10 -ms-6 block w-32 shrink-0 rounded-2xl outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background sm:-ms-8 sm:w-44"
+        className="press group relative z-10 -ms-6 block w-32 shrink-0 rounded-xl sm:rounded-2xl outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background sm:-ms-8 sm:w-44"
       >
         <MediaPoster media={media} sizes="(min-width: 640px) 220px, 160px" />
       </Link>

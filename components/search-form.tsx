@@ -24,8 +24,13 @@ export function SearchForm({ initialQuery }: { initialQuery: string }) {
     <form
       onSubmit={handleSubmit}
       role="search"
-      className="flex max-w-xl gap-4"
+      className="flex w-full max-w-xl gap-2 sm:gap-4"
     >
+      {/*
+        `min-w-0` est ce qui empêche le champ de pousser le bouton hors de
+        l'écran : un `input` porte une largeur intrinsèque que `flex-1` ne
+        contredit pas, et sous 380px la marge n'existe plus.
+      */}
       <Input
         key={initialQuery}
         name="q"
@@ -35,7 +40,7 @@ export function SearchForm({ initialQuery }: { initialQuery: string }) {
         aria-label={t("search.label")}
         startSlot={<Search size={18} />}
         autoFocus={initialQuery === ""}
-        className="flex-1 rounded-full"
+        className="min-w-0 flex-1 rounded-full"
       />
       <Button
         type="submit"

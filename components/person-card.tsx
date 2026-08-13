@@ -13,9 +13,9 @@ export function PersonCard({ person, sizes = "190px" }: PersonCardProps) {
   return (
     <Link
       href={`/person/${person.id}`}
-      className="press group block rounded-2xl outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+      className="press group block rounded-xl sm:rounded-2xl outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
     >
-      <div className="relative aspect-2/3 overflow-hidden rounded-2xl bg-background-muted ring-1 ring-border/50">
+      <div className="relative aspect-2/3 overflow-hidden rounded-xl sm:rounded-2xl bg-background-muted ring-1 ring-border/50">
         {person.profile ? (
           <Image
             src={tmdbImage(person.profile, "w342")}

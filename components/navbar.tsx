@@ -5,11 +5,17 @@ import { usePathname } from "next/navigation";
 import { Suspense } from "react";
 import { Button } from "@appica/ui-react/button";
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@appica/ui-react/dropdown-menu";
+import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from "@appica/ui-react/tooltip";
-import { Search } from "@appica/icons-react";
+import { Menu2, Search } from "@appica/icons-react";
 import type { MessageKey } from "@/lib/i18n/translate";
 import { CommandMenu } from "./command-menu";
 import { useTranslations } from "./i18n-provider";
@@ -50,13 +56,18 @@ export function Navbar({ session }: { session: React.ReactNode }) {
 
         <div className="ms-auto flex shrink-0 items-center gap-2">
           <CommandMenu />
+          {/*
+            Entre `md` et `lg` le rail de liens est visible mais le champ de
+            recherche (`max-lg:hidden`) ne l'est pas : ce raccourci comble ce
+            seul intervalle. Sous `md`, la recherche est dans le burger.
+          */}
           <Tooltip>
             <TooltipTrigger
               render={
                 <Button
                   variant="ghost"
                   size="icon-sm"
-                  className="rounded-full lg:hidden"
+                  className="rounded-full max-md:hidden lg:hidden"
                   render={<Link href="/search" aria-label={t("nav.searchLabel")} />}
                 >
                   <Search size={18} />
@@ -67,6 +78,9 @@ export function Navbar({ session }: { session: React.ReactNode }) {
           </Tooltip>
           <ThemeToggle />
           {session}
+          <Suspense fallback={<BurgerMenu pathname={null} />}>
+            <ActiveBurgerMenu />
+          </Suspense>
         </div>
       </div>
     </header>
@@ -78,20 +92,71 @@ function ActiveNavLinks() {
   return <NavLinks pathname={pathname} />;
 }
 
+function ActiveBurgerMenu() {
+  const pathname = usePathname();
+  return <BurgerMenu pathname={pathname} />;
+}
+
+/**
+ * Sous `md`, les quatre entrées ne tiennent plus à côté du logo et du bloc de
+ * compte : le rail devenait une bande à faire défiler, où les dernières entrées
+ * n'étaient plus visibles. Le burger les remet toutes à portée.
+ */
+function BurgerMenu({ pathname }: { pathname: string | null }) {
+  const t = useTranslations();
+
+  return (
+    <DropdownMenu size="sm">
+      <DropdownMenuTrigger
+        render={
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            className="rounded-full md:hidden"
+            aria-label={t("nav.menu")}
+          >
+            <Menu2 size={20} />
+          </Button>
+        }
+      />
+      <DropdownMenuContent align="end" className="w-44">
+        {NAV_LINKS.map((link) => {
+          const active = isActive(link.match, pathname);
+          return (
+            <DropdownMenuItem
+              key={link.href}
+              render={
+                <Link
+                  href={link.href}
+                  aria-current={active ? "page" : undefined}
+                />
+              }
+              className={active ? "text-foreground-strong" : undefined}
+            >
+              {t(link.key)}
+            </DropdownMenuItem>
+          );
+        })}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+
+function isActive(match: string, pathname: string | null): boolean {
+  if (pathname === null) return false;
+  return match === "/" ? pathname === "/" : pathname.startsWith(match);
+}
+
 function NavLinks({ pathname }: { pathname: string | null }) {
   const t = useTranslations();
 
   return (
     <nav
       aria-label={t("nav.label")}
-      className="no-scrollbar flex min-w-0 items-center gap-1 overflow-x-auto"
+      className="no-scrollbar flex min-w-0 items-center gap-1 overflow-x-auto max-md:hidden"
     >
       {NAV_LINKS.map((link) => {
-        const active =
-          pathname !== null &&
-          (link.match === "/"
-            ? pathname === "/"
-            : pathname.startsWith(link.match));
+        const active = isActive(link.match, pathname);
         return (
           <Link
             key={link.href}

@@ -13,7 +13,7 @@ interface MediaCardProps {
 
 export function MediaPoster({ media, sizes = "190px" }: MediaCardProps) {
   return (
-    <div className="relative aspect-2/3 overflow-hidden rounded-2xl bg-background-muted ring-1 ring-border/50">
+    <div className="relative aspect-2/3 overflow-hidden rounded-xl sm:rounded-2xl bg-background-muted ring-1 ring-border/50">
       {media.poster ? (
         <Image
           src={tmdbImage(media.poster, "w342")}
@@ -50,7 +50,7 @@ export function MediaCard({ media, sizes = "190px" }: MediaCardProps) {
     <div className="relative">
       <Link
         href={`/${media.type}/${media.id}`}
-        className="press group block rounded-2xl outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+        className="press group block rounded-xl sm:rounded-2xl outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
       >
         <MediaPoster media={media} sizes={sizes} />
         <div className="mt-2.5 px-0.5">
