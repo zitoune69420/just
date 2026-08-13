@@ -32,6 +32,12 @@ interface CatalogFiltersProps {
   sort: SortKey;
   /** Vrai pendant que la grille se recharge, pour l'atténuer sans la figer. */
   busy?: boolean;
+  /**
+   * Retire le cadre du panneau. Dans un dialogue, la carte se retrouvait
+   * imbriquée dans une autre : deux bordures, deux fonds et deux rembourrages
+   * pour un seul contenu.
+   */
+  bare?: boolean;
   onGenresChange: (genreIds: number[]) => void;
   onSortChange: (sort: SortKey) => void;
   onReset: () => void;
@@ -42,6 +48,7 @@ export function CatalogFilters({
   selectedGenreIds,
   sort,
   busy = false,
+  bare = false,
   onGenresChange,
   onSortChange,
   onReset,
@@ -95,9 +102,11 @@ export function CatalogFilters({
   return (
     <aside
       aria-busy={busy}
-      className={`flex max-h-[60vh] w-full flex-col rounded-3xl border border-border/60 bg-background-subtle/60 p-5 backdrop-blur-sm transition-opacity duration-200 lg:sticky lg:top-20 lg:h-[80vh] lg:max-h-[calc(100vh-6rem)] lg:w-72 lg:shrink-0 ${
-        busy ? "opacity-60" : "opacity-100"
-      }`}
+      className={`flex w-full flex-col transition-opacity duration-200 ${
+        bare
+          ? "max-h-[65vh]"
+          : "max-h-[60vh] rounded-3xl border border-border/60 bg-background-subtle/60 p-5 backdrop-blur-sm lg:sticky lg:top-20 lg:h-[80vh] lg:max-h-[calc(100vh-6rem)] lg:w-72 lg:shrink-0"
+      } ${busy ? "opacity-60" : "opacity-100"}`}
     >
       <div
         ref={scrollRef}

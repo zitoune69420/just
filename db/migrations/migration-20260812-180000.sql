@@ -9,8 +9,11 @@
 -- bien deux signalements distincts. Elle sert aussi de garde-fou contre le
 -- bruit, en plus du quota côté application.
 --
--- `coalesce` dans l'index : `unique` laisse passer les doublons dès qu'une
--- colonne est nulle, ce qui est le cas de `season` et `episode` pour un film.
+-- `nulls not distinct` dans l'index : `unique` laisse passer les doublons dès
+-- qu'une colonne est nulle, ce qui est le cas de `season` et `episode` pour un
+-- film. Un index d'expressions — `coalesce(season, -1)` — obtiendrait le même
+-- résultat mais ne serait jamais retenu par le `ON CONFLICT (colonnes)` de
+-- l'application, qui échouerait alors en `42P10`. Demande PostgreSQL 15.
 
 create table if not exists public.reports (
   id bigint primary key generated always as identity,
@@ -25,10 +28,8 @@ create table if not exists public.reports (
 );
 
 create unique index if not exists reports_unique_target_idx
-  on public.reports (
-    user_id, tmdb_id, media_type,
-    coalesce(season, -1), coalesce(episode, -1)
-  );
+  on public.reports (user_id, tmdb_id, media_type, season, episode)
+  nulls not distinct;
 
 -- Le tableau d'administration lit les signalements ouverts, du plus récent au
 -- plus ancien.
