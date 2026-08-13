@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import Link from "next/link";
 import { Button } from "@appica/ui-react/button";
 import { Dialog, DialogClose, DialogContent } from "@appica/ui-react/dialog";
@@ -244,7 +245,73 @@ export function WatchDialog({
     return () => clearTimeout(timer);
   }, []);
 
+  /**
+   * Position du bord haut du lecteur, pour poser l'avertissement juste dessus.
+   *
+   * Elle se mesure au lieu de se déduire : le dialogue est centré et sa hauteur
+   * dépend du format de la vidéo, du rail et de la fenêtre. Aucune valeur écrite
+   * en dur ne suivrait un changement de taille ou une rotation d'écran.
+   */
+  const [anchorTop, setAnchorTop] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (!open || !hint) return;
+
+    const popup = document.querySelector<HTMLElement>("[data-player-popup]");
+    if (!popup) return;
+
+    const update = () => setAnchorTop(popup.getBoundingClientRect().top);
+
+    /** Après la peinture : à l'ouverture, le dialogue est encore à sa taille d'entrée. */
+    const frame = requestAnimationFrame(update);
+    const observer = new ResizeObserver(update);
+    observer.observe(popup);
+    window.addEventListener("resize", update);
+
+    return () => {
+      cancelAnimationFrame(frame);
+      observer.disconnect();
+      window.removeEventListener("resize", update);
+    };
+  }, [open, hint]);
+
   return (
+    <>
+    {/**
+     * L'avertissement sort du dialogue par un portail vers `document.body`.
+     * Le laisser à l'intérieur ne suffisait pas à le rendre flottant : la
+     * popup porte `transform-gpu`, qui fait d'elle le bloc conteneur de tout
+     * descendant `fixed`, lequel se retrouve alors rogné par son
+     * `overflow-hidden`. Hors du dialogue, il se cale sur la fenêtre.
+     *
+     * `top` vaut le bord haut du lecteur, mesuré ; la translation de `100%`
+     * remonte l'avertissement de sa propre hauteur, plus 0.75rem d'écart. Il
+     * suit donc le lecteur au lieu d'être collé en haut de l'écran.
+     *
+     * `z-60` passe devant le voile du dialogue, posé à `z-50`.
+     */}
+    {open && hint && anchorTop !== null && typeof document !== "undefined" &&
+      createPortal(
+        <div
+          role="status"
+          style={{ top: anchorTop }}
+          className="pointer-events-none fixed inset-x-0 z-60 flex -translate-y-[calc(100%+0.75rem)] justify-center px-4"
+        >
+          <div className="pointer-events-auto flex max-w-lg items-start gap-2.5 rounded-md bg-warning px-4 py-3 text-sm font-medium text-warning-foreground shadow-2xl ring-1 ring-black/10">
+            <AlertTriangle size={18} className="mt-px shrink-0" />
+            <p className="min-w-0 flex-1">{t("detail.adsWarning")}</p>
+            <button
+              type="button"
+              onClick={() => setHint(false)}
+              aria-label={t("detail.adsWarningDismiss")}
+              className="-me-1 -mt-1 shrink-0 rounded-sm p-1 text-warning-foreground/70 outline-none transition-colors hover:text-warning-foreground focus-visible:ring-2 focus-visible:ring-warning-foreground"
+            >
+              <X size={16} />
+            </button>
+          </div>
+        </div>,
+        document.body,
+      )}
     <Dialog open={open} onOpenChange={onOpenChange}>
       {/**
        * La borne de largeur réserve la place du rail : la vidéo garde son 16/9
@@ -258,33 +325,7 @@ export function WatchDialog({
        * au-dessus de la vidéo, à distance des deux autres commandes. Elle est
        * reprise plus bas comme premier élément du rail, avec eux.
        */}
-      <DialogContent closeButton={false} className="w-full max-w-[min(64rem,calc((100dvh-2rem)*16/9))] overflow-hidden border-border-overlay bg-background p-0 sm:max-w-[min(64rem,calc((100dvh-2rem)*16/9+3.5rem))] [&>[data-slot=dialog-content]]:pt-0! [&>[data-slot=dialog-content]]:pb-0!">
-        <div className="flex flex-col">
-        {/**
-         * Bandeau, pas surimpression : posé sur la vidéo, l'avertissement
-         * masquait le haut de l'image pendant douze secondes — soit le début de
-         * la lecture. Il pousse maintenant le lecteur vers le bas et lui rend
-         * son cadre entier.
-         */}
-        {hint && (
-          <div
-            role="status"
-            className="flex shrink-0 justify-center p-3"
-          >
-            <div className="flex max-w-lg items-start gap-2.5 rounded-md bg-warning px-4 py-3 text-sm font-medium text-warning-foreground ring-1 ring-black/10">
-              <AlertTriangle size={18} className="mt-px shrink-0" />
-              <p className="min-w-0 flex-1">{t("detail.adsWarning")}</p>
-              <button
-                type="button"
-                onClick={() => setHint(false)}
-                aria-label={t("detail.adsWarningDismiss")}
-                className="-me-1 -mt-1 shrink-0 rounded-sm p-1 text-warning-foreground/70 outline-none transition-colors hover:text-warning-foreground focus-visible:ring-2 focus-visible:ring-warning-foreground"
-              >
-                <X size={16} />
-              </button>
-            </div>
-          </div>
-        )}
+      <DialogContent closeButton={false} data-player-popup="" className="w-full max-w-[min(64rem,calc((100dvh-2rem)*16/9))] overflow-hidden border-border-overlay bg-background p-0 sm:max-w-[min(64rem,calc((100dvh-2rem)*16/9+3.5rem))] [&>[data-slot=dialog-content]]:pt-0! [&>[data-slot=dialog-content]]:pb-0!">
         <div className="relative flex min-h-0 flex-col sm:flex-row">
         <div className="relative aspect-video min-w-0 flex-1">
           {/**
@@ -403,9 +444,9 @@ export function WatchDialog({
             )}
           </aside>
         </div>
-        </div>
       </DialogContent>
     </Dialog>
+    </>
   );
 }
 
